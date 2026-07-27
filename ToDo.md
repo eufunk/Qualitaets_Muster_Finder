@@ -62,6 +62,7 @@
 ---
 
 ## 🖥️ Baustein 3 — Dashboard bauen *(Woche 3 & 4)*
+**Status: ✅ Erster Entwurf abgeschlossen — live auf Streamlit Community Cloud**
 
 ### Grundstruktur
 - [x] Streamlit kennenlernen und Grundstruktur anlegen (Navigation zwischen Seiten)
@@ -117,8 +118,8 @@
 - [ ] Komplett-Durchlauf testen: Rohdaten → fertige App ohne Fehler
 
 ### Dokumentation
-- [ ] Startanleitung schreiben (damit andere die App ohne Hilfe starten können)
-- [ ] Entscheidungen festhalten: Warum diese Zielgröße? Warum diese Grenze? Warum diese Merkmale?
+- [x] Startanleitung schreiben → README.md erstellt
+- [x] Entscheidungen festhalten → README.md Abschnitt "Wichtige Entscheidungen"
 
 ### Präsentation
 - [ ] Fragestellung vorstellen
@@ -191,7 +192,7 @@
 | **Decision Tree — Gini/Entropy, Visualisierung** | **✅ Abgeschlossen!** | Baustein 4 |
 | **Metriken: Accuracy, Precision, Recall, F1, Confusion Matrix** | **✅ Abgeschlossen!** | Baustein 4 |
 | **R²-Metrik** *(kritisch — war in Präsentation ein Thema!)* | **✅ Berechnet!** R²=0,023 — erklärt und interpretiert | Baustein 4 |
-| **Streamlit** (Widgets, Session State, Formulare) | Baustein 3 noch offen | Baustein 3 |
+| **Streamlit** (Widgets, Session State, Formulare) | ✅ Implementiert — 4 Seiten live | Baustein 3 |
 | **`pivot_table()`** | **✅ Ergänzt!** | Baustein 2 |
 | **OOP / Klassen** | **✅ Implementiert!** Klasse `KrankenhausModell` | Baustein 4 |
 | **`joblib` / `pickle`** | **✅ Erledigt!** `modell_krankenhaus.pkl` gespeichert | Baustein 4 |
