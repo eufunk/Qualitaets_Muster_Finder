@@ -51,6 +51,13 @@ tags: []
 - Ziel-Variable: **`QS.Qualitätsindikator.csv`** (>50 MB — nur per Python lesbar)
 - Fortbildungsquote = `Erbracht / Pflichtige` aus `QS.Fortbildung.csv`
 
+> ⚠️ **DSGVO-Hinweis: Personenbezogene Daten im Data/-Ordner**  
+> Zwei Dateien enthalten echte Personendaten (Namen, E-Mail, Telefon von Krankenhauspersonal):
+> - **`Personen.csv`** — Kontaktpersonen der Krankenhäuser (Vorname, Nachname, E-Mail, Telefon, Funktion)
+> - **`FA.Personen.csv`** — Ärztliche Leitungen der Fachabteilungen (Vorname, Nachname, E-Mail, Telefon)
+>
+> Diese Dateien sind im `Data/`-Ordner, der per `.gitignore` **nicht** auf GitHub hochgeladen wird. Sie wurden **nicht** in die Analyse einbezogen und sind nicht in `analysetabelle.csv` enthalten. Die Daten stammen aus den öffentlich zugänglichen Qualitätsberichten 2023.
+
 ---
 
 ### 1.3 Ziel-Variable erstellen

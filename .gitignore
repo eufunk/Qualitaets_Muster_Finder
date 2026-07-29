@@ -1,5 +1,10 @@
 # Rohdaten — zu groß für GitHub (86 CSV-Dateien, bis 911 MB)
-Data/
+# Ausnahme: die 3 Dateien, die das Dashboard tatsächlich braucht
+Data/*
+!Data/analysetabelle.csv
+!Data/analysetabelle.xlsx
+!Data/modell_krankenhaus.pkl
+Aufgabenstellung/
 
 # Python-Cache
 __pycache__/

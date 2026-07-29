@@ -10,8 +10,8 @@
 
 ### Setup
 - [x] Fachlichen Kontext klären (Qualitätsindikatoren, Qualitätsberichte verstehen)
-- [x] Gemeinsames Git-Repository aufsetzen *(entfällt — Projekt wird lokal geteilt, kein GitHub)*
-- [x] Rohdaten **nicht** ins Repository — nur per `.gitignore` ausschließen *(Quelle: `Aufgabenstellung/Text_Presentation.docx`, Folie 14: „Die Rohdaten gehören da nicht rein. Die sind zu groß und haben da nichts verloren.")*
+- [x] Git-Repository aufsetzen + Code auf GitHub *(Dashboard läuft live auf Streamlit Cloud → GitHub aktiv)*
+- [x] Rohdaten **nicht** ins Repository — per `.gitignore` ausgeschlossen *(Folie 14: „Die Rohdaten gehören da nicht rein. Die sind zu groß.")*
 
 ### Datensatz erkunden
 - [x] Alle CSV-Dateien sichten und ein eigenes „Inhaltsverzeichnis" der Daten erstellen
@@ -23,21 +23,22 @@
 - [x] Für jedes Krankenhaus: Anteil auffälliger Qualitätsindikatoren berechnen
 - [x] Target-Variable definieren: `"Hat überdurchschnittlich viele Probleme"` = liegt über dem Median
 - [x] Fallstricke prüfen:
-  - [x] Doppelte Einträge entfernen
-  - [x] Nur tatsächlich bewertete Indikatoren einbeziehen (nicht bewertet ≠ unauffällig)
-- [ ] Zielgröße zuerst **jeder für sich** berechnen → Ergebnisse vergleichen → gemeinsame Version festlegen
+  - [x] Doppelte Einträge entfernen (Deduplizierung über `SO.QBID + QSQI.Indikator`)
+  - [x] Nur tatsächlich bewertete Indikatoren einbeziehen (N99 ausgeschlossen — nicht bewertet ≠ unauffällig)
+  - [x] Nur echte QI-Zeilen (`QSQI.ArtDesWertes == 'QI'` — keine Zählkennzahlen EKez/TKez)
 
 ### Merkmale auswählen & zusammenführen
 - [x] 5–8 aussagekräftige Merkmale auswählen, z. B.:
   - [x] Bettenzahl
   - [x] Ärzte pro Bett
-  - [ ] Pflegekräfte pro Bett *(noch offen — aus `FA.Personalliste.csv`, Bereich=Pflege)*
+  - [ ] **Pflegekräfte pro Bett** *(noch offen — explizit in `Fragestellung.docx` gefordert! Aus `FA.Personalliste.csv`, Filter: `FA.Personal.Bereich == 'Pflege'` — analog zu Ärzte-Berechnung)*
   - [x] Trägerschaft (öffentlich / privat / kirchlich)
   - [x] Region (Stadt/Land oder Bundesland)
   - [x] Uni-Klinik (ja/nein)
   - [x] Fortbildungsquote
 - [x] Alle Merkmale + Zielgröße in **eine Analysetabelle** zusammenführen (1 Zeile = 1 Krankenhaus)
 - [x] Zusammenführung **per Skript** reproduzierbar machen (kein manuelles Zusammenklicken)
+- [ ] **Analysetabelle aktualisieren** sobald Pflegekräfte pro Bett berechnet ist (Spalte ergänzen)
 
 ---
 
@@ -113,22 +114,29 @@
 ## 🏁 Baustein 5 — Abschluss & Präsentation *(Woche 5)*
 
 ### Robustheit & Code-Qualität
-- [ ] Randfälle testen: leere Eingaben, fehlende Werte
-- [ ] Code aufräumen
-- [ ] Komplett-Durchlauf testen: Rohdaten → fertige App ohne Fehler
+- [ ] Randfälle testen: leere Eingaben, fehlende Werte im Dashboard
+- [ ] Code aufräumen (ungenutzte Variablen, überflüssige Kommentare)
+- [ ] Komplett-Durchlauf testen: Rohdaten → `01_Exploration.ipynb` → `Data/analysetabelle.csv` → `Dashboard/streamlit_dashboard.py` — alles ohne Fehler *(Folie 13: „Geht das von den Rohdaten bis zur fertigen App durch, ohne dass es irgendwo hakt?")* *(2026-07-29: Code las zuvor aus dem Projekt-Root statt aus `Data/`, wo die Dateien tatsächlich lagen — jetzt behoben. Zusätzlich `streamlit_dashboard.py`/`dashboard_utils.py` nach `Dashboard/` verschoben. End-to-End-Lauf noch nicht verifiziert.)*
+- [ ] Streamlit-Cloud-Deployment: Main-File-Pfad in den App-Settings von `scripts/streamlit_dashboard.py` auf `Dashboard/streamlit_dashboard.py` umstellen
+- [ ] `requirements.txt` verifizieren — alle verwendeten Pakete enthalten und Versionen aktuell?
 
 ### Dokumentation
-- [x] Startanleitung schreiben → README.md erstellt
-- [x] Entscheidungen festhalten → README.md Abschnitt "Wichtige Entscheidungen"
+- [x] Startanleitung schreiben → `README.md` erstellt
+- [x] Entscheidungen festhalten → `README.md` Abschnitt "Wichtige Entscheidungen"
+- [ ] **Entscheidungsbegründungen** ausformulieren *(Folie 13: „festhalten, welche Entscheidungen ihr getroffen habt und warum"):*
+  - [ ] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)?
+  - [ ] Warum N99 ausgeschlossen?
+  - [ ] Warum diese Merkmale (und nicht andere)?
+  - [ ] Warum `aerzte_pro_bett` über FA.csv statt SO.Personalliste?
 
-### Präsentation
+### Präsentation *(Folie 13)*
 - [ ] Fragestellung vorstellen
-- [ ] Hürden & Erkenntnisse aus der Datenaufbereitung
-- [ ] Befunde der deskriptiven Analyse
-- [ ] Live-Demo des Dashboards
-- [ ] Grenzen der Analyse ehrlich benennen
-- [ ] Erzählen statt Stichpunkte ablesen
-- [ ] Generalprobe mit Stoppuhr (jeder spricht einen Teil)
+- [ ] Hürden & Erkenntnisse aus der Datenaufbereitung (Fallstricke, Designentscheidungen)
+- [ ] Befunde der deskriptiven Analyse — auch „kein Zusammenhang" klar und begründet benennen
+- [ ] Live-Demo des Dashboards (alle 4 Seiten zeigen)
+- [ ] Grenzen der Analyse ehrlich benennen: was können wir **nicht** aussagen?
+- [ ] **Erzählen statt Stichpunkte ablesen** *(Folie 13: „Niemand will Stichpunkte vorgelesen bekommen")*
+- [ ] Generalprobe mit Stoppuhr
 
 ### Abschlusspräsentation
 - [ ] Abschlusspräsentation halten
@@ -136,14 +144,11 @@
 
 ---
 
-## 🗂️ Teamorganisation
+## 🗂️ Teamorganisation *(Soloprojekt — angepasst)*
 
-- [ ] Schwerpunkte verteilen: Datenpipeline | Analyse & Modell | Dashboard
-- [ ] Wissen teilen: Wer etwas fertig hat, erklärt es den anderen (~10 min)
-- [ ] Wochenrhythmus einhalten:
-  - [ ] Morgens kurzes Daily
-  - [ ] Mittwochs gemeinsamer Zwischenstand
-  - [ ] Freitags Demo
+- [x] Schwerpunkte definiert: Datenpipeline → Analyse → Dashboard → Modell → Doku
+- [ ] Regelmäßiger Zwischenstand mit Trainer/in
+- [ ] Freitags Demo-fähiger Stand
 
 ---
 

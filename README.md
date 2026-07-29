@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 ### Starten
 ```bash
-streamlit run streamlit_dashboard.py
+streamlit run Dashboard/streamlit_dashboard.py
 ```
 
 → Dashboard öffnet sich automatisch unter `http://localhost:8501`
@@ -41,16 +41,26 @@ streamlit run streamlit_dashboard.py
 ### Benötigte Dateien
 ```
 📁 Projektordner/
-├── streamlit_dashboard.py   # Haupt-App
-├── dashboard_utils.py       # Funktionen & Plots
-├── modell_klasse.py         # Decision Tree Klasse
-├── modell_krankenhaus.pkl   # Trainiertes Modell
-├── analysetabelle.csv       # Datenbasis (1.824 Häuser)
+├── Notebooks/
+│   ├── 01_Exploration.ipynb     # Datenaufbereitung (86 CSVs → analysetabelle.csv)
+│   ├── 02_Analyse.ipynb         # Deskriptive Analyse (10 Grafiken, T-Test, ANOVA)
+│   └── 03_Decision_Tree.ipynb   # ML: Decision Tree, Feature Importance
+├── Dashboard/
+│   ├── streamlit_dashboard.py   # Haupt-App
+│   └── dashboard_utils.py       # Funktionen & Plots
+├── scripts/
+│   ├── modell_klasse.py         # Decision Tree Klasse
+│   ├── bi_datenanalyse.py       # BI-Tool-Vergleich (Word-Generator)
+│   └── datei_uebersicht_a4.py   # Datei-Klassifikation (Word-Generator)
+├── Data/
+│   ├── modell_krankenhaus.pkl   # Trainiertes Modell
+│   ├── analysetabelle.csv       # Datenbasis (1.824 Häuser)
+│   └── analysetabelle.xlsx      # Excel-Version
 ├── requirements.txt
-└── grafiken/                # PNG-Grafiken (optional)
+└── grafiken/                    # PNG-Grafiken (optional)
 ```
 
-> ⚠️ Der `Data/`-Ordner mit den Rohdaten (86 CSV-Dateien, bis 911 MB) ist **nicht** im Repository. Er wird für den Dashboard-Betrieb **nicht benötigt** — nur `analysetabelle.csv` reicht.
+> ⚠️ Die Rohdaten in `Data/CSV/` und `Data/Excel/` (86 Dateien, bis 911 MB) sind **nicht** im Repository. Für den Dashboard-Betrieb werden nur `Data/analysetabelle.csv` und `Data/modell_krankenhaus.pkl` benötigt — diese beiden liegen zwar im sonst per `.gitignore` ausgeschlossenen `Data/`-Ordner, sind aber per expliziter `!`-Ausnahme trotzdem versioniert.
 
 ---
 
@@ -58,11 +68,16 @@ streamlit run streamlit_dashboard.py
 
 | Datei / Ordner | Beschreibung |
 |----------------|-------------|
-| `01_Exploration.ipynb` | Datenaufbereitung: Ziel-Variable, Merkmale, Analysetabelle |
-| `02_Analyse.ipynb` | Deskriptive Analyse: 10 Grafiken, T-Test, ANOVA, Konfidenzintervalle |
-| `03_Decision_Tree.ipynb` | Decision Tree, Metriken, R², Feature Importance |
-| `analysetabelle.csv` | Fertige Analysetabelle (Ergebnis aus Baustein 1) |
-| `modell_krankenhaus.pkl` | Trainiertes Decision-Tree-Modell |
+| `Notebooks/01_Exploration.ipynb` | Datenaufbereitung: Ziel-Variable, Merkmale, Analysetabelle |
+| `Notebooks/02_Analyse.ipynb` | Deskriptive Analyse: 10 Grafiken, T-Test, ANOVA, Konfidenzintervalle |
+| `Notebooks/03_Decision_Tree.ipynb` | Decision Tree, Metriken, R², Feature Importance |
+| `Dashboard/streamlit_dashboard.py` | Haupt-App: 4 Seiten (Übersicht, Vergleiche, Ähnliche Häuser, Risiko-Rechner) |
+| `Dashboard/dashboard_utils.py` | Hilfsfunktionen: Daten laden, KPIs, Plots, Modell-Vorhersage |
+| `scripts/modell_klasse.py` | OOP-Wrapper `KrankenhausModell` (prepare, fit, evaluate, save, load) |
+| `scripts/bi_datenanalyse.py` | Generiert Word-Dokument: BI-Tool-Vergleich mit Kollegen |
+| `scripts/datei_uebersicht_a4.py` | Generiert Word-Dokument: Datei-Klassifikation (A4-Übersicht) |
+| `Data/analysetabelle.csv` | Fertige Analysetabelle (Ergebnis aus Baustein 1) |
+| `Data/modell_krankenhaus.pkl` | Trainiertes Decision-Tree-Modell |
 | `Workflow.md` | Vollständige Dokumentation aller Entscheidungen |
 | `ToDo.md` | Aufgabenliste nach Baustein-Struktur |
 
