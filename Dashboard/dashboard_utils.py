@@ -145,8 +145,6 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
     Farbe = Problemkategorie, Groesse = Bettenzahl.
     """
     df_karte = df.dropna(subset=["SO.Latitude", "SO.Longitude"]).copy()
-    # Mindestgröße damit auch Häuser mit 0 Betten sichtbar sind
-    df_karte["_bubble_size"] = df_karte["SO.Betten"].clip(lower=30)
 
     fig = px.scatter_mapbox(
         df_karte,
@@ -157,8 +155,6 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
             "Wenige Probleme": FARBE_WENIGE,
             "Viele Probleme":  FARBE_VIELE,
         },
-        size="_bubble_size",
-        size_max=20,
         hover_name="SO.Name",
         hover_data={
             "SO.Betten":        True,
@@ -168,12 +164,12 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
             "SO.Latitude":      False,
             "SO.Longitude":     False,
             "Problemkategorie": False,
-            "_bubble_size":     False,
         },
         zoom=5,
         center={"lat": 51.2, "lon": 10.4},
         mapbox_style="open-street-map",
     )
+    fig.update_traces(marker={"size": 8, "opacity": 0.7})
     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=620)
     return fig
 

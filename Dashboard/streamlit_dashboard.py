@@ -183,7 +183,12 @@ if seite == "Gesamtüberblick":
     _c1, _c2 = st.columns(2)
     _c1.metric("Wenige Probleme", f"{_n_wenige/len(df_gefiltert):.1%}", help=f"{_n_wenige:,} Häuser")
     _c2.metric("Viele Probleme",  f"{_n_viele/len(df_gefiltert):.1%}",  help=f"{_n_viele:,} Häuser")
-    st.plotly_chart(erstelle_karte(df_gefiltert), use_container_width=True)
+    _koord_ok = df_gefiltert[["SO.Latitude","SO.Longitude"]].dropna().shape[0]
+    if _koord_ok == 0:
+        st.warning("⚠️ Keine Koordinaten verfügbar — Karte kann nicht angezeigt werden.")
+    else:
+        st.caption(f"Kartendaten: {_koord_ok} Häuser mit Koordinaten | Beispiel Lat: {df_gefiltert['SO.Latitude'].dropna().iloc[0]}")
+        st.plotly_chart(erstelle_karte(df_gefiltert), use_container_width=True)
     st.caption(
         "Jeder Punkt ist ein Krankenhaus. Farbe: grün = wenige Qualitätsprobleme, rot = viele. "
         "Punktgröße entspricht der Bettenzahl. Hover für Details."
