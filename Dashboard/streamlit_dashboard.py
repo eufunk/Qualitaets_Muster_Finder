@@ -187,7 +187,6 @@ if seite == "Gesamtüberblick":
     if _koord_ok == 0:
         st.warning("⚠️ Keine Koordinaten verfügbar — Karte kann nicht angezeigt werden.")
     else:
-        st.caption(f"Kartendaten: {_koord_ok} Häuser mit Koordinaten | Beispiel Lat: {df_gefiltert['SO.Latitude'].dropna().iloc[0]}")
         st.plotly_chart(erstelle_karte(df_gefiltert), use_container_width=True)
     st.caption(
         "Jeder Punkt ist ein Krankenhaus. Farbe: grün = wenige Qualitätsprobleme, rot = viele. "
