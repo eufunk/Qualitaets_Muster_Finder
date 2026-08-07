@@ -56,14 +56,13 @@ def lade_daten(pfad: Path = DATA_PATH) -> pd.DataFrame:
     """
     df = pd.read_csv(pfad, low_memory=False)
 
-    # Koordinaten reparieren (Komma-Dezimal -> float)
+    # Koordinaten reparieren — bedingungslos, da dtype-Check auf manchen Servern fehlschlägt
     for col in ["SO.Latitude", "SO.Longitude"]:
-        if df[col].dtype == object:
-            df[col] = (
-                df[col].astype(str)
-                .str.replace(",", ".", regex=False)
-                .pipe(pd.to_numeric, errors="coerce")
-            )
+        df[col] = (
+            df[col].astype(str)
+            .str.replace(",", ".", regex=False)
+            .pipe(pd.to_numeric, errors="coerce")
+        )
 
     # Hilfsspalten fuer Dashboard-Anzeige
     df["Problemkategorie"] = df["hat_viele_Probleme"].map(LABEL_MAP)
