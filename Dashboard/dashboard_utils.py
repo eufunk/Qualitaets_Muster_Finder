@@ -22,8 +22,8 @@ from pathlib import Path
 # ── Projekt-Root (eine Ebene über /Dashboard) ─────────────────────
 PROJEKT_ROOT = Path(__file__).resolve().parent.parent
 
-# modell_klasse.py liegt in scripts/, nicht neben dieser Datei
-sys.path.insert(0, str(PROJEKT_ROOT / "scripts"))
+# modell_klasse.py liegt in model/, nicht neben dieser Datei
+sys.path.insert(0, str(PROJEKT_ROOT / "model"))
 from modell_klasse import KrankenhausModell  # noqa: E402, F401 – wird fuer joblib benoetigt
 
 # ── Konstanten ────────────────────────────────────────────────────
@@ -172,28 +172,54 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
         mapbox_style="carto-positron",
         title="Regionale Verteilung der Krankenhaeuser",
     )
-    fig.update_layout(margin={"r": 0, "t": 40, "l": 0, "b": 0}, height=500)
+    fig.update_layout(margin={"r": 0, "t": 40, "l": 0, "b": 0}, height=620)
     return fig
 
 
 def erstelle_quote_histogramm(df: pd.DataFrame) -> go.Figure:
-    """Histogramm der auffaellig-Quote mit Median-Linie."""
-    fig = px.histogram(
-        df, x="auffaellig_quote", nbins=30,
-        color="Problemkategorie",
-        color_discrete_map={
-            "Wenige Probleme": FARBE_WENIGE,
-            "Viele Probleme":  FARBE_VIELE,
-        },
-        labels={"auffaellig_quote": "Anteil auffaelliger QI"},
-        title="Verteilung der auffaellig-Quote",
-    )
+    """Histogramm der auffaellig-Quote — Bins explizit berechnet, Linie passt exakt."""
+    # Bins einmal berechnen, dann für Balken UND Linie nutzen (wie im Notebook)
+    data_all   = df["auffaellig_quote"].dropna().values
+    data_wenig = df[df["hat_viele_Probleme"] == 0]["auffaellig_quote"].dropna().values
+    data_viel  = df[df["hat_viele_Probleme"] == 1]["auffaellig_quote"].dropna().values
+
+    counts_all,   bin_edges = np.histogram(data_all,   bins=30)
+    counts_wenig, _         = np.histogram(data_wenig, bins=bin_edges)
+    counts_viel,  _         = np.histogram(data_viel,  bins=bin_edges)
+
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    bin_width   = (bin_edges[1] - bin_edges[0]) * 0.92  # 8% Lücke
+
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=bin_centers, y=counts_wenig, name="Wenige Probleme",
+        marker_color=FARBE_WENIGE, width=bin_width,
+    ))
+    fig.add_trace(go.Bar(
+        x=bin_centers, y=counts_viel, name="Viele Probleme",
+        marker_color=FARBE_VIELE, width=bin_width,
+    ))
+    # Linie auf exakter Balkenhöhe (passt garantiert, gleiche Bins)
+    fig.add_trace(go.Scatter(
+        x=bin_centers, y=counts_all,
+        mode="lines+markers",
+        line=dict(color="#2c3e50", width=1.5),
+        marker=dict(size=3),
+        name="Verlauf",
+        showlegend=False,
+    ))
     fig.add_vline(
-        x=MEDIAN_QUOTE, line_dash="dash", line_color="black",
+        x=MEDIAN_QUOTE, line_dash="dash", line_color="#888888",
         annotation_text=f"Median {MEDIAN_QUOTE:.0%}",
         annotation_position="top right",
     )
-    fig.update_xaxes(tickformat=".0%")
+    fig.update_layout(
+        barmode="stack",
+        xaxis=dict(tickformat=".0%", title="Anteil auffälliger QI"),
+        yaxis=dict(title="Anzahl Krankenhäuser"),
+        title="Verteilung der auffällig-Quote",
+        legend=dict(orientation="h", y=1.1),
+    )
     return fig
 
 
@@ -311,6 +337,7 @@ def finde_aehnliche(
     bundesland: str,
     traeger: str,
     n: int = 10,
+    toleranz_pct: float = 0.3,
 ) -> pd.DataFrame:
     """
     Findet aehnliche Krankenhaeuser anhand von Filtern.
@@ -326,9 +353,9 @@ def finde_aehnliche(
     """
     mask = pd.Series([True] * len(df), index=df.index)
 
-    # Bettenzahl: ±50% Toleranz
+    # Bettenzahl: konfigurierbare Toleranz
     if betten > 0:
-        toleranz = max(betten * 0.5, 50)
+        toleranz = max(betten * toleranz_pct, 30)
         mask &= df["SO.Betten"].between(betten - toleranz, betten + toleranz)
 
     if bundesland != "Alle":
@@ -398,6 +425,8 @@ def berechne_risiko(
     fortbildung: float,
     aerzte: float,
     traeger_enc: int,
+    pflege: float = 1.0,
+    konzern: int = 0,
 ) -> dict:
     """
     Berechnet die Risiko-Vorhersage fuer ein Krankenhaus.
@@ -409,6 +438,8 @@ def berechne_risiko(
         fortbildung:  Fortbildungsquote (0.0 - 1.0)
         aerzte:       Aerzte pro Bett
         traeger_enc:  Encoded Traeger (0=freigemeinnuetzig, 1=oeffentlich, 2=privat)
+        pflege:       Pflegekraefte pro Bett
+        konzern:      0=unabhaengig, 1=Konzernhaus
 
     Returns:
         dict mit Vorhersage, Wahrscheinlichkeiten und Erklaerung
@@ -420,6 +451,8 @@ def berechne_risiko(
         "SO.Uni":           uni,
         "fortbildungsquote": fortbildung,
         "aerzte_pro_bett":  aerzte,
+        "pflege_pro_bett":  pflege,
+        "ist_konzern":      konzern,
         "traeger_enc":      traeger_enc,
     }])
 
@@ -431,10 +464,11 @@ def berechne_risiko(
     risiko_farbe = FARBE_VIELE if vorhersage == 1 else FARBE_WENIGE
 
     # Decision Tree Erklaerung (wichtigster Split)
+    _seite  = "darunter" if aerzte <= DT_SPLIT else "darüber"
+    _folge  = "viele Qualitätsprobleme wahrscheinlich" if aerzte <= DT_SPLIT else "wenige Qualitätsprobleme wahrscheinlich"
     erklaerung = (
-        f"Wichtigster Faktor: aerzte_pro_bett = {aerzte:.3f} "
-        f"({'≤' if aerzte <= DT_SPLIT else '>'} {DT_SPLIT} = "
-        f"{'Risiko hoch' if aerzte <= DT_SPLIT else 'Risiko gering'})"
+        f"Ausschlaggebend: Ärzte pro Bett = {aerzte:.3f} "
+        f"(Schwellenwert {DT_SPLIT} — eingegebener Wert liegt {_seite} → {_folge})"
     )
 
     return {
@@ -480,7 +514,8 @@ if __name__ == "__main__":
 
     modell = lade_modell()
     if modell:
-        risiko = berechne_risiko(modell, betten=200, uni=0, fortbildung=0.7, aerzte=0.25, traeger_enc=1)
+        risiko = berechne_risiko(modell, betten=200, uni=0, fortbildung=0.7, aerzte=0.25,
+                                  traeger_enc=1, pflege=1.0, konzern=0)
         print(f"\nRisiko-Vorhersage: {risiko['risiko_text']} (P={risiko['prob_viele']:.1%})")
         print(f"  {risiko['erklaerung']}")
     else:

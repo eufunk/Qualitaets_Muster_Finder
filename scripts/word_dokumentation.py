@@ -19,7 +19,7 @@ Abhaengigkeiten:
 import os
 import subprocess
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -149,6 +149,9 @@ def erzeuge_dokument(daten: dict) -> Document:
     total_qi_sum     = daten["total_qi_sum"]
 
     doc = Document()
+    doc.core_properties.author = "Datenanalyse-Team"
+    doc.core_properties.created = datetime.now()
+    doc.core_properties.modified = datetime.now()
 
     # ── Seitenraender ──────────────────────────────────────────────
     for section in doc.sections:
@@ -194,20 +197,22 @@ def erzeuge_dokument(daten: dict) -> Document:
         ("2.1", "Überblick",                                "4"),
         ("2.2", "Schlüssel-ID: SO.QBID",                    "4"),
         ("2.3", "Relevante Tabellen",                       "4"),
-        ("2.4", "Nicht relevante Tabellen",                 "5"),
-        ("3",   "Datenaufbereitung",                        "6"),
-        ("3.1", "Vorgehen & Kriterien",                     "6"),
-        ("3.2", "Ziel-Variable",                            "6"),
-        ("3.3", "Merkmale (Features)",                      "7"),
-        ("4",   "Ergebnisse",                               "8"),
-        ("4.1", "Ziel-Variable — Statistiken",              "8"),
-        ("4.2", "Analysetabelle",                           "8"),
-        ("4.3", "Wozu wird die Analysetabelle genutzt?",    "9"),
-        ("4.4", "Fehlende Werte",                           "10"),
-        ("5",   "Deskriptive Analyse — Befunde",            "11"),
-        ("5.1", "Übersicht der Befunde",                    "11"),
-        ("5.2", "Gesamteinschätzung",                       "12"),
-        ("6",   "Offene Punkte & Nächste Schritte",         "13"),
+        ("2.4", "Möglicherweise relevante Tabellen",        "5"),
+        ("2.5", "Nicht relevante Tabellen",                 "6"),
+        ("3",   "Datenaufbereitung",                        "7"),
+        ("3.1", "Vorgehen & Kriterien",                     "7"),
+        ("3.2", "Ziel-Variable",                            "7"),
+        ("3.3", "Merkmale (Features)",                      "8"),
+        ("4",   "Ergebnisse",                               "9"),
+        ("4.1", "Ziel-Variable — Statistiken",              "9"),
+        ("4.2", "Analysetabelle",                           "9"),
+        ("4.3", "Wozu wird die Analysetabelle genutzt?",    "10"),
+        ("4.4", "Fehlende Werte",                           "11"),
+        ("5",   "Deskriptive Analyse — Befunde",            "12"),
+        ("5.1", "Übersicht der Befunde",                    "12"),
+        ("5.2", "Grafiken",                                 "13"),
+        ("5.3", "Gesamteinschätzung",                       "14"),
+        ("6",   "Offene Punkte & Nächste Schritte",         "15"),
     ]
     for nr, title_text, page in toc_entries:
         p = doc.add_paragraph()
@@ -249,9 +254,9 @@ def erzeuge_dokument(daten: dict) -> Document:
     bausteine = [
         ("Baustein 1", "Daten vorbereiten", "✅ Abgeschlossen"),
         ("Baustein 2", "Deskriptive Analyse", "✅ Abgeschlossen"),
-        ("Baustein 3", "Streamlit-Dashboard (3 Seiten)", "⬜ Offen"),
-        ("Baustein 4", "Entscheidungsbaum (Bonus)", "⬜ Offen"),
-        ("Baustein 5", "Abschluss & Präsentation", "⬜ Offen"),
+        ("Baustein 3", "Streamlit-Dashboard (4 Seiten)", "✅ Live"),
+        ("Baustein 4", "Entscheidungsbaum (Bonus)", "✅ Abgeschlossen"),
+        ("Baustein 5", "Abschluss & Präsentation", "🟡 Teilweise"),
     ]
     add_table(doc, ["Baustein", "Beschreibung", "Status"], bausteine,
               col_widths=[3.5, 8.5, 3.0])
@@ -269,7 +274,7 @@ def erzeuge_dokument(daten: dict) -> Document:
         "Der Datensatz besteht aus 86 CSV-Dateien im Data/-Ordner. "
         "Alle Daten stammen aus den offiziellen Qualitätsberichten deutscher "
         "Krankenhäuser (Berichtsjahr 2023) und werden vom IQTIG veröffentlicht.")
-    add_bullet(doc, "~1.900 Krankenhäuser (Standorte)")
+    add_bullet(doc, "2.310 Krankenhäuser (Standorte) in SO.csv — davon 1.824 mit Qualitätsbewertung")
     add_bullet(doc, "~150 Qualitätsindikatoren pro Haus")
     add_bullet(doc, "Strukturdaten: Betten, Personal, Träger, Standort, Geo-Koordinaten")
 
@@ -282,7 +287,7 @@ def erzeuge_dokument(daten: dict) -> Document:
     add_heading(doc, "2.3  Relevante Tabellen", level=2)
     rel_rows = [
         ("SO.csv",                    "Stammdaten aller Krankenhäuser (Haupttabelle)",
-         "SO.QBID, SO.Betten, SO.Bundesland, SO.Uni, KH.Träger.Art, Koordinaten",
+         "SO.QBID, SO.Betten, SO.Bundesland, SO.Uni, KH.Träger.Art, SO.Standortnummer, Koordinaten",
          "Kern-Merkmale"),
         ("QS.Qualitätsindikator.csv", "Qualitätsindikatoren mit Bewertungen (>50 MB)",
          "SO.QBID, QSErgBewStrukDialog, QSQI.Indikator, QSQI.ArtDesWertes",
@@ -290,33 +295,83 @@ def erzeuge_dokument(daten: dict) -> Document:
         ("QS.Fortbildung.csv",        "Fortbildungsnachweise der Ärzte",
          "SO.QBID, QS.Fortbildungspflichtige, QS.Fortbildungsnachweis_Erbracht_Habende",
          "Merkmal: Fortbildungsquote"),
-        ("FA.csv",                    "Fachabteilungen der Krankenhäuser",
-         "FA.QBID, FA.FZ.Voll, FA.FZ.Teil, FA.Key301",
-         "Merkmal: Ärzte pro Bett"),
-        ("QS.csv",                    "QS-Berichtsbasis pro Standort",
-         "QS.ID, SO.QBID, QS.Typ",
-         "Verknüpfungstabelle"),
-        ("QS.Leistungsbereich.csv",   "Leistungsbereiche mit Dokumentationsraten",
-         "SO.QBID, QSLB.Dokumentationsrate, QSLB.Fallzahl",
-         "Ergänzung"),
+        ("FA.csv",                    "Fachabteilungen der Krankenhäuser (Brückentabelle)",
+         "ABTID, FA.QBID (= SO.QBID)",
+         "Verknüpfungstabelle für Personaldaten"),
+        ("FA.Personalliste.csv",      "Personal pro Fachabteilung nach Berufsgruppe",
+         "ABTID, FA.Personal.Bereich, FA.Personal.Anzahl",
+         "Merkmal: aerzte_pro_bett (stärkster Prädiktor)"),
+        ("SO.Personalliste.csv",      "Personal auf Standortebene nach Berufsgruppe *(2026-07-29)*",
+         "SO.QBID, SO.Personal.Bereich, SO.Personal.Anzahl",
+         "Merkmal: pflege_pro_bett"),
+        ("Konzern.csv",               "Konzernzugehörigkeit *(2026-07-29)*",
+         "SO.Standortnummer (⚠️ nicht SO.QBID), Konzern",
+         "Merkmal: ist_konzern"),
     ]
     add_table(doc,
               ["Datei", "Inhalt", "Wichtige Spalten", "Rolle"],
               rel_rows,
               col_widths=[4.5, 4.5, 5.5, 3.5])
     doc.add_paragraph()
+    add_body(doc,
+        "Hinweis: QS.csv wurde ursprünglich als notwendige Verknüpfungstabelle vermutet, "
+        "wird aber tatsächlich nie geladen — QS.Qualitätsindikator.csv trägt SO.QBID bereits "
+        "selbst, ein Join über QS.csv ist für die Zusammenführung nicht nötig.")
 
-    add_heading(doc, "2.4  Nicht relevante Tabellen", level=2)
+    add_heading(doc, "2.4  Möglicherweise relevante Tabellen (identifiziert, nicht eingebunden)", level=2)
+    add_body(doc,
+        "Diese Tabellen enthalten potenziell nützliche Daten, wurden aber (noch) nicht "
+        "in die Analysetabelle aufgenommen:")
+    moeglich_rows = [
+        ("QS.Leistungsbereich.csv", "QSLB.Dokumentationsrate = potenzielle Qualitätskennzahl. Noch nicht gesichtet/eingebunden."),
+        ("AQ.Pflege.csv", "Enthält nur Pflege-Qualifikationsnachweise, keine Personal-Anzahlen. SO.Personalliste.csv liefert pflege_pro_bett direkter — deshalb hier statt AQ.Pflege.csv verwendet."),
+        ("AQ.Ärzte.csv", "Qualifikationsmerkmale der Ärzte (Facharzt-Bezeichnungen), aber keine Vollzeit-Anzahlen. FA.Personalliste.csv ist für aerzte_pro_bett besser geeignet."),
+        ("QS.Behandlungsumfang.csv", "Möglicherweise Ergänzung zu QS.Leistungsbereich.csv. Noch nicht gesichtet."),
+        ("QS.Extern.Sonstige.csv", "Alternative Ziel-Variable denkbar, aber keine einheitliche auffällig-Bewertung wie QS.Qualitätsindikator.csv."),
+        ("QS.Pso.csv, QS.Psy.csv, QS.Struktur.Station.csv", "Psychiatrie-spezifische Qualitätsdaten. Schlüssel QS.Einrichtung.ID — kein direkter Join mit SO.QBID ohne Brückentabelle. Nur für Psychiatrie-Teilanalyse geeignet."),
+        ("MM.csv, MM.Ausnahme.csv, MM.Leistungsberechtigung.Prognose.csv", "Mindestmengen — ob ein Haus gesetzliche Mindestfallzahlen erfüllt. Strukturmerkmal, nicht gesichtet."),
+        ("AM.csv, AM.Leistung.csv, AM.VAVU.csv", "Ausstattungsmerkmale (medizinisch-technische Geräte). Nicht gesichtet."),
+        ("CQ.csv", "Zertifizierungen/Strukturqualitätsvereinbarungen. Nicht verwendet."),
+        ("BF.csv, BM.csv", "Behandlungsfelder/-möglichkeiten. Bedeutung für Analyse unklar."),
+        ("AMTS.csv, AMTS_Massnahme.csv", "Arzneimitteltherapiesicherheit. Bedeutung für Auffälligkeitsquote unklar."),
+        ("RM.csv, RM.Fallbesprechung.csv", "Risikomanagement-Systeme. Nicht gesichtet."),
+        ("Notfallversorgung.csv, MP.csv", "Notfallversorgungsstufe / Mindestpersonalbedarf. Strukturmerkmale, nicht gesichtet."),
+        ("HB.csv, HD.csv, HM.csv, WeitereHygiene.csv, KISS.csv", "Hygiene- und Infektionsdaten. HD.csv ist >50 MB. Potenzielles Qualitätsmerkmal, nicht gesichtet."),
+        ("AA.csv", "Apparative Ausstattung (Geräte-Verfügbarkeit) — gehört zur AM-Familie, nicht gesichtet."),
+        ("AMTS_InstrumentMassnahme.csv", "Detail-/Lookup-Tabelle zu AMTS_Massnahme.csv."),
+        ("DMP.csv", "Teilnahme an Disease-Management-Programmen — potenzielles Strukturmerkmal, nie geprüft."),
+        ("EF.csv, IF.csv", "Externe/interne Fachabteilungen — nicht gesichtet."),
+        ("Mitbewerber_Betten.csv", "Bettenzahl benachbarter Wettbewerber — Marktdichte-/Konkurrenzmerkmal, im gesamten Projekt bisher nicht in Betracht gezogen."),
+    ]
+    add_table(doc, ["Datei(en)", "Warum (noch) nicht eingebunden"], moeglich_rows,
+              col_widths=[6.0, 10.0])
+    doc.add_paragraph()
+
+    add_heading(doc, "2.5  Nicht relevante Tabellen", level=2)
     add_body(doc, "Folgende Tabellen wurden bewusst ausgeschlossen:")
     nicht_rel = [
-        ("NM.csv",              "Nicht-medizinische Angebote (Parkplatz, Telefon)"),
-        ("ICD.Code.csv",        "ICD-Diagnoseschlüssel (reine Lookup-Tabelle)"),
-        ("OPS.csv",             "Operationsschlüssel (reine Lookup-Tabelle)"),
-        ("Link.csv",            "URL-Links ohne Analysewert"),
-        ("QS.Nachweis.csv",     "Technische Meta-Daten (Nachweiszeiträume)"),
+        ("NM.csv",              "Nicht-medizinische Angebote (Parkplatz, Telefon, WLAN) — kein Analysebezug"),
+        ("Personen.csv, FA.Personen.csv", "⚠️ DSGVO — personenbezogene Daten (Name, E-Mail, Telefon). Nicht in Analyse; Data/ per .gitignore ausgeschlossen"),
+        ("QS.Einrichtungstypen.csv, QS.Berufsgruppen.csv", "Reine Lookup-/Dekodierungstabellen — kein eigener Analysewert"),
+        ("ICD.Code.csv, OPS.csv, OPS.Code.csv", "Diagnose-/Prozedurenschlüssel (reine Lookup-Tabellen)"),
+        ("Alle *.Key.csv (16 Dateien)", "Technische Schlüssel-/Lookup-Tabellen ohne eigene Analysedaten (z.B. AA.Key.csv, FA-verwandte Key-Dateien)"),
+        ("Link.csv, LinkVersorgunggebieteSO.csv, Weiterführender_Link.csv", "Nur URLs zu externen Webseiten — keine Analysedaten"),
+        ("QS.Nachweis.csv, BewertungStrukDialog.csv", "Technische Meta-Daten (Nachweiszeiträume, Erläuterung der Bewertungscodes)"),
+        ("QS.Landesrecht.csv", "Länderspezifische QS-Anforderungen — nicht bundeseinheitlich vergleichbar, würde Häuser in strengeren Bundesländern systematisch benachteiligen"),
+        ("GIQI.csv", "Geriatrische Indikatoren — fachspezifisch, keine allgemeine Relevanz"),
+        ("VAVU.csv", "Versorgungsstruktur (14 MB) — nicht gesichtet, keine erkennbare Relevanz"),
+        ("Schutzkonzept.csv, Praevention_Missbrauch_und_Gewalt.csv, Neuartige_Therapien.csv", "Zu spezifisch für die allgemeine Fragestellung"),
+        ("Sicherstellungszuschlaege.csv, Pflegepersonalregelung.csv, ErfPersVorgaben.csv", "Verwaltungsdaten ohne direkten Qualitätsbezug"),
+        ("Akademische_Lehre.csv, Lenkungsgremium.csv, ZV.csv", "Metadaten/Organisationsstruktur — Lehrstatus bereits über SO.Uni abgedeckt"),
+        ("Abt.Zugang.csv", "Adress-/Kontaktdaten einer Abteilung, keine Analysedaten"),
+        ("Abt301.csv", "Lookup-Tabelle (amtlicher Fachabteilungsschlüssel 301)"),
+        ("Error.csv", "Technisches Fehlerprotokoll der Berichtserstellung, keine Inhaltsdaten"),
+        ("Sicherstellungszuschlaege_Fachabteilungen.csv", "Abteilungsdetail zum bereits ausgeschlossenen Sicherstellungszuschlaege.csv"),
     ]
     for datei, grund in nicht_rel:
         add_bullet(doc, f"{datei} — {grund}")
+    add_body(doc,
+        "Vollständige Klassifikation aller 86 Dateien: siehe Doku/MD/Daten_Inhaltsverzeichnis.md.")
 
     doc.add_page_break()
 
@@ -376,7 +431,9 @@ def erzeuge_dokument(daten: dict) -> Document:
         ("SO.Uni",             "SO.csv",              "Direkt verfügbar",     "Binär: 0/1"),
         ("SO.Latitude/Long.",  "SO.csv",              "Direkt verfügbar",     "Numerisch (für Karte)"),
         ("fortbildungsquote",  "QS.Fortbildung.csv",  "Berechnet: Erbracht / Pflichtige", "Numerisch 0–1"),
-        ("Ärzte pro Bett",     "FA.csv",              "Noch zu berechnen",    "Numerisch"),
+        ("aerzte_pro_bett",    "FA.Personalliste.csv + FA.csv", "Σ Ärzte / SO.Betten", "Numerisch — stärkster Prädiktor (FI 53,6 %)"),
+        ("pflege_pro_bett",    "SO.Personalliste.csv", "Σ Pflegekräfte / SO.Betten", "Numerisch — 2. stärkster Prädiktor (FI 23,8 %), ergänzt 2026-07-29"),
+        ("ist_konzern",        "Konzern.csv",         "SO.Standortnummer in Konzern.csv? → 0/1", "Binär — kein Zusammenhang gefunden (Chi² p=0,90), ergänzt 2026-07-29"),
     ]
     add_table(doc,
               ["Merkmal", "Quelle", "Berechnung", "Typ"],
@@ -432,8 +489,9 @@ def erzeuge_dokument(daten: dict) -> Document:
         ("Baustein 3\nDashboard Seite 3",
          "Filter nach Betten / Region / Träger → ähnliche Häuser finden und deren Qualität zeigen"),
         ("Baustein 4\nDecision Tree",
-         "Feature Matrix X = Betten, Träger, Bundesland, Uni, Fortbildungsquote; "
-         "Zielvariable y = hat_viele_Probleme; direkt für train_test_split und DecisionTreeClassifier nutzbar"),
+         "Feature Matrix X = SO.Betten, SO.Uni, fortbildungsquote, aerzte_pro_bett, pflege_pro_bett, "
+         "ist_konzern, traeger_enc; Zielvariable y = hat_viele_Probleme; direkt für train_test_split "
+         "und DecisionTreeClassifier nutzbar. Ergebnis: Accuracy 63,6 % (Basislinie 50,7 %), R²=0,033"),
     ]
     add_table(doc, ["Baustein", "Nutzung der Analysetabelle"], nutzung_rows,
               col_widths=[4.0, 12.0])
@@ -461,8 +519,8 @@ def erzeuge_dokument(daten: dict) -> Document:
     # ══════════════════════════════════════════════════════════════
     add_heading(doc, "5  Deskriptive Analyse — Befunde", level=1)
     add_body(doc,
-        "Die Analyse wurde in 02_Analyse.ipynb durchgeführt. Grundlage: analysetabelle.csv. "
-        "10 Grafiken wurden erstellt, jede mit automatisch berechnetem Befundsatz. "
+        "Die Analyse wurde in 02_Analyse.ipynb durchgeführt. Grundlage: Data/analysetabelle.csv. "
+        "12 Grafiken wurden erstellt, jede mit automatisch berechnetem Befundsatz. "
         "Farbschema einheitlich: grün = wenige Probleme, rot = viele Probleme.")
 
     add_heading(doc, "5.1  Übersicht der Befunde", level=2)
@@ -478,6 +536,11 @@ def erzeuge_dokument(daten: dict) -> Document:
     fb_1 = df_analyse[df_analyse["hat_viele_Probleme"] == 1]["fortbildungsquote"].median()
     ab_0 = df_analyse[df_analyse["hat_viele_Probleme"] == 0]["aerzte_pro_bett"].median()
     ab_1 = df_analyse[df_analyse["hat_viele_Probleme"] == 1]["aerzte_pro_bett"].median()
+    pb_0 = df_analyse[df_analyse["hat_viele_Probleme"] == 0]["pflege_pro_bett"].median()
+    pb_1 = df_analyse[df_analyse["hat_viele_Probleme"] == 1]["pflege_pro_bett"].median()
+    n_konzern = int(df_analyse["ist_konzern"].sum())
+    quote_konzern = df_analyse[df_analyse["ist_konzern"] == 1]["hat_viele_Probleme"].mean()
+    quote_unabh   = df_analyse[df_analyse["ist_konzern"] == 0]["hat_viele_Probleme"].mean()
 
     befund_rows = [
         ("Grafik 1\nauffällig-Quote",
@@ -505,6 +568,12 @@ def erzeuge_dokument(daten: dict) -> Document:
         ("Grafik 10\nStörfaktor Träger×Betten",
          f"Private Häuser sind kleiner (Md={int(df_analyse[df_analyse['KH.Träger.Art'] == 'privat']['SO.Betten'].median())} Betten). "
          "Der Trägereffekt muss daher mit Vorsicht interpretiert werden."),
+        ("Grafik 11\nPflegekräfte pro Bett *(2026-07-29)*",
+         f"Wenige={pb_0:.3f}, Viele={pb_1:.3f} — ähnliches Muster wie Ärzte/Bett (T-Test p<0,001, signifikant)."),
+        ("Grafik 12\nKonzernvergleich *(2026-07-29)*",
+         f"Konzernhäuser: {n_konzern:,} von {len(df_analyse):,} ({n_konzern/len(df_analyse):.1%}). "
+         f"Anteil viele Probleme: Konzern={quote_konzern:.1%} vs. unabhängig={quote_unabh:.1%} — "
+         "praktisch kein Unterschied (Chi² p=0,90, nicht signifikant)."),
     ]
     add_table(doc, ["Grafik", "Befund"], befund_rows, col_widths=[3.5, 12.5])
     doc.add_paragraph()
@@ -520,6 +589,8 @@ def erzeuge_dokument(daten: dict) -> Document:
         ("grafiken/g8_korrelation.png",             "Grafik 8: Korrelationsmatrix"),
         ("grafiken/g9_scatter_betten_aerzte.png",   "Grafik 9: Scatter — Bettenzahl vs. Ärzte pro Bett"),
         ("grafiken/g10_stoerfaktor_traeger.png",    "Grafik 10: Störfaktor — Bettengröße je Trägerschaft"),
+        ("grafiken/g11_pflege_pro_bett.png",        "Grafik 11: Pflegekräfte pro Bett — MIT vs. OHNE viele Probleme"),
+        ("grafiken/g12_konzern_vergleich.png",      "Grafik 12: Konzernhaus vs. unabhängiges Haus"),
     ]
     for pfad, titel in grafik_dateien:
         if os.path.exists(pfad):
@@ -532,7 +603,7 @@ def erzeuge_dokument(daten: dict) -> Document:
         else:
             add_body(doc, f"[Grafik nicht gefunden: {pfad}]")
 
-    add_heading(doc, "5.2  Gesamteinschätzung", level=2)
+    add_heading(doc, "5.3  Gesamteinschätzung", level=2)
     add_body(doc,
         "Die Analyse zeigt keine starken, eindeutigen Zusammenhänge zwischen den untersuchten "
         "Strukturmerkmalen und der Ziel-Variable. Der stärkste Prädiktor ist total_qi "
@@ -557,21 +628,23 @@ def erzeuge_dokument(daten: dict) -> Document:
     add_heading(doc, "6  Offene Punkte & Nächste Schritte", level=1)
 
     offen = [
-        ("Baustein 3: Streamlit-Dashboard",
-         "Seite 1: Übersicht + Karte | Seite 2: Vergleiche | Seite 3: Ähnliche Häuser"),
-        ("Baustein 4: Decision Tree (Bonus)",
-         "max_depth=3, Train-Test-Split, Modell speichern (joblib)"),
-        ("Baustein 5: Präsentation & Dokumentation",
-         "Startanleitung, Entscheidungsbegründungen, Live-Demo"),
-        ("Pflegekräfte pro Bett",
-         "Noch nicht berechnet — aus FA.Personalliste.csv extrahieren"),
+        ("Baustein 5: Robustheit & Code-Qualität",
+         "Randfälle im Dashboard testen (leere Eingaben, fehlende Werte), Code aufräumen"),
+        ("Baustein 5: Präsentation",
+         "Entscheidungsbegründungen ausformulieren, Live-Demo vorbereiten, Generalprobe mit Stoppuhr"),
+        ("Streamlit-Cloud-Deployment",
+         "Main-File-Pfad in den App-Settings von scripts/streamlit_dashboard.py auf "
+         "Dashboard/streamlit_dashboard.py aktualisieren"),
+        ("scripts/powerbi_anleitung.py",
+         "Hartkodierter os.chdir()-Pfad eines fremden Rechners muss noch repariert werden"),
     ]
     add_table(doc, ["Aufgabe", "Details"], offen, col_widths=[5.5, 10.5])
     doc.add_paragraph()
 
     add_body(doc,
-        "Hinweis: Ein Entscheidungsbaum auf Basis der bereits vorliegenden Analysetabelle "
-        "kann jederzeit trainiert werden. Die Datengrundlage ist vollständig.")
+        "Hinweis: Bausteine 1–4 sind vollständig abgeschlossen und wurden am 2026-07-29 "
+        "end-to-end getestet (Rohdaten → alle 3 Notebooks → Dashboard, fehlerfrei). "
+        "Offen ist nur noch der Abschluss-Baustein 5.")
 
     return doc
 

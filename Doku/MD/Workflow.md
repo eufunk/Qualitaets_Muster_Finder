@@ -1,10 +1,4 @@
-﻿---
-noteId: "a1dceb40898d11f1aab5fd6c420404f8"
-tags: []
-
----
-
-# 🗂️ Workflow — Qualitäts-Muster-Finder
+﻿# 🗂️ Workflow — Qualitäts-Muster-Finder
 
 > Dieses Dokument beschreibt zu jedem Baustein: was gemacht wurde, welche Entscheidungen getroffen wurden und warum.
 
@@ -100,20 +94,24 @@ tags: []
 | `SO.Latitude / SO.Longitude` | SO.csv | Direkt (für Karte) |
 | `fortbildungsquote` | QS.Fortbildung.csv | `Erbracht / Pflichtige` |
 | `aerzte_pro_bett` | FA.Personalliste.csv | `Σ Ärzte / SO.Betten` |
+| `pflege_pro_bett` *(2026-07-29)* | SO.Personalliste.csv | `Σ Pflegekräfte / SO.Betten` |
+| `ist_konzern` *(2026-07-29)* | Konzern.csv | `SO.Standortnummer` in Konzern.csv? → 0/1 |
 
 **Entscheidung:** Zusammenführung vollständig per Skript reproduzierbar — kein manuelles Klicken.
 
-**Analysetabelle (`analysetabelle.csv`):**
+**Analysetabelle (`Data/analysetabelle.csv`):**
 
 | Kennzahl | Wert |
 |----------|------|
 | Zeilen (Krankenhäuser) | **1.824** |
-| Spalten | 15 |
+| Spalten | 18 |
 | Ziel-Variable = 1 (viele Probleme) | 899 (49,3 %) |
 | Ziel-Variable = 0 (wenige Probleme) | 925 (50,7 %) |
 | Fehlende Werte KH.Träger.Art | 28 (1,5 %) |
 | Fehlende Werte fortbildungsquote | 33 (1,8 %) |
 | Fehlende Werte aerzte_pro_bett | 5 (0,3 %) |
+| Fehlende Werte pflege_pro_bett | 4 (0,2 %) |
+| Konzernhäuser (ist_konzern=1) | 358 (19,6 %) |
 
 **Wozu wird die Analysetabelle genutzt?** → Rohdaten → Analysetabelle → **alles andere.**
 
@@ -141,6 +139,33 @@ tags: []
 
 ---
 
+### 1.6 Pflegekräfte pro Bett (Ergänzung, 2026-07-29)
+
+**Hintergrund:** Explizit in `Fragestellung.docx` gefordertes Merkmal — stand lange als offener Punkt in `ToDo.md`. Kollegen im BI-Tool-Vergleich (`BI_Datenanalyse.docx`) empfahlen dafür `AQ.Pflege.csv` oder `FA.Personalliste.csv` mit Pflege-Filter.
+
+**Quelle:** `SO.Personalliste.csv` (direkt, kein Umweg über `FA.csv` nötig)
+
+**Vorgehen:**
+- Filter: `SO.Personal.Bereich == "Pflege"`
+- Aggregation: Summe pro `SO.QBID` → `pflege_gesamt / SO.Betten`
+- **Warum `SO.Personalliste.csv` statt `AQ.Pflege.csv`?** `AQ.Pflege.csv` enthält nur Qualifikationsnachweise, keine Personal-Anzahlen. `SO.Personalliste.csv` hat direkt `SO.QBID` + `SO.Personal.Anzahl`.
+
+**Ergebnisse:** Ø **1,01** Pflegekräfte/Bett | 4 fehlende Werte | Feature Importance im Decision Tree: **23,8 %** (2. wichtigstes Merkmal)
+
+---
+
+### 1.7 Konzernzugehörigkeit (Ergänzung, 2026-07-29)
+
+**Hintergrund:** Von den Kollegen im BI-Tool-Vergleich als „interessante Ergänzung" identifiziert (Konzernhäuser könnten durch zentrale Qualitätssicherung andere QI-Profile haben).
+
+**Quelle:** `Konzern.csv`
+
+> ⚠️ **Bug gefunden und behoben:** `Konzern.csv` nutzt `SO.Standortnummer` als Schlüssel — **nicht** `SO.QBID`. Der erste Join-Versuch verglich versehentlich `Konzern.csv`s `SO.Standortnummer` gegen `SO.csv`s `SO.QBID` → **0 Treffer**, `ist_konzern` war für alle 1.824 Häuser 0. `SO.csv` hat aber selbst eine `SO.Standortnummer`-Spalte, die im ersten Anlauf nicht mit ausgewählt wurde. Nach Korrektur (Vergleich `SO.Standortnummer` gegen `SO.Standortnummer`): **358 von 1.824 Häusern (19,6 %)** sind Konzernhäuser.
+
+**Ergebnis:** Chi²-Test zeigt **keinen** signifikanten Zusammenhang zwischen `ist_konzern` und `hat_viele_Probleme` (χ²=0,015, p=0,90). Der Decision Tree bestätigt das mit **0 % Feature Importance**. Bewusst trotzdem im Modell gelassen — das Modell soll selbst entscheiden, kein Zusammenhang ist ein valider Befund.
+
+---
+
 ## <span style="color:#2980b9">📊 Baustein 2 — Deskriptive Analyse</span>
 
 <span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:4px;font-weight:bold">✅ Abgeschlossen</span> &nbsp; **Datum:** 2026-07-27 &nbsp; **Datei:** `02_Analyse.ipynb`
@@ -149,7 +174,7 @@ tags: []
 
 ### 2.1 Vorgehen
 
-10 Grafiken aus `analysetabelle.csv`. Jede Grafik mit automatisch berechnetem Befundsatz. Farbschema: 🟢 grün = wenige Probleme, 🔴 rot = viele Probleme. Grafiken gespeichert in `grafiken/`.
+12 Grafiken aus `Data/analysetabelle.csv`. Jede Grafik mit automatisch berechnetem Befundsatz. Farbschema: 🟢 grün = wenige Probleme, 🔴 rot = viele Probleme. Grafiken gespeichert in `grafiken/`. Grafik 11 (Pflegekräfte/Bett) und Grafik 12 (Konzernvergleich) am 2026-07-29 ergänzt.
 
 ---
 
@@ -166,12 +191,16 @@ tags: []
 | 8 | Korrelation | Stärkste Korrelation: `total_qi` **(r=−0,28)**, `aerzte_pro_bett` (r=−0,14) |
 | 9 | Scatter | Kein klares Trennmuster — starke Überlappung |
 | 10 | Störfaktor | Private Häuser kleiner (Md=125 Betten) — Trägereffekt mit Vorsicht |
+| 11 *(2026-07-29)* | Pflegekräfte/Bett | Wenige=1,041, Viele=0,892 — ähnliches Muster wie Ärzte/Bett |
+| 12 *(2026-07-29)* | Konzernvergleich | Konzern 49,7 % vs. unabhängig 49,2 % viele Probleme — praktisch kein Unterschied |
 
 ### 2.3 Inferenzstatistik (ergänzt)
 
 | Test | Ergebnis | Befund |
 |------|----------|--------|
 | **T-Test** Ärzte/Bett (Wenige vs. Viele) | t=6,002, **p<0,001** | Unterschied statistisch **signifikant** |
+| **T-Test** Pflegekräfte/Bett (Wenige vs. Viele) *(2026-07-29)* | t=5,846, **p<0,001** | Unterschied statistisch **signifikant** |
+| **Chi²-Test** Konzernzugehörigkeit vs. viele Probleme *(2026-07-29)* | χ²=0,015, **p=0,90** | **Kein** signifikanter Zusammenhang |
 | **ANOVA** auffällig-Quote nach Träger | F=11,323, **p<0,001** | Mind. eine Gruppe unterscheidet sich signifikant |
 | **95%-KI** Ärzte/Bett Wenige | [0,468–0,497] | Kein Überlappung mit Viele-Gruppe |
 | **95%-KI** Ärzte/Bett Viele | [0,402–0,433] | Bestätigt signifikanten Unterschied |
@@ -187,39 +216,45 @@ Keine starken, eindeutigen Zusammenhänge. Stärkster Prädiktor `total_qi` ist 
 
 ## <span style="color:#8e44ad">🖥️ Baustein 3 — Dashboard bauen</span>
 
-<span style="background:#f2f2f2;color:#555;padding:2px 8px;border-radius:4px;font-weight:bold">⬜ Noch nicht begonnen</span> &nbsp; **Werkzeug:** Streamlit
+<span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:4px;font-weight:bold">✅ Live</span> &nbsp; **Werkzeug:** Streamlit &nbsp; **Dateien:** `Dashboard/streamlit_dashboard.py`, `Dashboard/dashboard_utils.py`
 
-**Geplant:**
+**Umgesetzt:**
 - Seite 1 „Übersicht": Kennzahlen + Deutschland-Karte + Verteilung
-- Seite 2 „Vergleiche": Dropdown → Verteilung MIT vs. OHNE viele Probleme
-- Seite 3 „Ähnliche Häuser": Filter nach Betten / Region / Träger
-- Seite 4 „Risiko-Rechner" *(Bonus)*: Decision Tree Vorhersage
+- Seite 2 „Vergleiche": Dropdown → Verteilung MIT vs. OHNE viele Probleme, Pivot-Tabelle
+- Seite 3 „Ähnliche Häuser": Filter nach Betten / Region / Träger + Einzelhaus-Steckbrief
+- Seite 4 „Risiko-Rechner" *(Bonus)*: Decision Tree Vorhersage — seit 2026-07-29 inkl. Eingabefelder für Pflegekräfte/Bett und Konzernstatus
+
+**Deployment:** Streamlit Community Cloud — live unter `qualitaets-muster-finder.streamlit.app`
+
+**Technischer Hinweis:** `streamlit_dashboard.py` und `dashboard_utils.py` wurden am 2026-07-29 von `scripts/` in einen eigenen `Dashboard/`-Ordner verschoben. `modell_klasse.py` wiederum wurde am 2026-07-30 von `scripts/` in einen eigenen `model/`-Ordner verschoben. Alle drei Ordner sind getrennt — der Import von `modell_klasse` läuft über eine `sys.path`-Ergänzung zur Laufzeit. Der Main-File-Pfad in den Streamlit-Cloud-Einstellungen muss entsprechend aktualisiert werden.
 
 ---
 
 ## <span style="color:#e67e22">🤖 Baustein 4 — Entscheidungsbaum</span> *(Bonus)*
 
-<span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:4px;font-weight:bold">✅ Abgeschlossen</span> &nbsp; **Datum:** 2026-07-27 &nbsp; **Datei:** `03_Decision_Tree.ipynb`
+<span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:4px;font-weight:bold">✅ Abgeschlossen</span> &nbsp; **Datum:** 2026-07-27, neu trainiert 2026-07-29 &nbsp; **Datei:** `03_Decision_Tree.ipynb`
 
-- **OOP:** Klasse `KrankenhausModell` mit `prepare()`, `fit()`, `evaluate()`, `save()`, `load()`
+- **OOP:** Klasse `KrankenhausModell` mit `prepare()`, `fit()`, `evaluate()`, `save()`, `load()` — Notebook importiert die Klasse jetzt aus `model/modell_klasse.py`, statt sie inline zu duplizieren *(behebt einen `__main__`-Pickle-Bug, der das Dashboard beim Laden des Modells crashen ließ)*
 - **Train-Test-Split:** 80/20, stratifiziert | Basislinie: 50,7 %
-- **Metriken:** Accuracy=0,649 | Precision=0,683 | Recall=0,539 | F1=0,602 | CV=0,604±0,039
-- **R²=0,023** — Strukturmerkmale erklären nur 2,3 % der Varianz → bestätigt Baustein 2
-- **Feature Importance:** `aerzte_pro_bett` 71,3 %, `SO.Betten` 28,7 % — alle anderen 0 %
+- **Metriken:** Accuracy=0,636 | Precision=0,682 | Recall=0,489 | F1=0,570 | CV=0,597±0,042
+- **R²=0,033** — Strukturmerkmale erklären nur 3,3 % der Varianz → bestätigt Baustein 2
+- **Feature Importance:** `aerzte_pro_bett` 53,6 %, `pflege_pro_bett` 23,8 %, `SO.Betten` 22,6 % — alle anderen (inkl. `ist_konzern`) 0 %
 - **Wichtigster Split:** `aerzte_pro_bett ≤ 0,271`
-- **`joblib`:** Modell gespeichert als `modell_krankenhaus.pkl`
+- **`joblib`:** Modell gespeichert als `Data/modell_krankenhaus.pkl`
 
 ---
 
 ## <span style="color:#c0392b">🏁 Baustein 5 — Abschluss & Präsentation</span>
 
-<span style="background:#f2f2f2;color:#555;padding:2px 8px;border-radius:4px;font-weight:bold">⬜ Noch nicht begonnen</span>
+<span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:4px;font-weight:bold">🟡 Teilweise erledigt</span>
 
-**Geplant:** Robustheit testen, Startanleitung, Entscheidungen dokumentieren, Präsentation mit Live-Demo
+**Erledigt:** Startanleitung (`README.md`), Entscheidungen dokumentiert (`README.md`, `ProjektDetails.md`, dieses Dokument), Komplett-Durchlauf getestet (Rohdaten → alle 3 Notebooks → Dashboard, fehlerfrei)
+
+**Noch offen:** Randfälle im Dashboard testen, Code aufräumen, Entscheidungsbegründungen für Präsentation ausformulieren, Präsentation mit Live-Demo + Generalprobe
 
 ---
 
-*Zuletzt aktualisiert: 2026-07-27*
+*Zuletzt aktualisiert: 2026-07-29*
 
 ---
 
@@ -231,16 +266,39 @@ Keine starken, eindeutigen Zusammenhänge. Stärkster Prädiktor `total_qi` ist 
 
 | Datei | Baustein | Zweck |
 |-------|----------|-------|
-| `01_Exploration.ipynb` | Baustein 1 | Datenaufbereitung: Ziel-Variable, Merkmale, Analysetabelle, Ärzte pro Bett |
-| `02_Analyse.ipynb` | Baustein 2 | Deskriptive Analyse: 10 Grafiken, T-Test, ANOVA, Konfidenzintervalle, pivot_table |
-| `03_Decision_Tree.ipynb` | Baustein 4 | Decision Tree, OOP, Metriken, R², Feature Importance, joblib |
+| `01_Exploration.ipynb` | Baustein 1 | Datenaufbereitung: Ziel-Variable, Merkmale, Analysetabelle, Ärzte/Pflege pro Bett, Konzernzugehörigkeit |
+| `02_Analyse.ipynb` | Baustein 2 | Deskriptive Analyse: 12 Grafiken, T-Test, Chi²-Test, ANOVA, Konfidenzintervalle, pivot_table |
+| `03_Decision_Tree.ipynb` | Baustein 4 | Decision Tree, OOP (importiert aus model/modell_klasse.py), Metriken, R², Feature Importance, joblib |
+
+### 🖥️ Dashboard
+
+| Datei | Baustein | Zweck |
+|-------|----------|-------|
+| `Dashboard/streamlit_dashboard.py` | Baustein 3 | Haupt-App: 4 Seiten (Übersicht, Vergleiche, Ähnliche Häuser, Risiko-Rechner) |
+| `Dashboard/dashboard_utils.py` | Baustein 3 | Hilfsfunktionen: Daten laden, KPIs, Plots, Modell-Vorhersage |
+
+### 🧠 Modell-Logik (`model/`) *(NEU 2026-07-30, vorher in `scripts/`)*
+
+| Datei | Baustein | Zweck |
+|-------|----------|-------|
+| `modell_klasse.py` | Baustein 4 | OOP-Wrapper `KrankenhausModell` — einzige Quelle der Wahrheit für Features & Modell-Logik |
+
+### 🐍 Python-Module (`scripts/`)
+
+| Datei | Baustein | Zweck |
+|-------|----------|-------|
+| `bi_datenanalyse.py` | Baustein 1 | Generiert Word-Dokument: BI-Tool-Vergleich mit Kollegen |
+| `datei_uebersicht.py` | Baustein 1 | Generiert Word-Dokument: Datei-Klassifikation (A4) |
+| `word_dokumentation.py` | Baustein 1 | Generiert Hauptdokumentation als Word-Datei |
+| `analysetabelle_zusammenfassung.py` | Baustein 1 | **NEU (2026-07-30)** Generiert Word-Dokument: Merkmale, Ziel-Variable, Quelltabellen, Merge-Kriterien, Endgröße |
+| `grafiken_speichern.py`, `datensatz_bericht.py`, `powerbi_anleitung.py` | — | Interne Hilfsskripte (per `.gitignore` ausgeschlossen) |
 
 ### 📊 Datendateien
 
 | Datei | Baustein | Zweck |
 |-------|----------|-------|
-| `analysetabelle.csv` | Baustein 1 | Finale Analysetabelle: 1.824 Häuser × 15 Spalten — Basis für alles weitere |
-| `modell_krankenhaus.pkl` | Baustein 4 | Trainiertes Decision-Tree-Modell (joblib) — bereit für Dashboard |
+| `Data/analysetabelle.csv` | Baustein 1 | Finale Analysetabelle: 1.824 Häuser × 18 Spalten — Basis für alles weitere |
+| `Data/modell_krankenhaus.pkl` | Baustein 4 | Trainiertes Decision-Tree-Modell (joblib) — bereit für Dashboard |
 
 ### 📄 Dokumentation (Word)
 
@@ -255,6 +313,8 @@ Keine starken, eindeutigen Zusammenhänge. Stärkster Prädiktor `total_qi` ist 
 |-------|-------|
 | `Workflow.md` | Dieses Dokument: Vorgehen, Entscheidungen, Verweise |
 | `ToDo.md` | Aufgabenliste nach Baustein-Struktur mit Haken |
+| `01_Exploration.md` | Schritt-für-Schritt-Erklärung von `01_Exploration.ipynb` — was gemacht wurde und warum |
+| `02_Analyse.md` | **NEU (2026-07-30)** Schritt-für-Schritt-Erklärung von `02_Analyse.ipynb` — was gemacht wurde und warum |
 | `Daten_Inhaltsverzeichnis.md` | Tabellarische Übersicht aller 86 CSV-Dateien mit Relevanz-Einstufung |
 
 ### 🖼️ Grafiken
@@ -269,6 +329,9 @@ Keine starken, eindeutigen Zusammenhänge. Stärkster Prädiktor `total_qi` ist 
 | `grafiken/g7_bundesland.png` | Anteil je Bundesland |
 | `grafiken/g8_korrelation.png` | Korrelationsmatrix |
 | `grafiken/g9_scatter_betten_aerzte.png` | Scatter Bettenzahl vs. Ärzte/Bett |
+| `grafiken/g10_stoerfaktor_traeger.png` | Störfaktor Träger × Bettengröße |
+| `grafiken/g11_pflege_pro_bett.png` | Pflegekräfte pro Bett MIT vs. OHNE viele Probleme *(2026-07-29)* |
+| `grafiken/g12_konzern_vergleich.png` | Konzernhaus vs. unabhängiges Haus *(2026-07-29)* |
 | `grafiken/confusion_matrix.png` | Confusion Matrix Decision Tree |
 | `grafiken/decision_tree.png` | Visualisierung Entscheidungsbaum |
 | `grafiken/feature_importance.png` | Feature Importance Balkendiagramm |

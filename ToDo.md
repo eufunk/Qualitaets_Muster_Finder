@@ -16,7 +16,7 @@
 ### Datensatz erkunden
 - [x] Alle CSV-Dateien sichten und ein eigenes „Inhaltsverzeichnis" der Daten erstellen
 - [x] Relevante Tabellen identifizieren:
-  - Qualitätsindikatoren (C-1.2): Bewertungen für ~1.900 Krankenhäuser
+  - Qualitätsindikatoren (C-1.2): Bewertungen für ~1.900 Krankenhäuser *(Schätzung aus Fragestellung.docx — tatsächlich nachgezählt: 1.824)*
   - Strukturdaten (A-Teil): Betten, Personal, Träger, Standort
 
 ### Ziel-Variable erstellen
@@ -31,14 +31,16 @@
 - [x] 5–8 aussagekräftige Merkmale auswählen, z. B.:
   - [x] Bettenzahl
   - [x] Ärzte pro Bett
-  - [ ] **Pflegekräfte pro Bett** *(noch offen — explizit in `Fragestellung.docx` gefordert! Aus `FA.Personalliste.csv`, Filter: `FA.Personal.Bereich == 'Pflege'` — analog zu Ärzte-Berechnung)*
+  - [x] **Pflegekräfte pro Bett** *(2026-07-29 erledigt — `pflege_pro_bett` aus `SO.Personalliste.csv`, Filter `SO.Personal.Bereich == 'Pflege'`; direkter Join über `SO.QBID`, kein Umweg über `FA.csv` nötig)*
   - [x] Trägerschaft (öffentlich / privat / kirchlich)
   - [x] Region (Stadt/Land oder Bundesland)
   - [x] Uni-Klinik (ja/nein)
   - [x] Fortbildungsquote
+  - [x] **Konzernzugehörigkeit** *(2026-07-29 ergänzt — `ist_konzern` aus `Konzern.csv`, BI-Kollegen-Empfehlung; Join-Bug behoben, siehe unten)*
 - [x] Alle Merkmale + Zielgröße in **eine Analysetabelle** zusammenführen (1 Zeile = 1 Krankenhaus)
 - [x] Zusammenführung **per Skript** reproduzierbar machen (kein manuelles Zusammenklicken)
-- [ ] **Analysetabelle aktualisieren** sobald Pflegekräfte pro Bett berechnet ist (Spalte ergänzen)
+- [x] **Analysetabelle aktualisieren** — `pflege_pro_bett` und `ist_konzern` sind jetzt Spalten 17+18 in `Data/analysetabelle.csv`
+- [x] **Bug behoben (2026-07-29):** `01_Exploration.ipynb` verglich beim Konzern-Join `Konzern.csv`s `SO.Standortnummer` fälschlich gegen `SO.QBID` statt gegen `SO.csv`s eigene `SO.Standortnummer`-Spalte → `ist_konzern` war für alle 1.824 Häuser 0. Nach Fix: 358 Konzernhäuser (19,6 %). Chi²-Test zeigt aber: kein signifikanter Zusammenhang mit `hat_viele_Probleme` (p=0,90) — Decision Tree bestätigt das mit 0 % Feature Importance für `ist_konzern`.
 
 ---
 
@@ -59,6 +61,7 @@
   - [x] Scatter-Plots
   - [x] Balkendiagramme
 - [x] Zu **jeder** Grafik einen erklärenden Satz schreiben (auch „kein Unterschied“ ist ein Befund)
+- [x] **Grafiken nachgebessert (2026-08-03):** Grafik 1 bekam eine Linie über den Balkenspitzen (bessere Ablesbarkeit der Anzahl) und 10 %-Schritte auf der Prozent-Achse; Grafik 3 die Legende verschoben (überdeckte zuvor den Balken für „öffentlich"); Grafik 4 eine fehlende Farb-Legende ergänzt (inkl. Gruppengrößen n=1.731/93). Alle Änderungen in `scripts/grafiken_speichern.py` **und** synchron im Notebook `02_Analyse.ipynb` vorgenommen.
 
 ---
 
@@ -101,13 +104,15 @@
 - [x] Vergleichs-Basislinie festlegen (wie gut wäre bloßes Raten?)
 - [x] Decision Tree trainieren (`max_depth=3`)
 - [x] Modell bewerten: Genauigkeit auf **neuen** (Test-)Daten prüfen
+- [x] **Cross-Validation** (5-Fold CV) — 59,7 % ± 4,2 % Accuracy, bestätigt kein Overfitting
 - [x] Baum in eigenen Worten vorlesen können (Verständnistest)
 - [x] Vorhersage: `"Hat überdurchschnittlich viele Probleme"` basierend auf Strukturmerkmalen
 - [x] **Metriken:** Accuracy, Precision, Recall, F1-Score, Confusion Matrix
-- [x] **R²-Metrik** erklärt und berechnet (R²=0,023 → bestätigt schwachen Zusammenhang)
-- [x] **Feature Importance** visualisiert (`aerzte_pro_bett` dominiert)
-- [x] **OOP** — Modell-Wrapper-Klasse `KrankenhausModell` implementiert
-- [x] **`joblib`** — Modell gespeichert als `modell_krankenhaus.pkl`
+- [x] **R²-Metrik** erklärt und berechnet (R²=0,033 → bestätigt schwachen Zusammenhang)
+- [x] **Feature Importance** visualisiert (`aerzte_pro_bett` dominiert mit 53,6 %)
+- [x] **OOP** — Modell-Wrapper-Klasse `KrankenhausModell` implementiert *(2026-07-29: Notebook importiert die Klasse jetzt aus `modell_klasse.py` statt sie inline zu duplizieren — behebt zugleich einen `__main__`-Pickle-Bug, der das Dashboard zuvor beim Laden des Modells crashen ließ; 2026-07-30: Datei von `scripts/` nach `model/` verschoben)*
+- [x] **`joblib`** — Modell gespeichert als `Data/modell_krankenhaus.pkl`
+- [x] **Modell neu trainiert (2026-07-29)** mit `pflege_pro_bett` und `ist_konzern` als zusätzlichen Features. Accuracy 63,6 % (Basislinie 50,7 %). Feature Importance: `aerzte_pro_bett` 53,6 %, `pflege_pro_bett` 23,8 %, `SO.Betten` 22,6 %, alle anderen (inkl. `ist_konzern`) 0 %
 
 ---
 
@@ -115,19 +120,21 @@
 
 ### Robustheit & Code-Qualität
 - [ ] Randfälle testen: leere Eingaben, fehlende Werte im Dashboard
-- [ ] Code aufräumen (ungenutzte Variablen, überflüssige Kommentare)
-- [ ] Komplett-Durchlauf testen: Rohdaten → `01_Exploration.ipynb` → `Data/analysetabelle.csv` → `Dashboard/streamlit_dashboard.py` — alles ohne Fehler *(Folie 13: „Geht das von den Rohdaten bis zur fertigen App durch, ohne dass es irgendwo hakt?")* *(2026-07-29: Code las zuvor aus dem Projekt-Root statt aus `Data/`, wo die Dateien tatsächlich lagen — jetzt behoben. Zusätzlich `streamlit_dashboard.py`/`dashboard_utils.py` nach `Dashboard/` verschoben. End-to-End-Lauf noch nicht verifiziert.)*
+- [x] **Code aufräumen** — Duplikat `scripts/doku_generieren.py` gelöscht (identisch mit `word_dokumentation.py`), `datei_uebersicht_a4.py` → `datei_uebersicht.py` umbenannt, `modell_klasse.py` von `scripts/` nach eigenen Ordner `model/` verschoben, python-docx-Metadaten-Bug (falsches Erstelldatum/Autor „2013-12-23"/„python-docx") in allen 5 Word-Generator-Skripten behoben
+- [x] Komplett-Durchlauf getestet: Rohdaten → `01_Exploration.ipynb` → `Data/analysetabelle.csv` → `03_Decision_Tree.ipynb` → `Data/modell_krankenhaus.pkl` → `Dashboard/streamlit_dashboard.py` — alles ohne Fehler *(2026-07-29: alle drei Notebooks + Dashboard erfolgreich end-to-end durchlaufen lassen und lokal im Browser via `streamlit run` geprüft)*
 - [ ] Streamlit-Cloud-Deployment: Main-File-Pfad in den App-Settings von `scripts/streamlit_dashboard.py` auf `Dashboard/streamlit_dashboard.py` umstellen
 - [ ] `requirements.txt` verifizieren — alle verwendeten Pakete enthalten und Versionen aktuell?
 
 ### Dokumentation
 - [x] Startanleitung schreiben → `README.md` erstellt
 - [x] Entscheidungen festhalten → `README.md` Abschnitt "Wichtige Entscheidungen"
-- [ ] **Entscheidungsbegründungen** ausformulieren *(Folie 13: „festhalten, welche Entscheidungen ihr getroffen habt und warum"):*
-  - [ ] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)?
-  - [ ] Warum N99 ausgeschlossen?
-  - [ ] Warum diese Merkmale (und nicht andere)?
-  - [ ] Warum `aerzte_pro_bett` über FA.csv statt SO.Personalliste?
+- [x] **Entscheidungsbegründungen ausformulieren** *(Folie 13: „festhalten, welche Entscheidungen ihr getroffen habt und warum")* — erledigt über zwei neue, ausführliche Notebook-Walkthroughs (2026-07-30, seither iterativ verfeinert bis 2026-08-03):
+  - [x] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)? → `Doku/MD/01_Exploration.md` Kap. 3, Schritt 7
+  - [x] Warum N99 ausgeschlossen? → `Doku/MD/01_Exploration.md` Kap. 3, Schritt 2
+  - [x] Warum diese Merkmale (und nicht andere)? → je ein „Warum"-Abschnitt pro Merkmal in `Doku/MD/01_Exploration.md`, konsolidiert in `Doku/Word/Analysetabelle_Zusammenfassung.docx`
+  - [x] Warum `aerzte_pro_bett` über FA.csv statt SO.Personalliste? → `Doku/MD/01_Exploration.md` Kap. 6
+- [x] **Notebook-Walkthroughs erstellt:** `Doku/MD/01_Exploration.md`, `Doku/MD/02_Analyse.md` und `Doku/MD/03_Decision_Tree.md` — erklären jeden Schritt der beiden Notebooks inkl. Begründung, mit allen Grafiken eingebettet, Konzept-Boxen (IQTIG, G-BA, p-Wert, Boxplot-Aufbau, „Diagramm lesen" je Grafik) und Klarstellung der „~1.900"-Zahl sowie des kleine-Zahlen-Effekts hinter der 100 %-Spitze in `auffaellig_quote`
+- [x] Kollegen-Zusammenfassung erstellt: `Doku/Word/Analysetabelle_Zusammenfassung.docx` (gewählte Merkmale, Ziel-Variablen, Quelltabellen, Merge-Kriterien, Endgröße der Analysetabelle)
 
 ### Präsentation *(Folie 13)*
 - [ ] Fragestellung vorstellen
@@ -196,7 +203,7 @@
 | **Konfidenzintervalle** | ~~Nicht berechnet~~ — **✅ Ergänzt!** | Erledigt |
 | **Decision Tree — Gini/Entropy, Visualisierung** | **✅ Abgeschlossen!** | Baustein 4 |
 | **Metriken: Accuracy, Precision, Recall, F1, Confusion Matrix** | **✅ Abgeschlossen!** | Baustein 4 |
-| **R²-Metrik** *(kritisch — war in Präsentation ein Thema!)* | **✅ Berechnet!** R²=0,023 — erklärt und interpretiert | Baustein 4 |
+| **R²-Metrik** *(kritisch — war in Präsentation ein Thema!)* | **✅ Berechnet!** R²=0,033 — erklärt und interpretiert | Baustein 4 |
 | **Streamlit** (Widgets, Session State, Formulare) | ✅ Implementiert — 4 Seiten live | Baustein 3 |
 | **`pivot_table()`** | **✅ Ergänzt!** | Baustein 2 |
 | **OOP / Klassen** | **✅ Implementiert!** Klasse `KrankenhausModell` | Baustein 4 |

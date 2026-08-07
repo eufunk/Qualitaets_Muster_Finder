@@ -42,16 +42,17 @@ streamlit run Dashboard/streamlit_dashboard.py
 ```
 📁 Projektordner/
 ├── Notebooks/
-│   ├── 01_Exploration.ipynb     # Datenaufbereitung (86 CSVs → analysetabelle.csv)
-│   ├── 02_Analyse.ipynb         # Deskriptive Analyse (10 Grafiken, T-Test, ANOVA)
+│   ├── 01_Exploration.ipynb     # Datenaufbereitung (86 CSVs → Data/analysetabelle.csv)
+│   ├── 02_Analyse.ipynb         # Deskriptive Analyse (12 Grafiken, T-Test, Chi²-Test, ANOVA)
 │   └── 03_Decision_Tree.ipynb   # ML: Decision Tree, Feature Importance
 ├── Dashboard/
 │   ├── streamlit_dashboard.py   # Haupt-App
 │   └── dashboard_utils.py       # Funktionen & Plots
+├── model/
+│   └── modell_klasse.py         # Decision Tree Klasse
 ├── scripts/
-│   ├── modell_klasse.py         # Decision Tree Klasse
 │   ├── bi_datenanalyse.py       # BI-Tool-Vergleich (Word-Generator)
-│   └── datei_uebersicht_a4.py   # Datei-Klassifikation (Word-Generator)
+│   └── datei_uebersicht.py   # Datei-Klassifikation (Word-Generator)
 ├── Data/
 │   ├── modell_krankenhaus.pkl   # Trainiertes Modell
 │   ├── analysetabelle.csv       # Datenbasis (1.824 Häuser)
@@ -69,13 +70,13 @@ streamlit run Dashboard/streamlit_dashboard.py
 | Datei / Ordner | Beschreibung |
 |----------------|-------------|
 | `Notebooks/01_Exploration.ipynb` | Datenaufbereitung: Ziel-Variable, Merkmale, Analysetabelle |
-| `Notebooks/02_Analyse.ipynb` | Deskriptive Analyse: 10 Grafiken, T-Test, ANOVA, Konfidenzintervalle |
+| `Notebooks/02_Analyse.ipynb` | Deskriptive Analyse: 12 Grafiken, T-Test, Chi²-Test, ANOVA, Konfidenzintervalle |
 | `Notebooks/03_Decision_Tree.ipynb` | Decision Tree, Metriken, R², Feature Importance |
 | `Dashboard/streamlit_dashboard.py` | Haupt-App: 4 Seiten (Übersicht, Vergleiche, Ähnliche Häuser, Risiko-Rechner) |
 | `Dashboard/dashboard_utils.py` | Hilfsfunktionen: Daten laden, KPIs, Plots, Modell-Vorhersage |
-| `scripts/modell_klasse.py` | OOP-Wrapper `KrankenhausModell` (prepare, fit, evaluate, save, load) |
+| `model/modell_klasse.py` | OOP-Wrapper `KrankenhausModell` (prepare, fit, evaluate, save, load) |
 | `scripts/bi_datenanalyse.py` | Generiert Word-Dokument: BI-Tool-Vergleich mit Kollegen |
-| `scripts/datei_uebersicht_a4.py` | Generiert Word-Dokument: Datei-Klassifikation (A4-Übersicht) |
+| `scripts/datei_uebersicht.py` | Generiert Word-Dokument: Datei-Klassifikation (A4-Übersicht) |
 | `Data/analysetabelle.csv` | Fertige Analysetabelle (Ergebnis aus Baustein 1) |
 | `Data/modell_krankenhaus.pkl` | Trainiertes Decision-Tree-Modell |
 | `Workflow.md` | Vollständige Dokumentation aller Entscheidungen |
@@ -98,16 +99,19 @@ Diese Spalte enthält den offiziellen Bewertungscode des Strukturierten Dialogs 
 `QSQI.AEKey` ist eine **Haus-ID**, kein Indikator-Schlüssel. Ein Fehler hier hätte dazu geführt, dass pro Haus nur 1 Zeile übrig bleibt statt ~55. Die Deduplizierung über `(SO.QBID, QSQI.Indikator)` stellt sicher, dass jeder Indikator pro Haus genau einmal gezählt wird.
 
 ### Warum `aerzte_pro_bett` als wichtigstes Merkmal?
-Nicht wir haben das entschieden — der Decision Tree hat es aus den Daten gelernt: Feature Importance 71,3 %. Der T-Test bestätigt den Unterschied (p < 0,001). Häuser mit ≤ 0,271 Ärzten/Bett haben signifikant höhere Auffälligkeitsquoten.
+Nicht wir haben das entschieden — der Decision Tree hat es aus den Daten gelernt: Feature Importance 53,6 %. Der T-Test bestätigt den Unterschied (p < 0,001). Häuser mit ≤ 0,271 Ärzten/Bett haben signifikant höhere Auffälligkeitsquoten.
 
 ### Warum `max_depth=3` beim Decision Tree?
 Bewusst einfach gehalten: Ein Baum mit max. 3 Entscheidungsebenen ist **erklärbar** — man kann ihn in eigenen Worten vorlesen. Tiefere Bäume würden Overfitting riskieren und die Interpretierbarkeit verlieren. Ziel war ein verständliches Modell, nicht die höchste Accuracy.
 
-### Warum R² so niedrig (0,023)?
-Das ist ein **valides Ergebnis**, kein Fehler. Strukturmerkmale (Betten, Träger, Ärzte) erklären nur 2,3 % der Varianz in der Auffälligkeitsquote. Das bedeutet: Andere Faktoren (Patientenmix, Spezialisierung, Dokumentationsqualität) spielen eine viel größere Rolle — die aber nicht im Datensatz enthalten sind.
+### Warum R² so niedrig (0,033)?
+Das ist ein **valides Ergebnis**, kein Fehler. Strukturmerkmale (Betten, Träger, Ärzte, Pflegepersonal, Konzernzugehörigkeit) erklären nur 3,3 % der Varianz in der Auffälligkeitsquote. Das bedeutet: Andere Faktoren (Patientenmix, Spezialisierung, Dokumentationsqualität) spielen eine viel größere Rolle — die aber nicht im Datensatz enthalten sind.
 
 ### Warum NaN bei `aerzte_pro_bett` nicht auffüllen?
 4 von 5 fehlenden Werten sind Tageskliniken mit `SO.Betten = 0`. Ärzte/Bett ist für diese Häuser **nicht definiert** — 0 Betten ergibt kein sinnvolles Verhältnis. NaN ist hier die korrekte Aussage: „nicht anwendbar".
+
+### Warum `ist_konzern` trotz fehlendem Signal im Modell?
+Der Chi²-Test zeigt keinen Zusammenhang zwischen Konzernzugehörigkeit und Qualitätsproblemen (p=0,90), und der Decision Tree bestätigt das mit 0 % Feature Importance. Wir haben das Merkmal trotzdem aufgenommen, statt es vorab auszuschließen — das Modell soll selbst entscheiden, was relevant ist. „Kein Zusammenhang" ist auch hier ein valider, dokumentierter Befund.
 
 ---
 
@@ -120,8 +124,9 @@ Das ist ein **valides Ergebnis**, kein Fehler. Strukturmerkmale (Betten, Träger
 | Median auffällig-Quote | **76,92 %** |
 | Träger mit höchstem Anteil | Privat: **56,5 %** |
 | Signifikantester Unterschied | Ärzte/Bett (T-Test p < 0,001) |
-| Decision Tree Accuracy | **64,9 %** (Basislinie: 50,7 %) |
-| R² (lineare Regression) | **0,023** — schwacher Zusammenhang |
+| Konzernhäuser | 358 von 1.824 (19,6 %) — kein signifikanter Zusammenhang (Chi² p=0,90) |
+| Decision Tree Accuracy | **63,6 %** (Basislinie: 50,7 %) |
+| R² (lineare Regression) | **0,033** — schwacher Zusammenhang |
 
 > **Fazit:** Keine starken, eindeutigen Zusammenhänge zwischen Strukturmerkmalen und Qualitätsproblemen. Privathäuser und niedrige Ärztedichte zeigen Tendenzen — aber kein klares Muster. **Kein Zusammenhang ist ein valides Ergebnis.**
 

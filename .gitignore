@@ -13,7 +13,6 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Temporäre Skripte (interne Nutzung)
-doku_generieren.py
 datensatz_bericht.py
 grafiken_speichern.py
 powerbi_anleitung.py

@@ -1,9 +1,3 @@
----
-noteId: "1b8946b08b7211f184a2cf9ec95e8a13"
-tags: []
-
----
-
 # 🎤 Präsentation — Qualitäts-Muster-Finder
 ## Folienbeschreibung für PowerPoint
 
@@ -60,7 +54,7 @@ Die Frage ist bewusst offen formuliert. Wir suchen nach Mustern, nicht nach Bewe
 **Inhalt:**
 - Jedes deutsche Krankenhaus ist seit 2005 **gesetzlich verpflichtet**, jährlich einen Qualitätsbericht zu veröffentlichen
 - Herausgeber: **IQTIG** (Institut für Qualitätssicherung und Transparenz im Gesundheitswesen), im Auftrag des **G-BA** (Gemeinsamer Bundesausschuss)
-- Die Daten sind **öffentlich zugänglich** und für alle ~1.900 Krankenhäuser **einheitlich** erhoben
+- Die Daten sind **öffentlich zugänglich** und für alle 2.310 Krankenhäuser (Stammdaten in SO.csv) **einheitlich** erhoben
 - Berichtsjahr: **2023**
 
 **Visualisierung:** Kleine Infografik — Krankenhaus → Qualitätsbericht → IQTIG → Datensatz
@@ -72,7 +66,7 @@ Das macht diese Daten besonders wertvoll: Alle Häuser werden nach denselben Reg
 
 ### Folie 5 — Der Datensatz auf einen Blick
 **Inhalt (Kennzahlen-Karten):**
-- 🏥 **~1.900** Krankenhäuser
+- 🏥 **2.310** Krankenhäuser (1.824 davon mit Qualitätsbewertung → Basis der Analysetabelle)
 - 📁 **86 CSV-Dateien** · ca. 1,2 GB
 - 📊 **~150 Qualitätsindikatoren** pro Haus
 - 🔑 **1 universeller Schlüssel:** `SO.QBID`
@@ -214,16 +208,18 @@ Drei Fallstricke, die uns fast eine falsche Zielgröße geliefert hätten: N99 (
 | `SO.Uni` | `SO.csv` | Binär: Uni-Klinik ja/nein |
 | `fortbildungsquote` | `QS.Fortbildung.csv` | Numerisch 0–1 |
 | `aerzte_pro_bett` | `FA.Personalliste.csv` + `FA.csv` | Numerisch |
+| `pflege_pro_bett` | `SO.Personalliste.csv` | Numerisch *(ergänzt 2026-07-29)* |
+| `ist_konzern` | `Konzern.csv` | Binär: Konzernhaus ja/nein *(ergänzt 2026-07-29)* |
 
 **Was gesagt wird:**  
-Die meisten Merkmale kamen direkt aus SO.csv. Nur `aerzte_pro_bett` war technisch aufwändiger — weil die Personaldaten über zwei Joins verknüpft werden mussten, und weil die Zahlen als Komma-Dezimal gespeichert waren (z. B. `"13,47"` statt `13.47`).
+Die meisten Merkmale kamen direkt aus SO.csv. `aerzte_pro_bett` und `pflege_pro_bett` waren technisch aufwändiger — weil die Personaldaten über Joins verknüpft werden mussten, und weil die Zahlen als Komma-Dezimal gespeichert waren (z. B. `"13,47"` statt `13.47`). Bei `ist_konzern` steckte ein Bug im ersten Join-Versuch (falscher Schlüssel), der erst später aufgefallen ist — mehr dazu bei den Grenzen der Analyse.
 
 ---
 
 ### Folie 14 — Die Analysetabelle: Das zentrale Ergebnis der Vorbereitung
 **Inhalt:**
 - `analysetabelle.csv` — **eine Zeile = ein Krankenhaus**
-- **~1.824 Zeilen · 15 Spalten**
+- **1.824 Zeilen · 18 Spalten** (inkl. `pflege_pro_bett` & `ist_konzern`, ergänzt 2026-07-29)
 - Fehlende Werte: `KH.Träger.Art` (28 fehlend, <2 %) · `fortbildungsquote` (33 fehlend, <2 %)
 - Tageskliniken (0 Betten): `aerzte_pro_bett` = NaN — korrekt, kein stationäres Profil
 
@@ -312,11 +308,13 @@ Fortbildungsquote zeigt fast keine Korrelation mit der Ziel-Variable — obwohl 
 - Stärkste Korrelationen mit `hat_viele_Probleme`:
   - `total_qi` (Anzahl bewerteter Indikatoren): r = **−0,28**
   - `aerzte_pro_bett`: r = **−0,14**
-  - `SO.Betten`: r ≈ **−0,10**
+  - `pflege_pro_bett`: r ≈ **−0,14** *(ergänzt 2026-07-29, ähnlich stark wie Ärzte/Bett)*
+  - `SO.Betten`: r ≈ **−0,08**
   - `fortbildungsquote`: r ≈ **0,01** (kein Zusammenhang)
+  - `ist_konzern`: r ≈ **0,00** (kein Zusammenhang) *(ergänzt 2026-07-29)*
 
 **Was gesagt wird:**  
-Der stärkste Prädiktor ist `total_qi` — also wie viele Indikatoren ein Haus überhaupt bewertet hat. Häuser mit mehr bewerteten Indikatoren haben tendenziell niedrigere Auffälligkeitsquoten. Das ist kein Qualitätsmerkmal, sondern ein strukturelles Merkmal — vielleicht weil größere Häuser mehr Routine haben. Inhaltlich der überraschendste Befund.
+Der stärkste Prädiktor ist `total_qi` — also wie viele Indikatoren ein Haus überhaupt bewertet hat. Häuser mit mehr bewerteten Indikatoren haben tendenziell niedrigere Auffälligkeitsquoten. Das ist kein Qualitätsmerkmal, sondern ein strukturelles Merkmal — vielleicht weil größere Häuser mehr Routine haben. Inhaltlich der überraschendste Befund. `pflege_pro_bett` verhält sich fast identisch zu `aerzte_pro_bett` — beide Personalkennzahlen korrelieren stark miteinander (r=0,58), sagen also einen ähnlichen Effekt voraus. `ist_konzern` zeigt dagegen praktisch keinen Zusammenhang.
 
 ---
 
@@ -329,8 +327,8 @@ Der stärkste Prädiktor ist `total_qi` — also wie viele Indikatoren ein Haus 
 - Algorithmus: `DecisionTreeClassifier`, `max_depth=3`
 - Training: 80 % der Daten · Test: 20 %
 - Basislinie (Raten): ~50 % Accuracy (ausgewogene Klassen)
-- Modell-Accuracy auf Testdaten: **~58–62 %**
-- Feature Importance: `aerzte_pro_bett` dominiert mit **71,3 %**
+- Modell-Accuracy auf Testdaten: **63,6 %**
+- Feature Importance: `aerzte_pro_bett` dominiert mit **53,6 %**, gefolgt von `pflege_pro_bett` (23,8 %) und `SO.Betten` (22,6 %)
 
 **Visualisierung:** Kleines Baumdiagramm (max_depth=3, lesbar)
 
@@ -383,6 +381,8 @@ Das Dashboard läuft nicht lokal, sondern öffentlich im Internet. Wer es öffne
 | Uni-Status | 🔴 Kaum vorhanden |
 | Fortbildungsquote | 🔴 Kein Zusammenhang |
 | Ärzte pro Bett | 🟢 Schwach, aber stärkster Prädiktor |
+| Pflegekräfte pro Bett | 🟢 Schwach, ähnlich stark wie Ärzte/Bett |
+| Konzernzugehörigkeit | 🔴 Kein Zusammenhang (Chi² p=0,90) |
 
 **Was gesagt wird:**  
 Das Ergebnis: Wir finden keine starken, eindeutigen Zusammenhänge. Das ist — wie wir am Anfang gesagt haben — ein valides Ergebnis. Es bedeutet wahrscheinlich: Die Struktur eines Hauses erklärt allein noch nicht, wie gut es bei Qualitätsindikatoren abschneidet. Andere Faktoren spielen eine größere Rolle.
@@ -394,11 +394,11 @@ Das Ergebnis: Wir finden keine starken, eindeutigen Zusammenhänge. Das ist — 
 - **Patientenmix:** Häuser mit schwierigeren Patienten fallen häufiger außerhalb des Referenzbereichs — das liegt nicht an schlechter Qualität
 - **Dokumentationsqualität:** Manche Auffälligkeiten sind Dokumentationsfehler, keine echten Qualitätsprobleme
 - **Kein Kausalitätsnachweis:** Korrelation ≠ Kausalität — auch bei gefundenen Zusammenhängen
-- **Fehlende Merkmale:** Pflegekräfte pro Bett wurde noch nicht eingebunden, Konzernzugehörigkeit fehlt
 - **N99-Problematik:** Häuser mit wenig Fällen haben mehr N99 → systematische Verzerrung möglich
+- **Eigener Fehler gefunden und behoben:** Der erste Join-Versuch für `ist_konzern` verglich `Konzern.csv`s Schlüssel `SO.Standortnummer` fälschlich gegen `SO.QBID` — 0 Treffer, unbemerkt geblieben, bis eine Prüfung der Kollegen-Empfehlung den Fehler aufdeckte. Nach Korrektur: 358 von 1.824 Häusern sind Konzernhäuser, aber ohne Zusammenhang zur Qualität
 
 **Was gesagt wird:**  
-Ein ehrlicher Umgang mit Grenzen gehört zu einer guten Datenanalyse. Wir haben uns bemüht, keine Korrelation „zurechtbiegen" — und wenn die Daten nichts zeigen, sagen wir das klar.
+Ein ehrlicher Umgang mit Grenzen gehört zu einer guten Datenanalyse. Wir haben uns bemüht, keine Korrelation „zurechtbiegen" — und wenn die Daten nichts zeigen, sagen wir das klar. Und: Auch die eigene Pipeline muss man hinterfragen — der Konzern-Join-Bug lief lange unbemerkt durch, weil das Ergebnis (0 Konzernhäuser) plausibel genug aussah, um nicht sofort aufzufallen.
 
 ---
 
@@ -410,7 +410,6 @@ Ein ehrlicher Umgang mit Grenzen gehört zu einer guten Datenanalyse. Wir haben 
 - Reproduzierbarkeit ist nicht optional — sie ist Qualitätsmerkmal der Analyse
 
 **Was als nächstes kommen könnte:**
-- Pflegekräfte pro Bett einbinden
 - Patientenmix als Kontrollvariable einführen (z. B. Fallschwere-Index)
 - Mehrstufige Analyse: erst nach Träger gruppieren, dann innerhalb vergleichen
 - Zeitreihe: Vergleich 2021 → 2022 → 2023
@@ -432,11 +431,11 @@ Ein ehrlicher Umgang mit Grenzen gehört zu einer guten Datenanalyse. Wir haben 
 |-------|-----------|
 | **Foliendesign** | Klares, schlichtes Layout. Keine Animations-Überblendungen. |
 | **Schriftgröße** | Mindestens 20pt für Fließtext, 28pt+ für Überschriften |
-| **Grafiken** | Aus `grafiken/`-Ordner direkt einfügen (g1_auffaellig_quote.png, g3_traegerschaft.png, g8_korrelation.png, g10_stoerfaktor_traeger.png sind am stärksten) |
+| **Grafiken** | Aus `grafiken/`-Ordner direkt einfügen (g1_auffaellig_quote.png, g3_traegerschaft.png, g8_korrelation.png, g10_stoerfaktor_traeger.png, g11_pflege_pro_bett.png sind am stärksten) |
 | **Demo-Vorbereitung** | Browser mit Dashboard vorab öffnen, Internetverbindung prüfen; Fallback: Screenshots der 4 Seiten als Folie |
 | **Zeitkontrolle** | Block 1–2 (Einstieg + Daten): 22 Min · Block 3 (Vorgehen): 14 Min · Block 4 (Ergebnisse): 16 Min · Block 5 (Dashboard): 10 Min · Block 6 (Reflexion): 8 Min |
 | **Generalprobe** | Stoppuhr mitlaufen lassen. Ziel: 55 Min Präsentation + 5 Min Puffer für Fragen |
 
 ---
 
-*Erstellt: 2026-07-28 | Projekt: Qualitäts-Muster-Finder | Datenbasis: Qualitätsberichte 2023 (IQTIG)*
+*Erstellt: 2026-07-28 | Zuletzt aktualisiert: 2026-07-29 | Projekt: Qualitäts-Muster-Finder | Datenbasis: Qualitätsberichte 2023 (IQTIG)*

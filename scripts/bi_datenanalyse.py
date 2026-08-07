@@ -4,7 +4,7 @@ Stellungnahme zur Dateiauswahl der Kollegen (BI-Tool-Analyse)
 im Vergleich zu unserer Python-Exploration (01_Exploration.ipynb).
 """
 import os, tempfile
-from datetime import date
+from datetime import date, datetime
 from docx import Document
 from docx.shared import Pt, RGBColor, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -76,6 +76,10 @@ def add_infobox(doc, text, fill, text_color=None):
 
 # ══════════════════════════════════════════════════════════════════
 doc = Document()
+doc.core_properties.author = "Datenanalyse-Team"
+doc.core_properties.created = datetime.now()
+doc.core_properties.modified = datetime.now()
+doc.core_properties.title = "BI-Datenanalyse — Stellungnahme zur Dateiauswahl"
 for s in doc.sections:
     s.top_margin=Cm(2.0); s.bottom_margin=Cm(2.0)
     s.left_margin=Cm(2.5); s.right_margin=Cm(2.0)
@@ -152,7 +156,7 @@ add_tbl(doc,
          "⚠️ MOEG\n(zu spezifisch)",
          "Schlüssel: QS.Einrichtung.ID — kein direkter Join mit SO.csv ohne Brücke. "
          "Sinnvoll NUR für eine auf Psychiatrie-Häuser beschränkte Teilanalyse. "
-         "Für die allgemeine Projektfragestellung (alle ~1.900 Häuser) eingeschränkt verwendbar."),
+         "Für die allgemeine Projektfragestellung (alle 1.824 Häuser mit Bewertung) eingeschränkt verwendbar."),
         ("QS.Psy\n(Psychiatrie-Qualitätsdaten)",
          "⚠️ MOEG\n(zu spezifisch)",
          "Gleiche technische Einschränkung wie QS.Pso. Enthält psychiatriespezifische Qualitätsindikatoren. "
@@ -193,17 +197,17 @@ add_tbl(doc,
          "Vollständige Übereinstimmung. SO.csv ist unsere Ankertabelle: alle Strukturmerkmale "
          "(Betten, Träger, Bundesland, Uni), alle Geo-Koordinaten, universeller Schlüssel SO.QBID."),
         ("SO.Personalliste",
-         "⚠️ MOEG\n(Alternativquelle)",
-         "Interessante Ergänzung. Wir haben FA.Personalliste.csv bevorzugt, weil sie "
-         "feinere Aufschlüsselung nach Berufsgruppe (Ärzte/Pflege) ermöglicht. "
-         "SO.Personalliste ist auf Standortebene aggregiert — weniger Detail. "
-         "Empfehlung: Als Validierungsquelle für FA.Personalliste.csv verwenden; "
-         "oder für Merkmale, die nicht auf Abteilungsebene benötigt werden."),
+         "✅ VERW\n(seit 2026-07-29)",
+         "Ursprünglich als Alternativquelle eingestuft — FA.Personalliste.csv wurde für "
+         "aerzte_pro_bett bevorzugt, weil sie feinere Aufschlüsselung nach Berufsgruppe ermöglicht. "
+         "SO.Personalliste.csv wurde inzwischen aber selbst eingebunden: direkte Quelle für "
+         "pflege_pro_bett (Filter SO.Personal.Bereich == 'Pflege'), da SO.QBID + Anzahl direkt "
+         "vorhanden sind — kein Umweg über FA.csv nötig. 2. wichtigstes Merkmal (FI 23,8 %)."),
         ("QS.Leistungsbereich",
-         "✅ VERW\n(identifiziert)",
+         "⚠️ MOEG\n(weiterhin offen)",
          "Übereinstimmung. Wir haben diese Datei als relevant identifiziert (QSLB.Dokumentationsrate "
-         "= potenzielle Qualitätskennzahl), aber noch nicht eingebunden. Unterstützt die "
-         "Einschätzung der Kollegen — sollte eingebunden werden."),
+         "= potenzielle Qualitätskennzahl), aber bis heute (Stand 2026-07-30) nicht eingebunden. "
+         "Unterstützt die Einschätzung der Kollegen — sollte eingebunden werden."),
         ("QS.Fortbildung",
          "✅ VERW\n(verwendet)",
          "Vollständige Übereinstimmung. Fortbildungsquote ist explizit in der Aufgabenstellung "
@@ -211,7 +215,7 @@ add_tbl(doc,
         ("QS.Landesrecht",
          "❌ NEIN\n(nicht vergleichbar)",
          "Hier weichen wir ab. QS.Landesrecht enthält länderspezifische QS-Anforderungen — "
-         "diese sind nicht bundeseinheitlich und damit schlecht vergleichbar über alle ~1.900 Häuser. "
+         "diese sind nicht bundeseinheitlich und damit schlecht vergleichbar über alle 1.824 Häuser. "
          "Risiko: Häuser in Bundesländern mit strengeren Landesregeln erscheinen systematisch 'schlechter', "
          "obwohl sie nur andere Anforderungen erfüllen müssen. "
          "Empfehlung: Nur einbinden, wenn länderspezifische Analyse gewünscht ist."),
@@ -221,15 +225,20 @@ add_tbl(doc,
          "Grundlage der Ziel-Variable hat_viele_Probleme. Technischer Hinweis: 911 MB, "
          "nur per Python ladbar."),
         ("QS",
-         "✅ VERW\n(Verknüpfung)",
-         "Übereinstimmung. QS.csv ist die Brückentabelle QS-Berichtsbasis ↔ Standort. "
-         "Enthält QS.Typ (bund/land) — wichtig zum Filtern bundesweiter Indikatoren."),
+         "⚠️ MOEG\n(nicht benötigt)",
+         "Korrektur (2026-07-30): QS.csv wurde ursprünglich als notwendige Brückentabelle "
+         "QS-Berichtsbasis ↔ Standort eingeschätzt. Tatsächlich wird sie nie geladen — "
+         "QS.Qualitätsindikator.csv trägt SO.QBID bereits selbst, ein Join über QS.csv ist "
+         "für die Zusammenführung nicht nötig. QS.Typ (bund/land) könnte für eine Filterung "
+         "genutzt werden, wurde aber bisher nicht geprüft."),
         ("Konzern",
-         "⚠️ MOEG\n(interessant)",
-         "Gute Ergänzung. Konzernzugehörigkeit (Konzern vs. unabhängig) ist ein potenziell "
-         "relevantes Strukturmerkmal — Konzernhäuser haben möglicherweise systematisch "
-         "bessere/schlechtere Qualitätswerte. Wir hatten dies identifiziert, aber nicht eingebunden. "
-         "Empfehlung: Einbinden."),
+         "✅ VERW\n(seit 2026-07-29)",
+         "Gute Ergänzung — inzwischen eingebunden als Merkmal ist_konzern. Dabei wurde ein "
+         "Join-Bug gefunden und behoben: Konzern.csv nutzt SO.Standortnummer als Schlüssel, "
+         "nicht SO.QBID; der erste Versuch verglich fälschlich gegen SO.QBID (0 Treffer). "
+         "Nach Korrektur: 358 von 1.824 Häusern (19,6 %) sind Konzernhäuser. Chi²-Test zeigt "
+         "aber keinen signifikanten Zusammenhang mit Qualitätsproblemen (p=0,90) — der Decision "
+         "Tree bestätigt das mit 0 % Feature Importance."),
         ("Akademische_Lehre",
          "❌ NEIN\n(in SO.Uni enthalten)",
          "Hier weichen wir ab. Der Lehrstatus eines Krankenhauses ist bereits in SO.csv "
@@ -238,7 +247,7 @@ add_tbl(doc,
          "das sollte geprüft werden. Als Standalone-Datei ohne diesen Check: redundant."),
     ],
     cw=[3.8, 2.5, 12.2], hdr_color="1F497D",
-    row_fills=[F_GRUEN, F_GELB, F_GRUEN, F_GRUEN, F_ROT, F_GRUEN, F_GRUEN, F_GELB, F_ROT]
+    row_fills=[F_GRUEN, F_GRUEN, F_GELB, F_GRUEN, F_ROT, F_GRUEN, F_GELB, F_GRUEN, F_ROT]
 )
 doc.add_paragraph()
 
@@ -274,8 +283,9 @@ add_tbl(doc,
         ("FA.Personalliste",
          "✅ VERW\n(verwendet)",
          "Vollständige Übereinstimmung. FA.Personalliste.csv ist die Hauptquelle für "
-         "aerzte_pro_bett — das Merkmal mit der höchsten Feature Importance (71,3 %) "
-         "im Decision Tree. Wichtig: FA.Personal.Anzahl ist Komma-Dezimal ('13,47') "
+         "aerzte_pro_bett — das Merkmal mit der höchsten Feature Importance (53,6 %) "
+         "im Decision Tree, seit der Ergänzung um pflege_pro_bett und ist_konzern am 2026-07-29. "
+         "Wichtig: FA.Personal.Anzahl ist Komma-Dezimal ('13,47') "
          "und muss vor der Aggregation zu float konvertiert werden."),
         ("AQ.Ärzte",
          "⚠️ MOEG\n(Qualifikation, keine Anzahlen)",
@@ -285,16 +295,16 @@ add_tbl(doc,
          "Sinnvoll wenn Qualifikationsniveau (z.B. Anteil Fachärzte) als Merkmal untersucht werden soll. "
          "Empfehlung: Einbinden wenn Qualifikationsfrage relevant ist."),
         ("AQ.Pflege",
-         "⚠️ MOEG\n(Pflegekräfte — offen)",
-         "Sehr relevante Ergänzung. Pflegekräfte pro Bett ist laut Aufgabenstellung "
-         "(Fragestellung.docx) ein explizit zu untersuchendes Merkmal — "
-         "bisher noch NICHT in unsere Analysetabelle eingebunden (offener Punkt). "
-         "AQ.Pflege enthält Pflegequalifikationen. Alternativ: FA.Personalliste.csv "
-         "mit Filter auf FA.Personal.Bereich = 'Pflege'. "
-         "Empfehlung: Dringend einbinden — komplettiert die Personalanalyse."),
+         "❌ NEIN\n(Ersatz gewählt)",
+         "Pflegekräfte pro Bett ist laut Aufgabenstellung (Fragestellung.docx) ein explizit "
+         "zu untersuchendes Merkmal und ist seit 2026-07-29 in der Analysetabelle (pflege_pro_bett). "
+         "AQ.Pflege.csv selbst wurde aber bewusst NICHT verwendet: sie enthält nur "
+         "Qualifikationsnachweise, keine Personal-Anzahlen. SO.Personalliste.csv liefert "
+         "SO.QBID + SO.Personal.Anzahl direkt — kein Umweg über FA.csv nötig und detaillierter "
+         "als AQ.Pflege.csv. Ergebnis: 2. wichtigstes Merkmal im Decision Tree (FI 23,8 %)."),
     ],
     cw=[3.8, 2.5, 12.2], hdr_color="1F497D",
-    row_fills=[F_GRUEN, F_ORANGE, F_GRUEN, F_GELB, F_GELB]
+    row_fills=[F_GRUEN, F_ORANGE, F_GRUEN, F_GELB, F_ROT]
 )
 doc.add_paragraph()
 
@@ -303,46 +313,55 @@ doc.add_paragraph()
 # ══════════════════════════════════════════════════════════════════
 add_h(doc, "4  Gesamtbewertung & Empfehlungen", level=1, color=C_BLAU)
 
+add_infobox(doc,
+    "Stand 2026-07-30: Diese Tabelle wurde aktualisiert, nachdem Konzern und SO.Personalliste "
+    "tatsächlich eingebunden wurden und ein Join-Bug bei Konzern.csv sowie eine Fehleinschätzung "
+    "zu QS.csv aufgefallen sind (siehe Gruppe 2 oben).",
+    F_BLAU
+)
+doc.add_paragraph()
+
 add_tbl(doc,
     ["Kategorie", "Anzahl Dateien", "Bewertung"],
     [
-        ("Vollständige Übereinstimmung (✅ + Kollegen)",
+        ("Tatsächlich in Analysetabelle eingebunden (✅)",
          "7",
-         "SO, QS, QS.Qualitätsindikator, QS.Fortbildung, QS.Leistungsbereich, FA, FA.Personalliste\n"
-         "→ Beide Analyseansätze bestätigen diese Auswahl unabhängig voneinander."),
-        ("Sinnvolle Ergänzungen durch Kollegen (⚠️ → jetzt VERW)",
-         "3",
-         "Konzern, AQ.Pflege, SO.Personalliste (als Validierung)\n"
-         "→ Sollten in die Analysetabelle aufgenommen werden."),
-        ("Technische Einschränkung beachten (Psychiatrie-Gruppe)",
-         "3",
-         "QS.Pso, QS.Psy, QS.Struktur.Station\n"
-         "→ Nur für Psychiatrie-Teilanalyse geeignet (anderer Join-Schlüssel: QS.Einrichtung.ID)."),
-        ("Lookup-Tabellen — kein Analysewert als Feature",
+         "SO, QS.Qualitätsindikator, QS.Fortbildung, FA, FA.Personalliste, SO.Personalliste, Konzern\n"
+         "→ Kernauswahl bestätigt; SO.Personalliste und Konzern kamen am 2026-07-29 hinzu."),
+        ("Identifiziert, aber weiterhin nicht eingebunden (⚠️)",
+         "7",
+         "QS (nicht benötigt — SO.QBID bereits in QS.Qualitätsindikator enthalten), "
+         "QS.Leistungsbereich, QS.Behandlungsumfang, AQ.Ärzte, QS.Pso, QS.Psy, QS.Struktur.Station\n"
+         "→ QS.Leistungsbereich bleibt der aussichtsreichste Kandidat für eine künftige Ergänzung."),
+        ("Lookup-Tabellen — kein Analysewert als Feature (❌)",
          "2",
          "QS.Einrichtungstypen, QS.Berufsgruppen\n"
          "→ Als Filter/Legende nützlich, nicht als Feature-Quelle."),
-        ("Abweichung — wir empfehlen NEIN",
-         "2",
+        ("Abweichung / bewusster Ersatz (❌)",
+         "3",
          "QS.Landesrecht (nicht vergleichbar über Bundesländer), "
-         "Akademische_Lehre (in SO.Uni enthalten)\n"
-         "→ Nur nach weiterer Prüfung einbinden."),
+         "Akademische_Lehre (in SO.Uni enthalten), "
+         "AQ.Pflege (durch SO.Personalliste ersetzt, da detaillierter)\n"
+         "→ Bewusste, begründete Entscheidungen — kein offener Punkt."),
         ("DSGVO-Hinweis",
          "1",
          "FA.Personen → personenbezogene Daten (Namen, E-Mails).\n"
          "→ Nicht für Feature-Engineering verwenden."),
     ],
     cw=[5.5, 2.0, 11.0], hdr_color="1F497D",
-    row_fills=[F_GRUEN, F_GRUEN, F_GELB, F_GRAU, F_ROT, F_ORANGE]
+    row_fills=[F_GRUEN, F_GELB, F_GRAU, F_ROT, F_ORANGE]
 )
 doc.add_paragraph()
 
 add_b(doc,
-    "Fazit: Die BI-Tool-Analyse der Kollegen ist insgesamt gut und bestätigt unsere Kernauswahl. "
-    "Die größte Erkenntnis ist die Ergänzung um AQ.Pflege (Pflegekräfte — offener Punkt bei uns) "
-    "und Konzern (Konzernzugehörigkeit als Strukturmerkmal). "
-    "Bei der Psychiatrie-Gruppe sollte der abweichende Join-Schlüssel vor der Einbindung "
-    "technisch gelöst werden.",
+    "Fazit: Die BI-Tool-Analyse der Kollegen war insgesamt gut und hat unsere Kernauswahl "
+    "bestätigt sowie zwei echte Lücken aufgedeckt. Konzern und SO.Personalliste (für "
+    "pflege_pro_bett) wurden am 2026-07-29 eingebunden — bei Konzern.csv fiel dabei zusätzlich "
+    "ein Join-Bug auf (falscher Schlüssel, 0 Treffer), der erst durch die erneute Prüfung dieser "
+    "Empfehlung entdeckt wurde. AQ.Pflege wurde bewusst NICHT übernommen, da SO.Personalliste.csv "
+    "denselben Zweck detaillierter erfüllt. Bei der Psychiatrie-Gruppe bleibt der abweichende "
+    "Join-Schlüssel (QS.Einrichtung.ID) weiterhin ungelöst — nur relevant für eine "
+    "Psychiatrie-Teilanalyse.",
     size=10.5, color=C_BLAU, bold=True
 )
 
