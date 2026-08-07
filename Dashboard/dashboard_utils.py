@@ -144,53 +144,36 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
     Erstellt die Deutschland-Karte mit Krankenhaus-Standorten.
     Farbe = Problemkategorie, Groesse = Bettenzahl.
     """
-    df_karte = df.dropna(subset=["SO.Latitude", "SO.Longitude"])
+    df_karte = df.dropna(subset=["SO.Latitude", "SO.Longitude"]).copy()
+    # Mindestgröße damit auch Häuser mit 0 Betten sichtbar sind
+    df_karte["_bubble_size"] = df_karte["SO.Betten"].clip(lower=30)
 
-    try:
-        # scatter_map (Plotly ≥ 5.11, kein Mapbox-Token nötig)
-        fig = px.scatter_map(
-            df_karte,
-            lat="SO.Latitude",
-            lon="SO.Longitude",
-            color="Problemkategorie",
-            color_discrete_map={
-                "Wenige Probleme": FARBE_WENIGE,
-                "Viele Probleme":  FARBE_VIELE,
-            },
-            size="SO.Betten",
-            size_max=20,
-            hover_name="SO.Name",
-            hover_data={
-                "SO.Betten":        True,
-                "SO.Bundesland":    True,
-                TRAEGER_COL:        True,
-                "auffaellig_quote": ":.1%",
-                "SO.Latitude":      False,
-                "SO.Longitude":     False,
-                "Problemkategorie": False,
-            },
-            zoom=5,
-            center={"lat": 51.2, "lon": 10.4},
-            map_style="carto-positron",
-        )
-    except AttributeError:
-        # Fallback für ältere Plotly-Versionen
-        fig = px.scatter_mapbox(
-            df_karte,
-            lat="SO.Latitude",
-            lon="SO.Longitude",
-            color="Problemkategorie",
-            color_discrete_map={
-                "Wenige Probleme": FARBE_WENIGE,
-                "Viele Probleme":  FARBE_VIELE,
-            },
-            size="SO.Betten",
-            size_max=20,
-            hover_name="SO.Name",
-            zoom=5,
-            center={"lat": 51.2, "lon": 10.4},
-            mapbox_style="carto-positron",
-        )
+    fig = px.scatter_mapbox(
+        df_karte,
+        lat="SO.Latitude",
+        lon="SO.Longitude",
+        color="Problemkategorie",
+        color_discrete_map={
+            "Wenige Probleme": FARBE_WENIGE,
+            "Viele Probleme":  FARBE_VIELE,
+        },
+        size="_bubble_size",
+        size_max=20,
+        hover_name="SO.Name",
+        hover_data={
+            "SO.Betten":        True,
+            "SO.Bundesland":    True,
+            TRAEGER_COL:        True,
+            "auffaellig_quote": ":.1%",
+            "SO.Latitude":      False,
+            "SO.Longitude":     False,
+            "Problemkategorie": False,
+            "_bubble_size":     False,
+        },
+        zoom=5,
+        center={"lat": 51.2, "lon": 10.4},
+        mapbox_style="open-street-map",
+    )
     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=620)
     return fig
 
