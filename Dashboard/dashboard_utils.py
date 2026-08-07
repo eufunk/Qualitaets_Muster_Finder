@@ -146,33 +146,52 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
     """
     df_karte = df.dropna(subset=["SO.Latitude", "SO.Longitude"])
 
-    fig = px.scatter_mapbox(
-        df_karte,
-        lat="SO.Latitude",
-        lon="SO.Longitude",
-        color="Problemkategorie",
-        color_discrete_map=LABEL_MAP | {
-            "Wenige Probleme": FARBE_WENIGE,
-            "Viele Probleme":  FARBE_VIELE,
-        },
-        size="SO.Betten",
-        size_max=20,
-        hover_name="SO.Name",
-        hover_data={
-            "SO.Betten":       True,
-            "SO.Bundesland":   True,
-            TRAEGER_COL:       True,
-            "auffaellig_quote": ":.1%",
-            "SO.Latitude":     False,
-            "SO.Longitude":    False,
-            "Problemkategorie": False,
-        },
-        zoom=5,
-        center={"lat": 51.2, "lon": 10.4},
-        mapbox_style="carto-positron",
-        title="Regionale Verteilung der Krankenhaeuser",
-    )
-    fig.update_layout(margin={"r": 0, "t": 40, "l": 0, "b": 0}, height=620)
+    try:
+        # scatter_map (Plotly ≥ 5.11, kein Mapbox-Token nötig)
+        fig = px.scatter_map(
+            df_karte,
+            lat="SO.Latitude",
+            lon="SO.Longitude",
+            color="Problemkategorie",
+            color_discrete_map={
+                "Wenige Probleme": FARBE_WENIGE,
+                "Viele Probleme":  FARBE_VIELE,
+            },
+            size="SO.Betten",
+            size_max=20,
+            hover_name="SO.Name",
+            hover_data={
+                "SO.Betten":        True,
+                "SO.Bundesland":    True,
+                TRAEGER_COL:        True,
+                "auffaellig_quote": ":.1%",
+                "SO.Latitude":      False,
+                "SO.Longitude":     False,
+                "Problemkategorie": False,
+            },
+            zoom=5,
+            center={"lat": 51.2, "lon": 10.4},
+            map_style="carto-positron",
+        )
+    except AttributeError:
+        # Fallback für ältere Plotly-Versionen
+        fig = px.scatter_mapbox(
+            df_karte,
+            lat="SO.Latitude",
+            lon="SO.Longitude",
+            color="Problemkategorie",
+            color_discrete_map={
+                "Wenige Probleme": FARBE_WENIGE,
+                "Viele Probleme":  FARBE_VIELE,
+            },
+            size="SO.Betten",
+            size_max=20,
+            hover_name="SO.Name",
+            zoom=5,
+            center={"lat": 51.2, "lon": 10.4},
+            mapbox_style="carto-positron",
+        )
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=620)
     return fig
 
 
