@@ -224,7 +224,7 @@ Keine starken, eindeutigen Zusammenhänge. Stärkster Prädiktor `total_qi` ist 
 - Seite 3 „Ähnliche Häuser": Filter nach Betten / Region / Träger + Einzelhaus-Steckbrief
 - Seite 4 „Risiko-Rechner" *(Bonus)*: Decision Tree Vorhersage — seit 2026-07-29 inkl. Eingabefelder für Pflegekräfte/Bett und Konzernstatus
 
-**Deployment:** Streamlit Community Cloud — live unter `qualitaets-muster-finder.streamlit.app`
+**Deployment:** Streamlit Community Cloud — live unter [Qualitäts-Muster-Finder Dashboard](https://appdashboardpy-dkgplgkkzczyvnwpfjjcsp.streamlit.app/)
 
 **Technischer Hinweis:** `streamlit_dashboard.py` und `dashboard_utils.py` wurden am 2026-07-29 von `scripts/` in einen eigenen `Dashboard/`-Ordner verschoben. `modell_klasse.py` wiederum wurde am 2026-07-30 von `scripts/` in einen eigenen `model/`-Ordner verschoben. Alle drei Ordner sind getrennt — der Import von `modell_klasse` läuft über eine `sys.path`-Ergänzung zur Laufzeit. Der Main-File-Pfad in den Streamlit-Cloud-Einstellungen muss entsprechend aktualisiert werden.
 

@@ -128,7 +128,7 @@
 ### Dokumentation
 - [x] Startanleitung schreiben → `README.md` erstellt
 - [x] Entscheidungen festhalten → `README.md` Abschnitt "Wichtige Entscheidungen"
-- [x] **Entscheidungsbegründungen ausformulieren** *(Folie 13: „festhalten, welche Entscheidungen ihr getroffen habt und warum")* — erledigt über zwei neue, ausführliche Notebook-Walkthroughs (2026-07-30, seither iterativ verfeinert bis 2026-08-03):
+- [x] **Entscheidungsbegründungen ausformulieren** *(Folie 13: „festhalten, welche Entscheidungen ihr getroffen habt und warum")* — erledigt:
   - [x] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)? → `Doku/MD/01_Exploration.md` Kap. 3, Schritt 7
   - [x] Warum N99 ausgeschlossen? → `Doku/MD/01_Exploration.md` Kap. 3, Schritt 2
   - [x] Warum diese Merkmale (und nicht andere)? → je ein „Warum"-Abschnitt pro Merkmal in `Doku/MD/01_Exploration.md`, konsolidiert in `Doku/Word/Analysetabelle_Zusammenfassung.docx`
@@ -137,12 +137,20 @@
 - [x] Kollegen-Zusammenfassung erstellt: `Doku/Word/Analysetabelle_Zusammenfassung.docx` (gewählte Merkmale, Ziel-Variablen, Quelltabellen, Merge-Kriterien, Endgröße der Analysetabelle)
 
 ### Präsentation *(Folie 13)*
+
+#### Folien & Unterlagen *(2026-08-09 abgeschlossen)*
+- [x] **Folie 13 im PPTX aktualisiert** — Power BI → Streamlit-Dashboard (Titel, Screenshot, 5 Inhaltszeilen); Backup unter `Doku/Qualitaets_Muster_Finder_backup_folie13.pptx`; Skript: `scripts/update_folie13.py`
+- [x] **`Doku/MD/Praesentation_Folien_Beschreibung.md` korrigiert** — Übersichtstabelle Zeile 13 von „Dashboard in Power BI Präsentieren" auf „Streamlit-Dashboard — Live-Demo" aktualisiert; alle 15 Folien stimmen mit PPTX überein
+- [x] **Streamlit-Präsentationsfolie erstellt** — `Dashboard/folie13_praesentation.py`: slide-artige Einzelseite mit 2×2 Karten + Dashboard-Screenshots für die Einzelpräsentation; Start: `streamlit run Dashboard/folie13_praesentation.py`
+- [x] **Vollständiges Sprechertext-Dokument erstellt** — `Doku/Praesentationsskript_Qualitaets_Muster_Finder.docx` (30 Min, 15 Folien, erzählend mit fließenden Übergängen, Zeitangaben je Folie); Skript: `scripts/erstelle_praesentationsskript.py`
+- [x] **Erzählen statt Stichpunkte ablesen** — Sprechertext je Folie im Word-Skript vollständig ausformuliert, Übergänge hervorgehoben
+
+#### Noch offen
 - [ ] Fragestellung vorstellen
 - [ ] Hürden & Erkenntnisse aus der Datenaufbereitung (Fallstricke, Designentscheidungen)
 - [ ] Befunde der deskriptiven Analyse — auch „kein Zusammenhang" klar und begründet benennen
 - [ ] Live-Demo des Dashboards (alle 4 Seiten zeigen)
 - [ ] Grenzen der Analyse ehrlich benennen: was können wir **nicht** aussagen?
-- [ ] **Erzählen statt Stichpunkte ablesen** *(Folie 13: „Niemand will Stichpunkte vorgelesen bekommen")*
 - [ ] Generalprobe mit Stoppuhr
 
 ### Abschlusspräsentation
@@ -199,8 +207,8 @@
 
 | IHK-Thema | Warum nicht abgedeckt | Wo nachholen |
 |-----------|----------------------|--------------|
-| **Inferenzstatistik** — T-Test, ANOVA | ~~Noch nicht gemacht~~ — **✅ Ergänzt!** Beide signifikant (p<0,001) | ~~Baustein 2 ergänzen~~ Erledigt |
-| **Konfidenzintervalle** | ~~Nicht berechnet~~ — **✅ Ergänzt!** | Erledigt |
+| **Inferenzstatistik** — T-Test, ANOVA | **✅ Ergänzt!** Beide signifikant (p<0,001) | Erledigt |
+| **Konfidenzintervalle** | **✅ Ergänzt!** | Erledigt |
 | **Decision Tree — Gini/Entropy, Visualisierung** | **✅ Abgeschlossen!** | Baustein 4 |
 | **Metriken: Accuracy, Precision, Recall, F1, Confusion Matrix** | **✅ Abgeschlossen!** | Baustein 4 |
 | **R²-Metrik** *(kritisch — war in Präsentation ein Thema!)* | **✅ Berechnet!** R²=0,033 — erklärt und interpretiert | Baustein 4 |

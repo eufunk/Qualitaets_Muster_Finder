@@ -2,7 +2,7 @@
 
 > **Projektfrage:** Welche Krankenhausmerkmale hängen damit zusammen, dass ein Haus überdurchschnittlich viele Qualitätsprobleme aufweist?
 
-**Live-Dashboard:** [qualitaets-muster-finder.streamlit.app](https://appdashboardpy-dkgplgkkzczyvnwpfjjcsp.streamlit.app/)  
+**Live-Dashboard:** [Qualitäts-Muster-Finder Dashboard](https://appdashboardpy-dkgplgkkzczyvnwpfjjcsp.streamlit.app/)  
 **Datenbasis:** Qualitätsberichte 2023 — 1.824 deutsche Krankenhäuser (IQTIG)
 
 ---

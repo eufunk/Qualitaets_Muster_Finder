@@ -17,5 +17,16 @@ datensatz_bericht.py
 grafiken_speichern.py
 powerbi_anleitung.py
 
+# ZIP-Dateien nicht einchecken
+*.zip
+
+# TXT-Dateien nicht einchecken (Ausnahme: requirements.txt wird für pip install gebraucht)
+*.txt
+!requirements.txt
+
+# PowerPoint-Dateien nicht einchecken
+*.ppt
+*.pptx
+
 # Jupyter-Outputs optional ausschließen (auskommentieren um Outputs zu behalten)
 # *.ipynb

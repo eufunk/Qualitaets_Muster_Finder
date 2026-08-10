@@ -24,7 +24,7 @@ PROJEKT_ROOT = Path(__file__).resolve().parent.parent
 os.chdir(PROJEKT_ROOT)
 
 DATA_PATH = PROJEKT_ROOT / "Data" / "analysetabelle.csv"
-OUT_PATH = PROJEKT_ROOT / "Analysetabelle_Zusammenfassung.docx"
+OUT_PATH = PROJEKT_ROOT / "Doku" / "Word" / "Analysetabelle_Zusammenfassung.docx"
 
 C_BLAU = RGBColor(0x1F, 0x49, 0x7D)
 C_WEISS = RGBColor(0xFF, 0xFF, 0xFF)
