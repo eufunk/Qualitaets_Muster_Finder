@@ -138,10 +138,14 @@ def bild(pfad, breite_cm=14.5, titel=""):
     if titel:
         p = doc.add_paragraph()
         p.paragraph_format.space_before = Pt(6)
+        p.paragraph_format.keep_with_next = True   # Überschrift bleibt bei Seitenumbruch bei der Grafik
         r = p.add_run(titel)
         r.bold = True; r.font.size = Pt(10); r.font.color.rgb = GRAU
     if Path(pfad).exists():
         doc.add_picture(str(pfad), width=Cm(breite_cm))
+        bild_p = doc.paragraphs[-1]
+        bild_p.paragraph_format.keep_together = True   # Grafik selbst nicht über Seiten aufteilen
+        bild_p.paragraph_format.keep_with_next = True  # Grafik bleibt beim nachfolgenden Erklärtext
         doc.add_paragraph().paragraph_format.space_after = Pt(2)
     else:
         body(f"[Grafik nicht gefunden: {pfad}]", farbe=GRAU, italic=True)
@@ -311,6 +315,16 @@ body_runs([
      "Das bedeutet: In den 99.685 Zeilen gibt es genau 1.824 verschiedene Krankenhaus-IDs.", False),
 ])
 body_runs([
+    ("Wichtig — 1.824 ist kein Bereinigungsartefakt: ", True),
+    ("Nachgerechnet auf den komplett ungefilterten 417.799 Roh-Zeilen (vor jedem der drei "
+     "Bereinigungsschritte) ergibt qi['SO.QBID'].nunique() bereits ebenfalls 1.824. Die Bereinigung "
+     "reduziert also nur die Zeilenzahl (417.799 → 99.685), verliert dabei aber kein einziges Haus — "
+     "jedes Haus, das überhaupt in QS.Qualitätsindikator.csv vorkommt, hat mindestens einen gültigen, "
+     "bewerteten, nicht-doppelten QI-Eintrag. Zum Vergleich: SO.csv (Stammdaten) hat 2.310 eindeutige "
+     "SO.QBID — das sind alle Krankenhaus-Standorte, unabhängig davon, ob eine Qualitätsbewertung "
+     "vorliegt.", False),
+])
+body_runs([
     ("Daher der Durchschnitt: ", True),
     ("99.685 Zeilen ÷ 1.824 Häuser = 54,7 Indikatoren pro Haus. "
      "Der groupby()-Schritt fasst dann alle Zeilen desselben Hauses zusammen: "
@@ -387,6 +401,43 @@ code("    .merge(aerzte_pro_haus, on='SO.QBID', how='left')")
 code("    .merge(pflege_haus,     on='SO.QBID', how='left')")
 code("    .merge(konzern_flag,    on='SO.QBID', how='left')")
 code("→ Ergebnis: Data/analysetabelle.csv  ·  1.824 Zeilen × 18 Spalten")
+body("Woher stammt jede Tabelle in dieser Merge-Kette?", fett=True, abstand_nach=3)
+tabelle(
+    ["Variable", "Quelldatei", "Beigetragene Spalten"],
+    [
+        ("auffaellig_quote", "QS.Qualitätsindikator.csv (Abschnitt 2.2, Basis der Kette)",
+         "total_qi, auffaellig_n, auffaellig_quote, hat_viele_Probleme"),
+        ("so_klein",          "SO.csv (Stammdaten)",
+         "SO.Name, SO.Betten, SO.Bundesland, SO.Uni, KH.Träger, KH.Träger.Art, "
+         "SO.Latitude, SO.Longitude, SO.Standortnummer"),
+        ("fb_quote",          "QS.Fortbildung.csv",
+         "fortbildungsquote"),
+        ("aerzte_pro_haus",   "FA.Personalliste.csv + FA.csv (2 Joins über ABTID)",
+         "aerzte_pro_bett"),
+        ("pflege_haus",       "SO.Personalliste.csv",
+         "pflege_pro_bett"),
+        ("konzern_flag",      "Konzern.csv",
+         "ist_konzern"),
+    ],
+    col_widths=[3.0, 6.0, 5.0]
+)
+body(
+    "SO.QBID ist in jeder der sechs Tabellen der gemeinsame Schlüssel — dadurch landet am Ende "
+    "jede Spalte in der richtigen Zeile (= richtiges Krankenhaus), obwohl die Spalten aus fünf "
+    "völlig unterschiedlichen Rohdateien stammen. how='left' mit auffaellig_quote als Basis "
+    "stellt sicher, dass alle 1.824 Häuser mit Ziel-Variable erhalten bleiben, auch wenn ihnen "
+    "einzelne Merkmale fehlen (z. B. keine Fortbildungsdaten → NaN bei fortbildungsquote).",
+    size=9.5, farbe=GRAU, italic=True
+)
+body_runs([
+    ("Warum 1.824 Zeilen und nicht 2.310? ", True),
+    ("Ausgangspunkt des Merges ist auffaellig_quote (die Ziel-Variable, 1.824 Häuser) — so_klein aus "
+     "SO.csv (2.310 Häuser) wird per Left Join daran angehängt, nicht umgekehrt. Dadurch bleiben nur "
+     "Häuser übrig, die auch in der Ziel-Variable vorkommen. Die übrigen 486 Häuser (2.310 − 1.824) "
+     "stehen zwar in SO.csv mit Stammdaten, haben aber keine Zeile in QS.Qualitätsindikator.csv — ohne "
+     "Ziel-Variable lässt sich für sie kein hat_viele_Probleme bestimmen, sie fallen beim Merge "
+     "automatisch heraus.", False),
+])
 
 doc.add_page_break()
 
@@ -400,64 +451,144 @@ body(
 )
 trennlinie()
 
-h2("3.1  Methodik")
+h2("3.1  Die 12 Grafiken im Detail")
 body(
-    "Alle Analysen arbeiten ausschließlich auf analysetabelle.csv. "
-    "Einheitliches Farbschema: 🟢 grün = wenige Probleme, 🔴 rot = viele Probleme."
+    "Alle Analysen arbeiten ausschließlich auf analysetabelle.csv. Zu jeder Grafik: was sie zeigt "
+    "und warum sie für die Projektfrage wichtig ist. Die Tabelle unten fasst die Kernaussage jeder "
+    "Grafik auf einen Blick zusammen — im Anschluss folgt jede Grafik einzeln mit Bild und Erklärung."
 )
 tabelle(
-    ["Test", "Merkmal", "Ergebnis"],
+    ["Grafik", "Kernaussage"],
     [
-        ("T-Test (scipy.stats.ttest_ind)",    "Ärzte pro Bett",   "t = 6,002  ·  p < 0,001 — signifikant"),
-        ("T-Test",                             "Pflege pro Bett",  "p < 0,001 — signifikant"),
-        ("ANOVA (stats.f_oneway)",             "Trägerschaft",     "F = 11,3   ·  p < 0,001 — signifikant"),
-        ("Chi²-Test (stats.chi2_contingency)", "Konzernzugehörigkeit", "p = 0,90 — nicht signifikant"),
-        ("Pearson-Korrelation (.corr())",      "Alle Merkmale",    "r-Matrix in Grafik 8"),
+        ("1 — Verteilung der auffällig-Quote",     "Zielvariable linkssteil verteilt, Median 77 % — Ausgangspunkt aller Vergleiche"),
+        ("2 — Bettenzahl",                          "Häuser mit wenigen vs. vielen Qualitätsproblemen unterscheiden sich in der Bettenzahl kaum (Md 214 vs. 170, Bereiche überlappen stark)"),
+        ("3 — Trägerschaft",                        "Klarster Unterschied: Häuser mit vielen Qualitätsproblemen — privat 56,5 % vs. öffentlich 46,7 %"),
+        ("4 — Uni-Kliniken",                        "Anteil mit vielen Qualitätsproblemen bei Uni-Kliniken (47,3 %) vs. normalen Häusern (49,4 %) fast gleich"),
+        ("5+6 — Fortbildung & Ärzte pro Bett",       "Fortbildung ohne Effekt · Ärzte pro Bett bei Häusern mit vielen Problemen niedriger — wichtigstes Merkmal"),
+        ("7 — Bundesland",                          "Regionale Unterschiede im Anteil der Häuser mit vielen Qualitätsproblemen sichtbar, aber kleine Stichproben beachten"),
+        ("8 — Korrelationsmatrix",                   "Kompakte Übersicht: Ärzte/Bett und Pflege/Bett korrelieren am stärksten mit vielen Qualitätsproblemen"),
+        ("9 — Streudiagramm Betten × Ärzte/Bett",    "Häuser mit wenigen vs. vielen Qualitätsproblemen lassen sich anhand dieser zwei Merkmale nicht klar trennen"),
+        ("10 — Störfaktor Träger × Bettengröße",     "Private Häuser sind im Schnitt kleiner (Md 125 vs. 233 Betten) — die Bettengröße könnte den Träger-Befund aus Grafik 3 verzerren: kleine Häuser schwanken pro Indikator stärker rein zufällig, was fälschlich wie ein Träger-Effekt aussehen kann"),
+        ("11 — Pflegekräfte pro Bett",               "Gleiches Muster wie Ärzte/Bett — zweitwichtigstes Merkmal"),
+        ("12 — Konzernvergleich",                    "Kein Unterschied zwischen Konzern- und unabhängigen Häusern"),
     ],
-    col_widths=[5.0, 3.5, 6.5]
-)
-
-h2("3.2  Kernergebnisse")
-tabelle(
-    ["Merkmal", "Befund", "Stärke"],
-    [
-        ("Ärzte pro Bett",      "Wenige Probleme: Md=0,468 · Viele: Md=0,390", "🟢 r=−0,14  p<0,001"),
-        ("Pflegekräfte pro Bett","Gleiches Muster wie Ärzte/Bett",              "🟢 r=−0,14  p<0,001"),
-        ("Trägerschaft",        "Privat 56,5 % vs. öffentlich 46,7 %",          "🟡 ANOVA signifikant"),
-        ("Bundesland",          "Saarland 63 % (n=19) · Berlin 33 % (n=54)",    "🟡 kleine n beachten"),
-        ("Bettenzahl",          "Leichter Größeneffekt",                        "🟡 r=−0,08"),
-        ("Uni-Status",          "47 % vs. 49 % — kein Unterschied",             "🔴 kein Effekt"),
-        ("Konzernzugehörigkeit","Chi² p=0,90 — kein Zusammenhang",              "🔴 kein Effekt"),
-        ("Fortbildungsquote",   "r ≈ 0,01 — kein Zusammenhang",                 "🔴 kein Effekt"),
-    ],
-    col_widths=[4.0, 6.5, 4.5]
+    col_widths=[6.0, 9.0]
 )
 doc.add_paragraph()
-body(
-    "Gesamtfazit: Alle Zusammenhänge sind schwach. Das Strukturmodell erklärt nur 3,3 % der "
-    "Varianz (R² = 0,033). Kein Zusammenhang ist ein valides wissenschaftliches Ergebnis.",
-    italic=True, farbe=GRAU
-)
-
-h2("3.3  Ausgewählte Grafiken")
 
 # G1
 bild(GRAFIKEN / "g1_auffaellig_quote.png", breite_cm=13,
      titel="Grafik 1 — Verteilung der auffällig-Quote (Median 77 %, linkssteil)")
-body("Erstellt mit: matplotlib · Histogramm mit 30 Bins, Medianline, farbige Gruppen",
-     farbe=GRAU, size=9.5)
+body(
+    "Warum wichtig: Zeigt, wie die Ziel-Variable selbst verteilt ist, bevor überhaupt etwas verglichen "
+    "wird — Grundvoraussetzung für alle folgenden Auswertungen. Die auffällige Spitze bei 100 % (21,5 % "
+    "der Häuser) kommt von Häusern mit nur sehr wenigen bewerteten Indikatoren und ist bei der "
+    "Interpretation aller weiteren Ergebnisse zu berücksichtigen.",
+    farbe=GRAU, size=9.5
+)
+
+# G2
+bild(GRAFIKEN / "g2_bettenzahl.png", breite_cm=13,
+     titel="Grafik 2 — Bettenzahl: Wenige Probleme Md=214, Viele Probleme Md=170")
+body(
+    "Warum wichtig: Prüft die naheliegende Hypothese 'größere Häuser = andere Auffälligkeit'. Die "
+    "Wertebereiche beider Gruppen überlappen sich fast vollständig — Bettenzahl allein erklärt kaum "
+    "etwas, ein wichtiger Ausschluss-Befund für die weitere Merkmalsauswahl.",
+    farbe=GRAU, size=9.5
+)
 
 # G3
 bild(GRAFIKEN / "g3_traegerschaft.png", breite_cm=13,
      titel="Grafik 3 — Trägerschaft: Private Häuser mit höchstem Auffälligkeitsanteil")
-body("Erstellt mit: pandas.groupby + .pivot() → matplotlib Balkendiagramm",
-     farbe=GRAU, size=9.5)
+body(
+    "Warum wichtig: Der optisch klarste Unterschied der gesamten Analyse (privat 56,5 % vs. öffentlich "
+    "46,7 % vs. freigemeinnützig 46,4 %) — später per ANOVA statistisch bestätigt (F=11,3, p<0,001). "
+    "Muss aber zusammen mit Grafik 10 gelesen werden, da ein Störfaktor dahinterstecken könnte.",
+    farbe=GRAU, size=9.5
+)
+
+# G4
+bild(GRAFIKEN / "g4_uni.png", breite_cm=13,
+     titel="Grafik 4 — Uni-Kliniken (47,3 %) vs. normale Häuser (49,4 %)")
+body(
+    "Warum wichtig: Testet, ob spezialisierte Häuser mit komplexeren Fällen anders abschneiden. "
+    "Praktisch kein Unterschied — ein weiterer Ausschluss-Befund, der zeigt, dass nicht jedes plausible "
+    "Merkmal auch tatsächlich einen Zusammenhang zeigt.",
+    farbe=GRAU, size=9.5
+)
+
+# G5+6
+bild(GRAFIKEN / "g5_6_fortbildung_aerzte.png", breite_cm=13,
+     titel="Grafik 5+6 — Fortbildungsquote (kein Unterschied) & Ärzte pro Bett (sichtbarer Unterschied)")
+body(
+    "Warum wichtig: Die entscheidende Weiche der gesamten Analyse. Fortbildungsquote zeigt keinerlei "
+    "Unterschied (Md=0,667 in beiden Gruppen) und wird verworfen. Ärzte pro Bett zeigt eine sichtbare "
+    "Verschiebung (Md 0,468 vs. 0,390) — bestätigt sich später per T-Test (t=6,002, p<0,001) als "
+    "stärkstes Einzelmerkmal und höchste Feature Importance im späteren Decision Tree.",
+    farbe=GRAU, size=9.5
+)
+
+# G7
+bild(GRAFIKEN / "g7_bundesland.png", breite_cm=13,
+     titel="Grafik 7 — Bundesland: Saarland 63,2 % (n=19) vs. Berlin 33,3 % (n=54)")
+body(
+    "Warum wichtig: Prüft, ob Region/Landesvorgaben eine Rolle spielen. Sichtbare Unterschiede, aber "
+    "mit Vorsicht zu lesen: kleine Bundesländer haben wenige Häuser, ein einzelnes Haus kann den "
+    "Landeswert stark verschieben.",
+    farbe=GRAU, size=9.5
+)
 
 # G8
 bild(GRAFIKEN / "g8_korrelation.png", breite_cm=13,
      titel="Grafik 8 — Korrelationsmatrix: Alle Merkmale auf einen Blick")
-body("Erstellt mit: df.corr() (Pearson) → seaborn.heatmap  · Farbskala: RdBu_r",
-     farbe=GRAU, size=9.5)
+body(
+    "Warum wichtig: Fasst die gesamte deskriptive Analyse in einer Zahl pro Merkmal zusammen — die "
+    "kompakteste Übersicht, welches Merkmal am stärksten mit hat_viele_Probleme zusammenhängt "
+    "(aerzte_pro_bett und pflege_pro_bett vorn, ist_konzern und fortbildungsquote praktisch bei null).",
+    farbe=GRAU, size=9.5
+)
+
+# G9
+bild(GRAFIKEN / "g9_scatter_betten_aerzte.png", breite_cm=13,
+     titel="Grafik 9 — Streudiagramm: Bettenzahl vs. Ärzte pro Bett")
+body(
+    "Warum wichtig: Prüft, ob sich die beiden Gruppen anhand von zwei Merkmalen gemeinsam trennen "
+    "lassen — mehr Information als eine einzelne Korrelationszahl. Starke Überlappung bestätigt: Mit "
+    "diesen beiden Merkmalen allein lässt sich kein Haus zuverlässig zuordnen.",
+    farbe=GRAU, size=9.5
+)
+
+# G10
+bild(GRAFIKEN / "g10_stoerfaktor_traeger.png", breite_cm=13,
+     titel="Grafik 10 — Störfaktor: Private Häuser (Md 125 Betten) deutlich kleiner als öffentliche (233)")
+body(
+    "Warum wichtig: Der kritischste Kontroll-Befund im ganzen Notebook. Er zeigt, dass der Träger-"
+    "Effekt aus Grafik 3 teilweise ein versteckter Größen-Effekt sein könnte — kleinere Häuser haben "
+    "pro Indikator weniger Fälle und damit mehr statistische Schwankung. Ohne diese Grafik würde man "
+    "'privat = schlechter' zu unkritisch stehen lassen.",
+    farbe=GRAU, size=9.5
+)
+
+# G11
+bild(GRAFIKEN / "g11_pflege_pro_bett.png", breite_cm=13,
+     titel="Grafik 11 — Pflegekräfte pro Bett: Wenige Probleme Md=1,041, Viele Probleme Md=0,892")
+body(
+    "Warum wichtig: Zeigt dasselbe Muster wie Ärzte pro Bett und bestätigt sich später ebenfalls per "
+    "T-Test (p<0,001) — wird zum zweitwichtigsten Merkmal im Decision Tree. Die Ähnlichkeit zu Grafik 6 "
+    "ist zugleich ein Hinweis auf Multikollinearität (beide Merkmale korrelieren auch untereinander).",
+    farbe=GRAU, size=9.5
+)
+
+# G12
+bild(GRAFIKEN / "g12_konzern_vergleich.png", breite_cm=13,
+     titel="Grafik 12 — Konzernhaus (49,7 %) vs. unabhängiges Haus (49,2 %)")
+body(
+    "Warum wichtig: Testet eine von Kollegen vorgeschlagene Hypothese (zentrale Qualitätssicherung im "
+    "Konzern). Praktisch identische Werte — später per Chi²-Test bestätigt (p=0,90, klar nicht "
+    "signifikant). Bewusst trotzdem im Modell belassen: 'Kein Zusammenhang' ist ein valider, "
+    "dokumentierter Befund.",
+    farbe=GRAU, size=9.5
+)
 
 doc.add_page_break()
 
@@ -503,4 +634,4 @@ body(
 # ── Speichern ─────────────────────────────────────────────────────
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 doc.save(str(OUT_PATH))
-print(f"✅ Gespeichert: {OUT_PATH}")
+print(f"Gespeichert: {OUT_PATH}")

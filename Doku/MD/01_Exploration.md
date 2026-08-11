@@ -4,87 +4,85 @@
 
 **Projektfrage:** Welche Krankenhausmerkmale hängen damit zusammen, dass ein Haus überdurchschnittlich viele Qualitätsprobleme aufweist?
 
-> **📌 Woher kommt „~1.900 Krankenhäuser"?** Diese Zahl taucht in vielen Projektdokumenten auf — sie stammt aus `Aufgabenstellung/Fragestellung.docx` selbst („Qualitätsindikatoren (C-1.2): Bewertungen für ~1.900 Krankenhäuser") und ist eine **grobe Schätzung der Aufgabensteller**, keine im Notebook berechnete Zahl. Tatsächlich nachgezählt (2026-07-30) ergeben sich **zwei unterschiedliche, aber beide exakte** Werte:
-> - **2.310** eindeutige `SO.QBID` in `SO.csv` (alle Häuser mit Stammdaten)
-> - **1.824** eindeutige `SO.QBID` in `QS.Qualitätsindikator.csv` (Häuser mit tatsächlichen Qualitätsbewertungen)
+**Reihenfolge im Notebook (bewusste Designentscheidung):** Das Notebook baut zuerst die **Ziel-Variable y** (`QS.Qualitätsindikator.csv`, Abschnitt 1) und erst danach die **Merkmale X** (`SO.csv`, Abschnitt 2 ff.). Das ist eine Umstellung gegenüber einer früheren Notebook-Version, die mit den Stammdaten begann. Begründung direkt aus der Notebook-Einleitung: „Zuerst bauen wir, was wir erklären wollen (y = Ziel-Variable), dann bauen wir die erklärenden Merkmale (X)." Inhaltlich ändert das nichts an den Ergebnissen — nur die Lesereihenfolge folgt jetzt der logischen Abhängigkeit statt der Dateistruktur.
+
+> **📌 Woher kommt „~1.900 Krankenhäuser"?** Diese Zahl taucht in vielen Projektdokumenten auf (auch im Notebook selbst, Abschnitt 1) — sie stammt aus `Aufgabenstellung/Fragestellung.docx` selbst („Qualitätsindikatoren (C-1.2): Bewertungen für ~1.900 Krankenhäuser") und ist eine **grobe Schätzung der Aufgabensteller**, keine im Notebook berechnete Zahl. Tatsächlich nachgezählt ergeben sich **zwei unterschiedliche, aber beide exakte** Werte:
+> - **2.310** eindeutige `SO.QBID` in `SO.csv` — **Rohdaten, unbereinigt.** `SO.csv` hat 2.310 Zeilen und 2.310 eindeutige `SO.QBID`; jede Zeile ist bereits genau ein Haus, es gibt hier nichts zu deduplizieren.
+> - **1.824** eindeutige `SO.QBID` in `QS.Qualitätsindikator.csv` — **ebenfalls schon in den ungefilterten Rohdaten so**, nicht erst ein Ergebnis der Bereinigung. Direkt nachgerechnet (`qi["SO.QBID"].nunique()` auf den kompletten 417.799 Roh-Zeilen, vor jedem Filterschritt aus Abschnitt 1.4): bereits **1.824**. Die drei Bereinigungsschritte (nur QI-Typ → N99 raus → Duplikate raus, siehe Abschnitt 1.5) reduzieren die **Zeilenzahl** massiv (417.799 → 99.685), verändern die **Anzahl unterschiedlicher Häuser** dabei aber kein einziges Mal — sie bleibt bei jeder Zwischenstufe exakt 1.824. Es geht bei der Bereinigung also kein Haus verloren, nur überzählige/ungültige Indikator-Zeilen pro Haus. Diese Konstanz ist kein Zufall der Bereinigungslogik, sondern ein Befund über die Datenqualität: Jedes Haus, das überhaupt in `QS.Qualitätsindikator.csv` auftaucht, hat mindestens einen gültigen, bewerteten, nicht-doppelten QI-Eintrag.
 >
-> **1.824** ist damit auch die exakte Zeilenzahl der fertigen `analysetabelle.csv` — beim Filtern (N99 raus, Dedup) geht kein Haus verloren, nur einzelne Indikator-Zeilen. Die 486 Häuser, die in `SO.csv`, aber nicht in `QS.Qualitätsindikator.csv` stehen, fallen beim Merge automatisch raus, weil ohne Ziel-Variable keine Analyse möglich ist. Wo in diesem Dokument „~1.900" vorkam, wurde es durch die passende exakte Zahl ersetzt.
+> **1.824** ist damit auch die exakte Zeilenzahl der fertigen `analysetabelle.csv`. Die 486 Häuser, die in `SO.csv` (2.310), aber nicht in `QS.Qualitätsindikator.csv` (1.824) stehen, fallen beim Merge in Abschnitt 4 automatisch raus, weil ohne Ziel-Variable keine Analyse möglich ist.
 
 ---
 
-## 1. Setup & Datensatz erkunden
+## Setup
 
-**Was:** `DATA = Path("Data/CSV")` als Basispfad gesetzt. Alle 86 CSV-Dateien im Ordner aufgelistet, mit Dateigröße (0,3 MB bis 911,7 MB).
+**Was:** Bibliotheken laden (`pandas`, `numpy`, `pathlib`, `os`), Arbeitsverzeichnis auf den Projekt-Root wechseln (`if Path.cwd().name == 'Notebooks': os.chdir(Path.cwd().parent)` — funktioniert unabhängig davon, ob das Notebook aus `Notebooks/` oder vom Projekt-Root heraus gestartet wird), `DATA = Path("Data/CSV")` als Basispfad setzen. Alle 86 CSV-Dateien im Ordner werden mit ihrer Dateigröße aufgelistet (0,3 MB bis 911,7 MB).
 
-**Warum:** Bevor irgendetwas geladen wird, muss klar sein, was überhaupt im Datensatz steckt. 86 Dateien lassen sich nicht alle manuell durchlesen — deshalb zuerst eine systematische Übersicht (Name + Größe), dann gezielt vertiefen.
-
-### Spaltenverbindungen analysieren
-
-**Was:** Für alle 86 Dateien nur die Kopfzeile eingelesen (`nrows=0`, kostet kaum Zeit), gemeinsame Spaltennamen über alle Dateien gezählt.
-
-**Ergebnis:**
-- `SO.QBID` kommt in **34 Dateien** vor → universeller Krankenhaus-Schlüssel
-- `ABTID` kommt in **11 Dateien** vor → Abteilungs-Schlüssel (verbindet `FA.csv` ↔ `FA.Personalliste.csv`)
-- `QS.ID` kommt in **2 Dateien** vor (`QS.csv`, `QS.Nachweis.csv`) — **nicht** in `QS.Qualitätsindikator.csv`
-
-**Warum wichtig:** Das dritte Ergebnis ist der Grund, warum `QS.csv` im fertigen Notebook **nirgends geladen wird**, obwohl es lange als „notwendige Brückentabelle" galt (siehe Abschnitt 9 „Korrigierte Annahme" unten). `QS.Qualitätsindikator.csv` trägt `SO.QBID` bereits direkt selbst — ein Join über `QS.csv` ist für die Zusammenführung schlicht nicht nötig.
+**Warum:** Bevor irgendetwas geladen wird, muss klar sein, was überhaupt im Datensatz steckt — und alle nachfolgenden relativen Pfade (`Data/CSV/...`, am Ende `Data/analysetabelle.csv`) müssen unabhängig vom Startort des Notebooks korrekt auflösen.
 
 ---
 
-## 2. Stammdaten laden — `SO.csv`
+## Tabellenverbindungen analysieren — Wie hängen die 86 Dateien zusammen?
 
-### Was ist ein „Merkmal" und wozu brauchen wir es?
+**Problem:** Der Datensatz besteht aus 86 CSV-Dateien. Unklar ist, welche Dateien sich verknüpfen lassen und über welche Spalte (Join-Schlüssel).
 
-Die Projektfrage lautet: *Welche Krankenhaus**merkmale** hängen damit zusammen, dass ein Haus überdurchschnittlich viele Qualitätsprobleme hat?* Ein **Merkmal** (auch „Feature" genannt) ist dabei einfach eine **messbare Eigenschaft eines Krankenhauses** — z. B. seine Bettenzahl, sein Träger oder seine Region. In der Sprache des maschinellen Lernens/der Statistik heißen diese Eigenschaften **X** (die Eingaben), im Gegensatz zur **Ziel-Variable y** (`hat_viele_Probleme`, siehe Abschnitt 3) — dem Ergebnis, das wir erklären wollen.
+**Ansatz:** Von jeder Datei wird nur der Header eingelesen (`nrows=0` — keine einzige Datenzeile, dadurch auch für die 911 MB große `QS.Qualitätsindikator.csv` in Millisekunden möglich), danach werden Spaltennamen gezählt, die in mehreren Dateien vorkommen.
 
-**Wozu brauchen wir sie:** Ohne Merkmale gibt es nichts zu vergleichen. Die gesamte Analyse (Baustein 2: Vergleicht sich der Median der Bettenzahl zwischen auffälligen und unauffälligen Häusern? Baustein 4: Kann ein Decision Tree aus den Merkmalen vorhersagen, ob ein Haus auffällig ist?) beruht darauf, dass für jedes Haus dieselben Eigenschaften in derselben Tabelle stehen. `SO.csv` ist die Quelle für die meisten davon.
+**Ergebnis (Häufigkeitsanalyse):**
+- `SO.QBID` — universeller Krankenhaus-Schlüssel, kommt in vielen Dateien vor
+- `ABTID` — Abteilungs-Schlüssel (verbindet `FA.csv` ↔ `FA.Personalliste.csv`)
+- `QS.ID` — kommt nur in `QS.csv` und `QS.Nachweis.csv` vor, **nicht** in `QS.Qualitätsindikator.csv`
 
-**Was:** `SO.csv` geladen, `merkmale_cols` ausgewählt — mit folgender Rolle pro Spalte:
+**Warum das dritte Ergebnis wichtig ist:** Es ist der Grund, warum `QS.csv` im fertigen Notebook **nirgends geladen wird**, obwohl es lange als „notwendige Brückentabelle" galt (siehe „Was in diesem Notebook *nicht* passiert" unten). `QS.Qualitätsindikator.csv` trägt `SO.QBID` bereits direkt selbst — ein Join über `QS.csv` ist für die Zusammenführung schlicht nicht nötig.
 
-| Spalte | Rolle | Warum genau diese |
-|---|---|---|
-| `SO.QBID` | **Schlüssel**, kein Merkmal | Eindeutige Krankenhaus-ID — damit werden später alle anderen Tabellen (Fortbildung, Personal, Konzern, …) an das richtige Haus angehängt |
-| `SO.Name` | Beschreibung | Für Lesbarkeit im Dashboard („Ähnliche Häuser"-Steckbrief) — kein Analysemerkmal |
-| `SO.Betten` | **Merkmal** | Bettenzahl — Größenindikator, in der Aufgabenstellung explizit genannt |
-| `SO.Bundesland` | **Merkmal** | Region — mögliche geografische Unterschiede in der Auffälligkeit |
-| `SO.Uni` | **Merkmal** | Universitätsklinikum ja/nein — Uni-Kliniken behandeln tendenziell komplexere Fälle |
-| `KH.Träger` | Beschreibung | Trägername im Klartext — nur für Anzeige, nicht kategorisiert genug für eine Analyse |
-| `KH.Träger.Art` | **Merkmal** | Bereinigte Trägerkategorie (privat/freigemeinnützig/öffentlich) — das ist die tatsächlich auswertbare Version von `KH.Träger` |
-| `SO.Latitude` / `SO.Longitude` | **Merkmal** (indirekt) | Geo-Koordinaten — kein Merkmal für den Decision Tree, aber Grundlage für die Deutschlandkarte im Dashboard |
-| `SO.Standortnummer` | **Schlüssel**, kein Merkmal | Wird selbst nicht analysiert, sondern nur gebraucht, um später `Konzern.csv` korrekt anzubinden (Abschnitt 8) |
+### Spalten-Präfix-Analyse — warum zusätzlich zur Häufigkeitsanalyse?
 
-**Warum diese Datei überhaupt:** `SO.csv` ist die einzige Tabelle, die **alle** in der Aufgabenstellung genannten Strukturmerkmale in einer einzigen Zeile pro Haus enthält — Betten, Träger, Bundesland, Uni-Status, Geo-Koordinaten. Alternativdateien wie `SO.Personalliste.csv` enthalten nur Detailpersonal, keine Stammdaten. Ohne diese eine „Ankertabelle" müsste man Merkmale aus mehreren unzusammenhängenden Quellen zusammensuchen, ohne einen gemeinsamen Bezugspunkt (Haus) zu haben.
+**Was:** Alle Spaltennamen im Datensatz folgen dem Muster `PRÄFIX.Beschreibung` (z. B. `SO.Betten`, `FA.Personal.Bereich`, `QS.Fortbildungspflichtige`). Das Notebook gruppiert alle 86 Dateien danach, welchen Spalten-Präfix (`SO`, `FA`, `QS`, …) sie führen.
 
-**Warum `SO.Standortnummer` mit ausgewählt:** Wird später für den `Konzern.csv`-Join gebraucht (Abschnitt 8). Stand ursprünglich **nicht** in `merkmale_cols` — genau das hat den Konzern-Join-Bug verursacht (siehe unten).
+**Warum ein zweiter Analyseschritt nötig ist:** Die Häufigkeitsanalyse beantwortet *„Womit verknüpfen wir die Dateien?"* — aber nicht, *„Welche Dateien gehören thematisch zusammen?"* Dass `SO.QBID` in vielen Dateien vorkommt, sagt noch nichts darüber, ob diese Dateien über Stammdaten, Personal oder Qualitätssicherung sprechen. Die Präfix-Analyse liefert diesen thematischen Überblick, ohne eine einzige Datenzeile zu lesen:
+- Spalten-Präfix `SO` → **Standort**-Daten (Krankenhaus-Stammdaten)
+- Spalten-Präfix `FA` → **Fachabteilungs**-Daten
+- Spalten-Präfix `QS` → **Qualitätssicherungs**-Daten
+
+**Kurzfassung:** Häufigkeitsanalyse = *Wie verknüpfen wir?* · Präfix-Analyse = *Was enthält jede Dateigruppe thematisch?*
 
 ---
 
-## 3. Ziel-Variable erstellen — `QS.Qualitätsindikator.csv`
+## 1 — Qualitätsindikatoren (Ziel-Variable) — `QS.Qualitätsindikator.csv`
 
-### Übergang: Wir haben X — jetzt brauchen wir y
+### Warum zuerst diese Datei, noch vor den Stammdaten?
 
-Aus `SO.csv` (Abschnitt 2) haben wir die **Merkmale** — die Eigenschaften eines Hauses (Betten, Träger, Region, …). Damit lässt sich aber noch **gar nichts** vergleichen: Merkmale allein beantworten nicht die Projektfrage. Uns fehlt noch die andere Seite der Gleichung — die **Ziel-Variable** (y): eine einzige Zahl pro Haus, die sagt, *wie viele Qualitätsprobleme* dieses Haus hat. Erst wenn X (Merkmale) **und** y (Ziel-Variable) für jedes Haus in derselben Tabelle stehen, lässt sich fragen: „Haben Häuser mit mehr Betten öfter viele Probleme?"
+Die Projektfrage fragt nach Zusammenhängen mit „Qualitätsproblemen" — aber nirgends im Datensatz steht fertig, *wie viele* Qualitätsprobleme ein Haus hat. Diese Information steckt ausschließlich im C-Teil des Qualitätsberichts (`QS.Qualitätsindikator.csv`) und muss aus rohen R\*/N\*-Bewertungscodes erst noch **selbst gebaut** werden — das ist die eigentliche „Knobelaufgabe" laut Aufgabenstellung (`Text_Presentation.docx`, Folie 3–4). Weil alles andere im Notebook (Merkmale, Analysetabelle) sich an dieser Ziel-Variable ausrichtet, steht sie jetzt bewusst am Anfang.
 
-**Warum dafür eine ganz andere Datei nötig ist:** `SO.csv` enthält nur Strukturdaten (A-Teil des Qualitätsberichts) — dort steht nirgends, ob ein Haus qualitativ auffällig ist. Diese Information steckt ausschließlich im C-Teil des Qualitätsberichts, in `QS.Qualitätsindikator.csv`. Deshalb wechseln wir jetzt komplett die Datenquelle: weg von den Stammdaten, hin zu den ~150 Qualitätsindikator-Bewertungen pro Haus, aus denen die Ziel-Variable erst noch **selbst gebaut** werden muss (sie steht nirgends fertig in einer Spalte — das ist die eigentliche „Knobelaufgabe" laut Aufgabenstellung, siehe `Text_Presentation.docx` Folie 3–4).
+**Warum genau diese Datei:** Sie ist vom IQTIG im Auftrag des G-BA erstellt — alle Häuser werden nach denselben gesetzlich festgelegten Regeln bewertet. Das ist der einzige Datensatz im Projekt mit dieser Eigenschaft; ohne ihn gäbe es keine vergleichbare, einheitlich erhobene Qualitätsaussage.
 
-**Was:** Datei ist mit 911 MB die größte im Datensatz — zuerst nur `nrows=5` geladen, um die 29 Spalten zu prüfen, danach vollständig geladen (`qi = pd.read_csv(qi_pfad)`).
+> **📌 Was ist IQTIG, und was sind „IQTIG-Regeln"?** Das **IQTIG** (Institut für Qualitätssicherung und Transparenz im Gesundheitswesen) führt im Auftrag des **G-BA** (Gemeinsamer Bundesausschuss) die bundesweite Qualitätssicherung für Krankenhäuser durch. Für jeden Qualitätsindikator legt das IQTIG einen **Referenzbereich** fest, in dem der Wert eines Hauses normalerweise liegen sollte — diese Regeln sind **bundesweit einheitlich**. „Auffällig" (`R*`) ist dabei nur ein **statistisches Signal**: ein Hinweis, dass ein Wert außerhalb des Referenzbereichs liegt. Ob dahinter wirklich ein echtes Qualitätsproblem steckt, klärt ein separates Prüfverfahren, der **Strukturierte Dialog** (daher der Spaltenname `QSErgBewStrukDialog`). Deshalb gilt durchgehend: „Kein Zusammenhang ist ein valides Ergebnis" — Auffälligkeit ist kein automatisches Qualitätsurteil.
 
-**Bewertungsspalte:** `QSErgBewStrukDialog`
+### 1.1 — Datei laden
+
+Lädt die gesamte Datei (911 MB, 29 Spalten) und zeigt die ersten 3 Zeilen.
+
+### 1.2 — Bewertungsspalte identifizieren
+
+**Wie wird `QSErgBewStrukDialog` gefunden?** Der Spaltenname enthält Abkürzungen: `Erg` = Ergebnis, `Bew` = Bewertung, `Struk` = Strukturierter, `Dialog` = Dialog. Eine Suche nach dem Teilstring `'bew'` trifft `qsergbewstrukdialog` und findet die Spalte.
+
 - `R*` (R10, R20, …) = **rechnerisch auffällig**
 - `N01`, `N02` = **nicht auffällig**
 - `N99` = **nicht bewertet**
 
-**Warum genau diese Spalte:** Sie ist der einzige standardisierte, für alle 1.824 Häuser mit Bewertungen nach denselben IQTIG-Regeln vergebene Bewertungscode. Andere Dateien (z. B. `QS.Extern.Sonstige.csv`) haben zwar Zahlenwerte, aber keine einheitliche Klassifikation.
+### 1.3 — Alle Spalten mit kleiner Kardinalität prüfen
 
-> **📌 Was ist IQTIG, und was sind „IQTIG-Regeln"?** Das **IQTIG** (Institut für Qualitätssicherung und Transparenz im Gesundheitswesen) ist die Institution, die im Auftrag des **G-BA** (Gemeinsamer Bundesausschuss, oberstes Beschlussgremium der Selbstverwaltung im deutschen Gesundheitswesen) die bundesweite Qualitätssicherung für Krankenhäuser durchführt. Konkret bedeutet das: Für jeden Qualitätsindikator (z. B. „Komplikationsrate bei Hüft-OPs") legt das IQTIG einen **Referenzbereich** fest — den Bereich, in dem der Wert eines Hauses normalerweise liegen sollte. Diese Referenzbereiche und die Methode, wie „auffällig" berechnet wird, sind die „IQTIG-Regeln". Wichtig für uns: Diese Regeln sind **bundesweit einheitlich** — jedes Haus wird nach denselben Maßstäben bewertet. Genau das macht `QSErgBewStrukDialog` zur einzigen fair vergleichbaren Bewertungsspalte im gesamten Datensatz. Ohne diese Einheitlichkeit könnte man Häuser aus verschiedenen Regionen oder Trägerschaften gar nicht sinnvoll gegenüberstellen.
->
-> Wichtig zur Einordnung (siehe auch Abschnitt „Was in diesem Notebook *nicht* passiert" unten): „Auffällig" (`R*`) ist dabei nur ein **statistisches Signal** — ein Hinweis, dass ein Wert außerhalb des Referenzbereichs liegt. Ob dahinter wirklich ein echtes Qualitätsproblem steckt, klärt ein separates Prüfverfahren, der **Strukturierte Dialog** (daher der Spaltenname `QSErgBewStrukDialog` = „QS-Ergebnis der Bewertung im Strukturierten Dialog"). Das ist auch der Grund, warum das Projekt durchgehend betont: „Kein Zusammenhang ist ein valides Ergebnis" — Auffälligkeit ist kein automatisches Qualitätsurteil.
+**Kardinalität** = Anzahl verschiedener Werte in einer Spalte. `QSErgBewStrukDialog` hat ~10 verschiedene Werte (niedrige Kardinalität → kategorial), `SO.QBID` hat ~2.300 (hohe Kardinalität → ID-Spalte). Die Grenze von 15 ist ein pragmatischer Erfahrungswert, kein festes Gesetz — echte kategoriale Spalten haben in der Praxis fast immer deutlich weniger als 15 verschiedene Werte.
 
-### Berechnungsschritte — die Ziel-Variable Schritt für Schritt
+### 1.4 — Ziel-Variable berechnen
 
-Zur Erinnerung, worauf das alles hinausläuft: Am Ende soll **jedes Haus genau eine Zahl** bekommen — den Anteil seiner Qualitätsindikatoren, die „auffällig" bewertet wurden — und daraus ein einfaches 0/1-Etikett: „hat überdurchschnittlich viele Probleme" oder nicht. `QS.Qualitätsindikator.csv` liefert aber **~55 Zeilen pro Haus** (eine Zeile pro Indikator), nicht eine. Die folgenden 7 Schritte reduzieren diese vielen Zeilen pro Haus auf genau eine Zahl — und jeder Schritt beseitigt dabei eine konkrete Fallstricke in den Rohdaten.
+**Warum diese Designentscheidungen:**
+- **Nur `QSQI.ArtDesWertes == 'QI'`** — andere Typen (`EKez`, `TKez`, `TKEZ`, `KKez`) sind reine Zählkennzahlen ohne Auffällig/Unauffällig-Bewertung, keine echten Qualitätsindikatoren. Sie würden `total_qi` verwässern.
+- **N99 ausschließen** — bedeutet „nicht bewertet", meist wegen zu weniger Fälle für einen sinnvollen Referenzbereich. Das ist inhaltlich etwas anderes als „unauffällig" — würde man N99 mitzählen, stünde jedes Haus mit vielen N99-Indikatoren künstlich besser da.
+- **Deduplizierung über `(SO.QBID, QSQI.Indikator)`, nicht über `QSQI.AEKey`** — `AEKey` sieht wie ein Indikator-Schlüssel aus, ist aber tatsächlich pro Haus vergeben. Hätte man darüber dedupliziert, wäre pro Haus nur eine einzige Zeile übrig geblieben statt ~55 — die Ziel-Variable wäre unbrauchbar geworden, ohne dass der Fehler beim ersten Hinsehen auffällt.
+- **Median als Schwelle** (nicht Mittelwert oder ein fixer Wert wie 80 %) — robuster gegenüber Ausreißern und teilt die Häuser automatisch in zwei etwa gleich große Gruppen. Ein Modell, das nur die häufigere Klasse rät, läge sonst schon fast immer richtig, ohne etwas gelernt zu haben.
 
-**Kurzübersicht:**
+**Berechnungsschritte:**
 
 | Schritt | Code | Was |
 |---|---|---|
@@ -94,112 +92,146 @@ Zur Erinnerung, worauf das alles hinausläuft: Am Ende soll **jedes Haus genau e
 | 4 | `str.startswith('R')` → Flag | Auffällig-Flag (0/1) pro Indikator-Zeile setzen |
 | 5 | `groupby('SO.QBID').agg(count, sum)` | Von ~55 Zeilen/Haus auf 1 Zeile/Haus verdichten |
 | 6 | `auffaellig_quote = auffaellig_n / total_qi` | Anteil auffälliger Indikatoren berechnen |
-| 7 | `quote > Median → hat_viele_Probleme = 1` | Aus der Quote ein 0/1-Etikett machen |
+| 7 | `quote > Median → hat_viele_Probleme` | Aus der Quote ein 0/1-Etikett machen |
 
-**Schritt 1 — Nur echte Qualitätsindikatoren behalten (`QSQI.ArtDesWertes == 'QI'`)**
-Nicht jede Zeile in `QS.Qualitätsindikator.csv` ist ein bewerteter Qualitätsindikator. Die Spalte `QSQI.ArtDesWertes` unterscheidet mehrere Werttypen — unter anderem `QI` (ein echter, mit R*/N* bewerteter Qualitätsindikator) sowie `EKez`/`TKez` (Ergebnis- bzw. Teil-Kennzahlen — das sind reine **Zählwerte** ohne Auffällig/Unauffällig-Bewertung, z. B. „wie oft wurde eine bestimmte OP durchgeführt"). Würde man diese mitzählen, würden in Schritt 5 plötzlich Zeilen in `total_qi` landen, die gar keine Bewertung haben — die Quote würde dadurch verwässert, ohne dass das inhaltlich Sinn ergibt.
+**Ergebnis (tatsächlicher Notebook-Output):** Median auffällig-Quote **76,92 %**, Ziel-Variable-Verteilung `hat_viele_Probleme`: 925 Häuser mit 0 (unauffälliger), 899 mit 1 (auffälliger) — 1.824 Häuser insgesamt.
 
-**Schritt 2 — Nicht bewertete Indikatoren ausschließen (`QSErgBewStrukDialog != 'N99'`)**
-`N99` bedeutet „nicht bewertet" — meist weil zu wenige Fälle vorlagen, um überhaupt einen Referenzbereich sinnvoll anzuwenden. Das ist inhaltlich etwas völlig anderes als „unauffällig" (`N01`/`N02`). Würde man `N99` als „nicht auffällig" mitzählen, würde jedes Haus mit vielen `N99`-Indikatoren künstlich besser dastehen, als es die tatsächlich bewerteten Indikatoren hergeben — die Quote wäre systematisch nach unten verzerrt.
+### Wie kommt 54,7 zustande — und woher wissen wir, dass es 1.824 Häuser sind?
 
-**Schritt 3 — Duplikate entfernen (`drop_duplicates(['SO.QBID', 'QSQI.Indikator'])`)**
-Ein Haus kann für denselben Indikator mehrfach in den Rohdaten auftauchen (z. B. durch Nachmeldungen oder überlappende Erfassungszeiträume). Ohne Deduplizierung würde derselbe Indikator mehrfach in die Zählung eingehen und das Ergebnis verfälschen. Entscheidend ist, **worüber** dedupliziert wird: über die Kombination aus Haus (`SO.QBID`) und Indikator (`QSQI.Indikator`) — **nicht** über `QSQI.AEKey`. `AEKey` sieht auf den ersten Blick wie ein Indikator-Schlüssel aus, ist aber tatsächlich pro Haus vergeben. Hätte man darüber dedupliziert, wäre pro Haus nur noch **eine einzige Zeile** übrig geblieben statt der ~55 Indikator-Zeilen — die gesamte Ziel-Variable wäre unbrauchbar geworden, ohne dass der Fehler beim ersten Hinsehen auffällt (der Code liefe fehlerfrei durch, nur das Ergebnis wäre falsch).
+Jede der 99.685 bereinigten Zeilen trägt eine `SO.QBID`. `nunique()` zählt, wie viele *verschiedene* IDs vorkommen: **1.824**. Daraus folgt direkt:
 
-**Schritt 4 — Auffällig-Flag setzen (`str.startswith('R')`)**
-Jetzt wird pro verbliebener Zeile geprüft, ob der Bewertungscode mit `R` beginnt (`R10`, `R20`, …). Das Ergebnis ist ein neues 0/1-Flag pro Indikator-Zeile: 1 = rechnerisch auffällig, 0 = nicht auffällig. Das ist die Vorstufe für die Aggregation im nächsten Schritt — vorher stand in der Spalte ein Text-Code, jetzt eine Zahl, mit der man rechnen (summieren) kann.
+```
+Ø Indikatoren pro Haus = 99.685 Zeilen ÷ 1.824 Häuser = 54,7
+```
 
-**Schritt 5 — Pro Haus verdichten (`groupby('SO.QBID').agg(count, sum)`)**
-Das ist der eigentliche „Von-vielen-Zeilen-zu-einer-Zeile"-Schritt: Alle Indikator-Zeilen desselben Hauses werden zusammengefasst. `count` zählt, wie viele Indikatoren insgesamt bewertet wurden (`total_qi`), `sum` addiert die 0/1-Flags aus Schritt 4 (`auffaellig_n` = wie viele davon auffällig waren). Aus ~1.824 × ~55 Zeilen werden so 1.824 Zeilen — eine pro Haus.
+Kleine Häuser haben oft nur 2–5 bewertete Indikatoren, große Häuser über 150.
 
-**Schritt 6 — Quote berechnen (`auffaellig_quote = auffaellig_n / total_qi`)**
-Warum nicht einfach die absolute Anzahl auffälliger Indikatoren (`auffaellig_n`) als Zielgröße nehmen? Weil nicht jedes Haus gleich viele Indikatoren bewertet bekommt (kleinere oder spezialisierte Häuser haben oft weniger). Ein Haus mit 3 auffälligen von 10 bewerteten Indikatoren steht schlechter da als eines mit 3 von 60 — absolut gesehen aber gleich. Die **Quote** (Anteil statt absoluter Zahl) macht Häuser unterschiedlicher Größe erst vergleichbar.
+### 1.5 — Bereinigungsstatistik: die komplette Filterkaskade
 
-**Schritt 7 — Binäre Ziel-Variable (`quote > Median → hat_viele_Probleme = 1`)**
-Zuletzt wird aus der kontinuierlichen Quote (einem Wert zwischen 0 % und 100 %) ein einfaches Ja/Nein gemacht: Liegt ein Haus über dem Median, gilt es als „hat überdurchschnittlich viele Probleme" (1), sonst nicht (0). Das entspricht genau der Formulierung der Projektfrage und ist außerdem die Eingabeform, die spätere Verfahren (Gruppenvergleiche in Baustein 2, Klassifikation in Baustein 4) brauchen.
+**Neu gegenüber früheren Notebook-Versionen:** Ein eigener Abschnitt zeigt jetzt explizit, wie viele Zeilen nach jedem Filterschritt übrig bleiben — nicht nur das Endergebnis. Tatsächlicher Notebook-Output:
 
-**Warum ausgerechnet der Median als Schwelle (nicht Mittelwert oder ein fixer Wert wie 80 %):** Der Median (76,92 %) teilt die Häuser automatisch in zwei **gleich große** Gruppen (899 vs. 925 — 49,3 % zu 50,7 %). Das ist für ein Machine-Learning-Modell die ideale, ausgewogene Klassenverteilung — ein Modell, das nur die häufigere Klasse rät, läge sonst schon fast immer richtig, ohne etwas gelernt zu haben. Ein willkürlicher fester Schwellenwert (z. B. „ab 80 % auffällig") wäre außerdem nicht robust gegenüber der tatsächlichen Verteilung dieses Datensatzes — der Median passt sich automatisch an, egal wie die Werte tatsächlich verteilt sind.
+| Schritt | Zeilen danach | Entfernt |
+|---|---:|---:|
+| Ausgangsdatensatz | 417.799 | — |
+| 1. Zählkennzahlen entfernt (`EKez` 33.557 · `TKez` 51.921 · `TKEZ` 5.056 · `KKez` 18.539) | 308.726 | 109.073 |
+| 2. `N99` entfernt | 272.368 | 36.358 |
+| 3. Duplikate entfernt | **99.685** | 172.683 (63,4 % der Zeilen nach Schritt 2!) |
 
-**Ergebnis:** 1.824 Häuser (nach Deduplizierung und Filterung — kein Haus geht dabei verloren, siehe Hinweis-Kasten oben zu „~1.900"), Median-Quote 76,92 %.
-
----
-
-## 4. Fortbildungsquote — `QS.Fortbildung.csv`
-
-### Übergang: y steht — jetzt fehlende Merkmale ergänzen
-
-Die Ziel-Variable (y) ist jetzt fertig: Jedes Haus hat eine `auffaellig_quote` und ein `hat_viele_Probleme`-Etikett. Auf der Merkmals-Seite (X) haben wir aus `SO.csv` (Abschnitt 2) bereits mehrere Merkmale — `SO.Betten`, `SO.Bundesland`, `SO.Uni`, `KH.Träger.Art`. Diese kamen sozusagen „kostenlos" mit, weil sie alle direkt in einer einzigen Tabelle stehen. Die Aufgabenstellung verlangt aber 5–8 Merkmale insgesamt, und nicht jedes davon steht in `SO.csv` — die Fortbildungsquote zum Beispiel steht in einer ganz anderen Datei und muss, genau wie die Ziel-Variable in Abschnitt 3, erst noch **berechnet** werden. Deshalb wechseln wir hier erneut die Datenquelle — als Ergänzung zu den bereits vorhandenen Merkmalen, nicht als Ersatz.
-
-**Warum interessiert uns die Fortbildungsquote überhaupt?** Die Idee dahinter: Ärztinnen und Ärzte, die regelmäßig an Pflichtfortbildungen teilnehmen, sind fachlich auf dem aktuellen Stand — das könnte sich in weniger Behandlungsfehlern bzw. einer niedrigeren Auffälligkeitsquote niederschlagen. Es ist also ein plausibler **Kandidat** für einen Zusammenhang mit unserer Ziel-Variable. Ob dieser Zusammenhang tatsächlich existiert, wird hier in `01_Exploration.ipynb` noch **nicht** geprüft — das passiert erst in `02_Analyse.ipynb` (Gruppenvergleich, Korrelation). An dieser Stelle wird die Zahl nur berechnet und bereitgestellt. Ein weiterer, unabhängiger Grund, warum sie trotzdem berechnet werden muss: Die Aufgabenstellung (`Fragestellung.docx`) nennt die Fortbildungsquote **explizit** als zu untersuchendes Merkmal — sie ist damit gesetzt, unabhängig davon, ob sich später ein Zusammenhang zeigt oder nicht.
-
-**Was:** Datei geladen, `fortbildungsquote = QS.Fortbildungsnachweis_Erbracht_Habende / QS.Fortbildungspflichtige` berechnet.
-
-**Warum als Quote und nicht als absolute Zahl:** Genau wie bei der Ziel-Variable (Abschnitt 3, Schritt 6) haben nicht alle Häuser gleich viele Ärzte und damit gleich viele Pflichtfortbildungen. Die Quote (Erbrachte ÷ Pflichtige) macht Häuser unterschiedlicher Größe vergleichbar — ein großes Haus mit vielen absolvierten Fortbildungen ist nicht automatisch „fortbildungsaktiver" als ein kleines Haus mit wenigen, wenn man nur die absolute Zahl betrachtet.
-
-**Warum diese Datei:** `QS.Fortbildung.csv` ist die einzige Datei im gesamten Datensatz mit den beiden benötigten Zählern (erbrachte und pflichtige Fortbildungen) in auswertbarer Form.
+**Warum das aufschlussreich ist:** 63,4 % der nach Schritt 2 verbliebenen Zeilen waren Duplikate — ein deutlich höherer Anteil, als man auf den ersten Blick vermuten würde, und ein starker nachträglicher Beleg dafür, wie wichtig die korrekte Deduplizierungslogik aus Schritt 3 (Abschnitt 1.4) tatsächlich war. Auffällig ist außerdem, dass die Kategorie „Zählkennzahlen" uneinheitlich geschrieben im Rohdatensatz vorkommt (`TKez` **und** separat `TKEZ`, komplett großgeschrieben, mit 5.056 eigenen Zeilen) — eine kleine Dateninkonsistenz der Quelle, die die Filterlogik (`QSQI.ArtDesWertes == 'QI'`) automatisch mit erfasst, ohne dass sie einzeln behandelt werden musste.
 
 ---
 
-## 5. Erste Analysetabelle zusammenführen
+## 2 — Stammdaten — `SO.csv`
 
-**Was:** `SO.csv` + `QS.Qualitätsindikator.csv` (Ziel-Variable) + `QS.Fortbildung.csv` über `SO.QBID` gemerged, als `Data/analysetabelle.csv` gespeichert (erste Version).
+### Was ist ein „Merkmal" und wozu brauchen wir es?
 
-**Warum per Skript statt manuell:** Damit die gesamte Datenaufbereitung jederzeit reproduzierbar ist — kein manuelles Zusammenklicken, das sich nicht nachvollziehen lässt.
+Ein **Merkmal** (Feature) ist eine messbare Eigenschaft eines Krankenhauses — z. B. Bettenzahl, Träger oder Region. In der Sprache von Statistik/ML heißen diese Eigenschaften **X** (die Eingaben), im Gegensatz zur bereits fertigen **Ziel-Variable y** (`hat_viele_Probleme`, Abschnitt 1). `SO.csv` ist die **Ankertabelle** des gesamten Datenmodells: einziger Ort, an dem alle in der Aufgabenstellung genannten Strukturmerkmale (Betten, Träger, Bundesland, Uni-Status, Geo-Koordinaten) in einer einzigen Zeile pro Haus stehen, und Quelle von `SO.QBID` — der ID, über die alle anderen Tabellen verknüpft werden.
+
+### 2.1 — Erste Zeilen anzeigen
+
+Prüft Datenformat und Spaltenwerte anhand der ersten 3 Zeilen.
+
+### 2.2 — Relevante Spalten auswählen
+
+**Was:** `merkmale_cols` ausgewählt, mit folgender Rolle pro Spalte:
+
+| Spalte | Rolle | Warum genau diese |
+|---|---|---|
+| `SO.QBID` | **Schlüssel**, kein Merkmal | Eindeutige Krankenhaus-ID — damit werden später alle anderen Tabellen (Fortbildung, Personal, Konzern, …) an das richtige Haus angehängt |
+| `SO.Name` | Beschreibung | Für Lesbarkeit im Dashboard — kein Analysemerkmal |
+| `SO.Betten` | **Merkmal** | Bettenzahl — Größenindikator, in der Aufgabenstellung explizit genannt |
+| `SO.Bundesland` | **Merkmal** | Region — mögliche geografische Unterschiede in der Auffälligkeit |
+| `SO.Uni` | **Merkmal** | Universitätsklinikum ja/nein — Uni-Kliniken behandeln tendenziell komplexere Fälle |
+| `KH.Träger` | Beschreibung | Trägername im Klartext — nur für Anzeige, nicht kategorisiert genug für eine Analyse |
+| `KH.Träger.Art` | **Merkmal** | Bereinigte Trägerkategorie (privat/freigemeinnützig/öffentlich) |
+| `SO.Latitude` / `SO.Longitude` | **Merkmal** (indirekt) | Geo-Koordinaten — kein Merkmal für den Decision Tree, aber Grundlage für die Deutschlandkarte im Dashboard |
+| `SO.Standortnummer` | **Schlüssel**, kein Merkmal | Wird selbst nicht analysiert, sondern nur gebraucht, um später `Konzern.csv` korrekt anzubinden (Abschnitt 7) |
+
+**Ergebnis:** 2.310 eindeutige Krankenhäuser in `SO.csv` (Stammdaten-Ebene, vor dem Zusammenführen mit der Ziel-Variable — siehe „~1.900"-Hinweis oben, warum daraus am Ende 1.824 werden).
+
+### 2.3 — Trägerschaft & Uni-Status prüfen
+
+Gibt die Häufigkeitsverteilung der Trägerarten (privat / freigemeinnützig / öffentlich) und die Anzahl Uni-Kliniken aus — Grundlage für die spätere Gruppenanalyse in `02_Analyse.ipynb`.
 
 ---
 
-## 6. Ärzte pro Bett — `FA.Personalliste.csv` × `FA.csv`
+## 3 — Fortbildungsquote — `QS.Fortbildung.csv`
+
+**Warum interessiert uns die Fortbildungsquote überhaupt?** Ärztinnen und Ärzte, die regelmäßig an Pflichtfortbildungen teilnehmen, sind fachlich auf dem aktuellen Stand — das könnte sich in weniger Behandlungsfehlern niederschlagen. Ob dieser Zusammenhang tatsächlich existiert, wird hier **nicht** geprüft, sondern erst in `02_Analyse.ipynb` (Gruppenvergleich, Korrelation) — an dieser Stelle wird die Zahl nur berechnet. Unabhängig vom späteren Ergebnis: Die Aufgabenstellung nennt die Fortbildungsquote explizit als zu untersuchendes Merkmal.
+
+**Was:** `fortbildungsquote = QS.Fortbildungsnachweis_Erbracht_Habende / QS.Fortbildungspflichtige` (Division durch 0 über `replace(0, np.nan)` abgesichert).
+
+**Warum als Quote und nicht als absolute Zahl:** Nicht alle Häuser haben gleich viele Ärzte und damit gleich viele Pflichtfortbildungen — die Quote macht Häuser unterschiedlicher Größe vergleichbar.
+
+**Ergebnis:** 2.310 Häuser mit Fortbildungsdaten, davon 2.252 mit gültiger Quote (58 mit `Fortbildungspflichtige = 0` → NaN), Mittelwert 59,95 %, Median 66,67 %.
+
+---
+
+## 4 — Analysetabelle zusammenführen (erste Version)
+
+**Was:** `auffaellig_quote` (Ziel-Variable, Abschnitt 1) + `so_klein` (Merkmale, Abschnitt 2) + `fb_quote` (Fortbildungsquote, Abschnitt 3) per Left Join über `SO.QBID` zusammengeführt.
+
+**Warum `how='left'` ausgehend von der Ziel-Variable:** Alle 1.824 Häuser mit einer gültigen Ziel-Variable bleiben erhalten, auch wenn ihnen z. B. Fortbildungsdaten fehlen (→ NaN bei `fortbildungsquote`). Ein Inner Join hätte Häuser ohne vollständige Merkmale unnötig verloren.
+
+### 4.1 — Zwischenstand speichern (ohne `aerzte_pro_bett`)
+
+Speichert die bisherige Analysetabelle als erste Version nach `Data/analysetabelle.csv`. Diese Zwischenspeicherung wird in Abschnitt 5.2 und erneut in Abschnitt 8 durch vollständigere Versionen überschrieben — kein manuelles Zusammenklicken, jeder Zwischenstand ist per Skript reproduzierbar.
+
+---
+
+## 5 — Ärzte pro Bett — `FA.Personalliste.csv` × `FA.csv`
 
 ### Warum interessiert uns „Ärzte pro Bett"?
 
-Die erste Analysetabelle aus Abschnitt 5 hat mit `SO.Betten`, `SO.Bundesland`, `SO.Uni`, `KH.Träger.Art` und `fortbildungsquote` bereits 5 Merkmale — formal genug, um die in der Aufgabenstellung geforderte Mindestzahl von 5–8 Merkmalen zu erfüllen. `Fragestellung.docx` nennt „Ärzte pro Bett" aber als eigenes Beispiel-Merkmal, und die Idee dahinter ist inhaltlich naheliegend: **Ärzte pro Bett ist ein Maß für die Personalintensität** — wie viele Ärzte stehen rechnerisch für die Versorgung eines Bettes zur Verfügung? Die Hypothese: Häuser mit wenigen Ärzten im Verhältnis zu ihrer Bettenzahl könnten überlasteter sein, was sich in mehr Behandlungsfehlern bzw. einer höheren Auffälligkeitsquote niederschlagen könnte.
+Ein Maß für die **Personalintensität**: Wie viele Ärzte stehen rechnerisch für die Versorgung eines Bettes zur Verfügung? Hypothese: Häuser mit wenig Ärzten im Verhältnis zur Bettenzahl könnten überlasteter sein, was sich in mehr Behandlungsfehlern niederschlagen könnte.
 
-Anders als bei der Fortbildungsquote (Abschnitt 4) ist die Beschaffung hier aber technisch aufwändiger — die Ärztezahl steht nicht direkt in `SO.csv`, sondern muss aus einer ganz anderen, feiner granularen Tabelle (`FA.Personalliste.csv`, Personal **pro Fachabteilung**, nicht pro Haus) zusammengerechnet werden. Das ist der Grund für die zwei Dateien und den Join in diesem Abschnitt.
+*Vorgriff (erst in Baustein 2/4 wirklich geprüft):* `aerzte_pro_bett` wird sich später als das mit Abstand wichtigste Merkmal der gesamten Analyse herausstellen (Feature Importance 53,6 % im Decision Tree) — an dieser Stelle im Notebook war das noch nicht bekannt, sondern ein späterer, rein datengetriebener Befund.
 
-*Vorgriff (wird erst in Baustein 2/4 wirklich geprüft):* Anders als die Fortbildungsquote wird sich `aerzte_pro_bett` später tatsächlich als das mit Abstand wichtigste Merkmal der gesamten Analyse herausstellen — das war an dieser Stelle im Notebook aber noch nicht bekannt, sondern ein späterer, rein datengetriebener Befund.
+**Warum dieser Schritt technisch aufwändiger ist als die anderen:** Die Ärztezahl steht nicht direkt in `SO.csv`, sondern in `FA.Personalliste.csv` — Personal **pro Fachabteilung**, nicht pro Haus. Es braucht zwei Joins: `FA.Personalliste.csv` → `FA.csv` über `ABTID`, dann `FA.csv` → `SO.csv` über `FA.QBID = SO.QBID`. Zusätzlich ist `FA.Personal.Anzahl` Komma-Dezimal (`"13,47"`) und muss vor der Aggregation konvertiert werden, sonst behandelt pandas den Wert als String.
 
-**Was:**
-- `FA.csv` geladen (Brückentabelle: `ABTID` ↔ `FA.QBID` = `SO.QBID`)
-- `FA.Personalliste.csv` geladen, gefiltert auf `FA.Personal.Bereich == "Ärzte"`
-- `FA.Personal.Anzahl` ist **Komma-Dezimal** (z. B. `"13,47"`) → `.str.replace(",", ".")` → `float`
-- Summe Ärzte pro `ABTID` → über `FA.csv` auf `SO.QBID` aggregiert → `aerzte_pro_bett = aerzte_gesamt / SO.Betten`
+### 5.1 — Berechnung (2 Joins + Komma-Fix)
 
-**Warum der Umweg über `FA.csv`:** `FA.Personalliste.csv` kennt nur `ABTID` (Abteilungs-ID), nicht `SO.QBID` (Haus-ID). `FA.csv` ist die einzige Tabelle, die beide Schlüssel hat. Ohne sie lässt sich die Ärzteanzahl keinem Krankenhaus zuordnen.
+Filtert `FA.Personal.Bereich == "Ärzte"`, konvertiert `"13,47"` → `13.47`, summiert Ärzte je Abteilung, aggregiert über `FA.csv` auf Hausebene, teilt durch `SO.Betten`.
 
-**Warum NaN bei `SO.Betten == 0` nicht aufgefüllt wird:** 4 von 5 fehlenden Werten sind Tageskliniken ohne stationäre Betten. Ärzte/Bett ist für sie **nicht definiert** — 0 Betten ergibt kein sinnvolles Verhältnis. NaN ist hier die korrekte Aussage, kein Datenfehler.
+**Warum NaN bei `SO.Betten == 0` nicht aufgefüllt wird:** 4 von 5 fehlenden Werten sind Tageskliniken ohne stationäre Betten. Ärzte/Bett ist für sie nicht definiert — NaN ist hier die korrekte Aussage, kein Datenfehler.
 
-**Ergebnis:** Ø 0,451 Ärzte/Bett. Dieses Merkmal wird sich später (Baustein 4) als **stärkster Prädiktor** herausstellen (Feature Importance 53,6 % im Decision Tree) — das war zum Zeitpunkt dieses Notebook-Abschnitts noch nicht bekannt, sondern ein späterer, datengetriebener Befund.
+### 5.2 — In Analysetabelle einmergen & speichern
+
+**Ergebnis (tatsächlicher Notebook-Output):** Analysetabelle jetzt (1824, 16) — 5 fehlende Werte bei `aerzte_pro_bett`, davon 4 mit `SO.Betten == 0` (Tageskliniken). Ø Ärzte/Bett: **0,451**.
 
 ---
 
-## 7. Pflegekräfte pro Bett — `SO.Personalliste.csv` *(ergänzt 2026-07-29)*
+## 6 — Pflegekräfte pro Bett — `SO.Personalliste.csv`
 
-**Hintergrund:** Explizit in `Fragestellung.docx` gefordertes Merkmal — stand lange als offener Punkt in `ToDo.md`. Kollegen im BI-Tool-Vergleich (`BI_Datenanalyse.docx`) empfahlen dafür entweder `AQ.Pflege.csv` oder `FA.Personalliste.csv` mit Pflege-Filter.
+**Hintergrund:** Explizit in `Fragestellung.docx` gefordertes Merkmal. Kollegen im BI-Tool-Vergleich (`BI_Analyse/BI_Datenanalyse.docx`) empfahlen dafür entweder `AQ.Pflege.csv` oder `FA.Personalliste.csv` mit Pflege-Filter.
 
-**Was:** `SO.Personalliste.csv` geladen, gefiltert auf `SO.Personal.Bereich == "Pflege"`, Summe pro `SO.QBID` gebildet, `pflege_pro_bett = pflege_gesamt / SO.Betten`.
+**Was:** `SO.Personalliste.csv` geladen (78.637 Zeilen, Bereiche: Ärzte / Pflege / Hygiene / Sonstige Ther. / Psych), gefiltert auf `SO.Personal.Bereich == "Pflege"` (30.371 Zeilen), Summe pro `SO.QBID` gebildet, `pflege_pro_bett = pflege_gesamt / SO.Betten`.
 
-**Warum `SO.Personalliste.csv` statt `AQ.Pflege.csv` oder `FA.Personalliste.csv`:** `AQ.Pflege.csv` enthält nur Qualifikationsnachweise, **keine Anzahlen** — für ein Verhältnis wie „Pflegekräfte pro Bett" nutzlos. `SO.Personalliste.csv` hat direkt `SO.QBID` **und** `SO.Personal.Anzahl` — kein Umweg über `FA.csv` nötig, einfacher als der Ärzte-Weg in Abschnitt 6.
+**Warum `SO.Personalliste.csv` statt `AQ.Pflege.csv` oder erneut `FA.Personalliste.csv`:** `AQ.Pflege.csv` enthält nur Qualifikationsnachweise, keine Anzahlen. `SO.Personalliste.csv` hat direkt `SO.QBID` **und** `SO.Personal.Anzahl` — kein Umweg über `FA.csv` nötig, einfacher als der Ärzte-Weg in Abschnitt 5, obwohl die Datei technisch auch eine `Ärzte`-Kategorie führt (dort aber nicht verwendet, da `aerzte_pro_bett` bereits über `FA.Personalliste.csv` etabliert war).
 
-**Ergebnis:** Ø 1,01 Pflegekräfte/Bett, 4 fehlende Werte. Wurde später zum **zweitwichtigsten** Merkmal im Decision Tree (Feature Importance 23,8 %).
+**Ergebnis:** 2.310 Häuser mit Pflegedaten, Ø 0,900 Pflegekräfte/Bett (auf Basis aller Häuser mit Personalliste), 97 NaN-Werte (Tageskliniken mit `SO.Betten = 0`). In der finalen 1.824-Zeilen-Analysetabelle bleiben davon 4 fehlende Werte übrig. Wurde später zum **zweitwichtigsten** Merkmal im Decision Tree (Feature Importance 23,8 %).
 
 ---
 
-## 8. Konzernzugehörigkeit — `Konzern.csv` *(ergänzt 2026-07-29)*
+## 7 — Konzernzugehörigkeit — `Konzern.csv`
 
 **Hintergrund:** Von den Kollegen im BI-Tool-Vergleich als „interessante Ergänzung" vorgeschlagen — Konzernhäuser könnten durch zentrale Qualitätssicherung ein systematisch anderes QI-Profil haben.
 
-**Was:** `Konzern.csv` geladen, Spalten `Konzern`, `Krankenhaus`, `SO.Standortnummer`.
+**Was:** `Konzern.csv` geladen (1.506 Zeilen, Spalten `Konzern`, `Krankenhaus`, `SO.Standortnummer`).
 
-> ⚠️ **Bug gefunden und behoben:** `Konzern.csv` nutzt `SO.Standortnummer` als Schlüssel — **nicht** `SO.QBID`. Der erste Join-Versuch verglich `Konzern.csv`s `SO.Standortnummer` versehentlich gegen `SO.csv`s `SO.QBID` → **0 Treffer**, `ist_konzern` wäre für alle 1.824 Häuser 0 gewesen. Grund: `SO.Standortnummer` war ursprünglich gar nicht in `merkmale_cols` (Abschnitt 2) enthalten, obwohl `SO.csv` diese Spalte selbst hat. Nach Korrektur (Vergleich `SO.Standortnummer` gegen `SO.Standortnummer`): **358 von 1.824 Häusern (19,6 %)** sind Konzernhäuser.
+> ⚠️ **Bug gefunden und behoben:** `Konzern.csv` nutzt `SO.Standortnummer` als Schlüssel — **nicht** `SO.QBID`. Ein früherer Join-Versuch verglich `Konzern.csv`s `SO.Standortnummer` versehentlich gegen `SO.csv`s `SO.QBID` → 0 Treffer. Grund: `SO.Standortnummer` war ursprünglich gar nicht in `merkmale_cols` (Abschnitt 2.2) enthalten, obwohl `SO.csv` diese Spalte selbst führt. Nach der Korrektur (Vergleich `SO.Standortnummer` gegen `SO.Standortnummer`): **1.395 von 1.506** Konzern-Einträgen finden eine Übereinstimmung in `SO.csv`.
 
-**Ergebnis:** `ist_konzern` (0/1). Ein späterer Chi²-Test (Baustein 2) zeigt **keinen** signifikanten Zusammenhang mit `hat_viele_Probleme` (p=0,90); der Decision Tree bestätigt das mit 0 % Feature Importance. Das Merkmal blieb trotzdem im Modell — kein Zusammenhang ist ein valider, dokumentierter Befund, keine fehlgeschlagene Analyse.
+**Ergebnis (tatsächlicher Notebook-Output):** Auf Ebene aller 2.310 Häuser aus `SO.csv`: 466 Konzernhäuser, 1.844 unabhängige Häuser. In der finalen, auf 1.824 Häuser mit Ziel-Variable begrenzten Analysetabelle sind es **358 von 1.824 (19,6 %)** — der Unterschied zu den 466 erklärt sich daraus, dass die Analysetabelle nur Häuser mit Qualitätsbewertung enthält, `SO.csv` aber alle 2.310 Standorte.
+
+Ein späterer Chi²-Test (Baustein 2) zeigt **keinen** signifikanten Zusammenhang mit `hat_viele_Probleme` (p=0,90); der Decision Tree bestätigt das mit 0 % Feature Importance. Das Merkmal blieb trotzdem im Modell — kein Zusammenhang ist ein valider, dokumentierter Befund, keine fehlgeschlagene Analyse.
 
 ---
 
-## 9. Analysetabelle aktualisieren & speichern
+## 8 — Analysetabelle aktualisieren — alle neuen Merkmale einmergen
 
-**Was:** `pflege_pro_bett` und `ist_konzern` per `merge()` über `SO.QBID` in die bestehende Analysetabelle eingebunden, fehlende `ist_konzern`-Werte auf 0 gesetzt (Häuser ohne Konzern-Treffer = unabhängig), Ergebnis als `Data/analysetabelle.csv` gespeichert.
+**Was:** `pflege_pro_bett` und `ist_konzern` per `merge()` über `SO.QBID` in die bestehende Analysetabelle eingebunden, fehlende `ist_konzern`-Werte auf 0 gesetzt (Häuser ohne Konzern-Treffer = unabhängig), Ergebnis final als `Data/analysetabelle.csv` gespeichert.
 
-**Ergebnis — finale Analysetabelle:**
+**Ergebnis — finale Analysetabelle (tatsächlicher Notebook-Output):**
 
 | Kennzahl | Wert |
 |---|---|
@@ -211,21 +243,21 @@ Anders als bei der Fortbildungsquote (Abschnitt 4) ist die Beschaffung hier aber
 | Fehlende Werte `pflege_pro_bett` | 4 |
 | Konzernhäuser (`ist_konzern = 1`) | 358 (19,6 %) |
 
+**Alle 18 Spalten:** `SO.QBID`, `total_qi`, `auffaellig_n`, `auffaellig_quote`, `hat_viele_Probleme`, `SO.Name`, `SO.Betten`, `SO.Bundesland`, `SO.Uni`, `KH.Träger`, `KH.Träger.Art`, `SO.Latitude`, `SO.Longitude`, `SO.Standortnummer`, `fortbildungsquote`, `aerzte_pro_bett`, `pflege_pro_bett`, `ist_konzern`.
+
 **Wozu die Analysetabelle genutzt wird:** Rohdaten → Analysetabelle → **alles andere**. Baustein 2 (Grafiken/Statistik), Baustein 3 (Dashboard) und Baustein 4 (Decision Tree) greifen ausschließlich auf `Data/analysetabelle.csv` zu — die 86 Rohdateien werden danach nicht mehr gebraucht.
 
-### Pfad-Korrektur (2026-07-29)
-
-Alle drei Speicherstellen im Notebook (Abschnitt 5, eine Zwischenspeicherung nach Abschnitt 6, und Abschnitt 9) schrieben ursprünglich nach `analysetabelle.csv` **im Projekt-Root**. Tatsächlich liegt die Datei aber in `Data/` (dort greifen auch `dashboard_utils.py` und `modell_klasse.py` zu). Alle drei Stellen wurden auf `Data/analysetabelle.csv` korrigiert, damit ein frischer Notebook-Lauf die Datei am richtigen Ort ablegt.
+**Speicherpfad:** Alle drei Speicherstellen im Notebook (Abschnitt 4.1, Abschnitt 5.2, Abschnitt 8) schreiben konsistent relativ nach `"Data/analysetabelle.csv"` — das funktioniert korrekt, weil Setup (siehe oben) das Arbeitsverzeichnis vorab auf den Projekt-Root setzt, egal von wo das Notebook gestartet wird.
 
 ---
 
 ## Was in diesem Notebook *nicht* passiert (bewusste Abgrenzung)
 
-- **`QS.csv`** wird nie geladen — siehe Abschnitt 1. Ursprünglich als Brückentabelle vermutet, aber nicht nötig.
-- **`AQ.Pflege.csv`** wird nie geladen — bewusst durch `SO.Personalliste.csv` ersetzt (Abschnitt 7).
-- **`QS.Leistungsbereich.csv`** (`QSLB.Dokumentationsrate`) wurde identifiziert, aber bis heute nicht eingebunden — bleibt offener Punkt für eine künftige Erweiterung.
+- **`QS.csv`** wird nie geladen — siehe „Tabellenverbindungen analysieren". Ursprünglich als Brückentabelle vermutet, aber nicht nötig.
+- **`AQ.Pflege.csv`** wird nie geladen — bewusst durch `SO.Personalliste.csv` ersetzt (Abschnitt 6).
+- **`QS.Leistungsbereich.csv`**, **`Notfallversorgung.csv`** und **`MM.csv`** werden hier nicht eingebunden — sie wurden separat in `Notebooks/04_Potenzielle_Erweiterungen.ipynb` (siehe `Doku/MD/04_Potenzielle_Erweiterungen.md`) auf zusätzliches Signal geprüft. Zwei der drei Dateien zeigen dort ein stärkeres Signal als jedes bisherige Merkmal, sind aber (Stand dieses Dokuments) noch nicht in `analysetabelle.csv` übernommen.
 - Statistische Auswertung (T-Test, ANOVA, Chi²-Test, Grafiken) passiert **nicht** hier, sondern in `02_Analyse.ipynb`. Dieses Notebook liefert nur die Datengrundlage.
 
 ---
 
-*Zuletzt aktualisiert: 2026-07-30*
+*Zuletzt aktualisiert: 2026-08-10 — vollständig gegen den aktuellen Stand von `Notebooks/01_Exploration.ipynb` (47 Zellen) abgeglichen, inkl. neuer Reihenfolge (Ziel-Variable vor Stammdaten), neuer Bereinigungsstatistik (Abschnitt 1.5) und Spalten-Präfix-Analyse.*

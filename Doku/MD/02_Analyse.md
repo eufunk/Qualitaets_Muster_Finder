@@ -89,7 +89,7 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 - Fortbildungsquote: Median wenige Probleme = 0,667, viele Probleme = 0,667 — **identisch, kein Unterschied.**
 - Ärzte pro Bett: Median wenige Probleme = 0,468, viele Probleme = 0,390 — **sichtbarer Unterschied.**
 
-**Warum interessiert uns das:** Beide waren als plausible Kandidaten motiviert (`01_Exploration.md`, Kap. 4+6). Hier trennen sich die Hypothesen zum ersten Mal: Fortbildungsquote scheint **keine** Rolle zu spielen, Ärzte pro Bett schon — wird in Kapitel 4 dieses Dokuments (Inferenzstatistik) statistisch geprüft und ist später (Baustein 4) sogar das wichtigste Merkmal der gesamten Analyse.
+**Warum interessiert uns das:** Beide waren als plausible Kandidaten motiviert (`01_Exploration.md`, Abschnitt 3+5). Hier trennen sich die Hypothesen zum ersten Mal: Fortbildungsquote scheint **keine** Rolle zu spielen, Ärzte pro Bett schon — wird in Kapitel 4 dieses Dokuments (Inferenzstatistik) statistisch geprüft und ist später (Baustein 4) sogar das wichtigste Merkmal der gesamten Analyse.
 
 **Welche Schlüsse man daraus ziehen sollte:** Zwei unterschiedliche Konsequenzen für zwei Merkmale, die beide plausibel klangen.
 - **Fortbildungsquote:** Identische Mediane sind ein starkes Signal, dass hier **kein** Zusammenhang mit Qualitätsproblemen besteht — dieses Merkmal kann man für die weitere Analyse gedanklich zurückstellen, ganz ohne Test.
@@ -111,7 +111,7 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 
 **Befund:** Median wenige Probleme = 1,041, viele Probleme = 0,892 — ähnliches Muster wie Ärzte pro Bett (Grafik 6).
 
-**Warum interessiert uns das:** Dieselbe Personalintensitäts-Hypothese wie bei den Ärzten (`01_Exploration.md`, Kap. 7). Das ähnliche Muster zu `aerzte_pro_bett` ist ein erster Hinweis, dass beide Merkmale Ähnliches messen (wird in Grafik 8 als Korrelation sichtbar).
+**Warum interessiert uns das:** Dieselbe Personalintensitäts-Hypothese wie bei den Ärzten (`01_Exploration.md`, Abschnitt 6). Das ähnliche Muster zu `aerzte_pro_bett` ist ein erster Hinweis, dass beide Merkmale Ähnliches messen (wird in Grafik 8 als Korrelation sichtbar).
 
 ### Grafik 12 — Konzernvergleich 
 
@@ -121,7 +121,7 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 
 **Befund:** Konzernhäuser 49,7 % vs. unabhängige Häuser 49,2 % viele Probleme — **praktisch kein Unterschied.**
 
-**Warum interessiert uns das:** Die Hypothese aus `01_Exploration.md` Kap. 8 (zentrale Qualitätssicherung im Konzern beeinflusst die Auffälligkeit) bestätigt sich hier schon optisch nicht — beide Balken gleich hoch. Wird in Kapitel 4 dieses Dokuments mit dem Chi²-Test formal bestätigt.
+**Warum interessiert uns das:** Die Hypothese aus `01_Exploration.md` Abschnitt 7 (zentrale Qualitätssicherung im Konzern beeinflusst die Auffälligkeit) bestätigt sich hier schon optisch nicht — beide Balken gleich hoch. Wird in Kapitel 4 dieses Dokuments mit dem Chi²-Test formal bestätigt.
 
 ---
 
@@ -177,6 +177,12 @@ Kapitel 2 hat jedes Merkmal isoliert betrachtet. Jetzt geht es um zwei neue Frag
 **Befund:** Private Häuser sind im Median deutlich kleiner (125 Betten) als freigemeinnützige (217) und öffentliche (233).
 
 **Warum interessiert uns das — der wichtigste Punkt in diesem Abschnitt:** Der Befund bestätigt den Verdacht aus der Störfaktor-Box oben: Private Häuser sind systematisch **kleiner**. Kleinere Häuser haben pro Qualitätsindikator weniger Fälle — das kann die statistische Schwankungsbreite erhöhen und macht es wahrscheinlicher, rein zufällig außerhalb eines Referenzbereichs zu landen. Der scheinbare „Träger-Effekt" aus Grafik 3 könnte also in Wahrheit (ganz oder teilweise) ein **Größen-Effekt** sein, der sich hinter der Trägerart versteckt, statt ein echter Effekt der Trägerschaft selbst. Deshalb wird der Träger-Befund in der Gesamteinschätzung (Kapitel 6) bewusst mit dieser Einschränkung versehen, statt unkommentiert als „privat = schlechter" stehen zu bleiben.
+
+---
+
+### Zwischenstand im Notebook: „Zusammenfassung der deskriptiven Befunde"
+
+Direkt nach Grafik 12 enthält das Notebook eine eigene Markdown-Zelle mit einer kompakten **Kernbefunde-Tabelle**, die alle 12 Grafiken auf einen Blick zusammenfasst (Richtung + Stärke jedes Zusammenhangs mit `hat_viele_Probleme`) — inhaltlich deckt sie sich mit den Einzelbefunden aus Kapitel 2–3 dieses Dokuments, dient im Notebook aber als Brücke, bevor die Befunde im nächsten Schritt statistisch abgesichert werden.
 
 ---
 
@@ -237,17 +243,27 @@ Kapitel 2 hat gezeigt: Manche Merkmale unterscheiden sich zwischen den Gruppen s
 
 ## 5. Pivot-Tabelle: Trägerschaft × Uni-Status
 
-**Was:** Kreuztabelle der durchschnittlichen `auffaellig_quote`, aufgeschlüsselt nach Trägerart (Zeilen) und Uni-Status (Spalten).
+**Was:** Kreuztabelle der durchschnittlichen `auffaellig_quote`, aufgeschlüsselt nach Trägerart (Zeilen) und Uni-Status (Spalten), plus Gesamtspalte je Trägerart.
 
-**Befund:** In allen drei Trägerarten haben Uni-Kliniken eine etwas niedrigere Quote als Nicht-Uni-Häuser (z. B. freigemeinnützig: 0,745 vs. 0,713 bei Uni-Kliniken).
+**Befund (tatsächlicher Notebook-Output):**
 
-**Warum interessiert uns das:** Grafik 4 hatte „Uni-Kliniken vs. alle anderen" nur pauschal verglichen. Die Pivot-Tabelle prüft, ob dieser (schwache) Uni-Effekt **innerhalb jeder Trägerart** gleich aussieht, oder ob er nur durch eine bestimmte Trägerart getrieben wird. Ergebnis: Das Muster ist über alle drei Trägerarten hinweg konsistent — kein Hinweis auf eine versteckte Wechselwirkung zwischen Träger und Uni-Status.
+| Trägerart | Nicht-Uni | Uni-Klinik | Gesamt |
+|---|---:|---:|---:|
+| freigemeinnützig | 0,745 | 0,713 | 0,745 |
+| privat | 0,793 | 0,791 | 0,793 |
+| öffentlich | 0,755 | 0,723 | 0,752 |
+
+Bei freigemeinnützig und öffentlich liegt die Quote der Uni-Kliniken sichtbar niedriger als bei Nicht-Uni-Häusern (−0,032 bzw. −0,032). Bei privaten Häusern ist der Unterschied dagegen minimal (0,793 vs. 0,791) — hier macht der Uni-Status praktisch keinen Unterschied.
+
+**Warum interessiert uns das:** Grafik 4 hatte „Uni-Kliniken vs. alle anderen" nur pauschal verglichen. Die Pivot-Tabelle prüft, ob dieser (schwache) Uni-Effekt **innerhalb jeder Trägerart** gleich aussieht, oder ob er nur durch eine bestimmte Trägerart getrieben wird. Ergebnis: Bei zwei von drei Trägerarten (freigemeinnützig, öffentlich) ist der Uni-Effekt in etwa gleich stark, bei privaten Häusern verschwindet er fast — ein Hinweis, dass der insgesamt schwache Uni-Effekt aus Grafik 4 nicht gleichmäßig über alle Trägerarten verteilt ist, statistisch aber ohnehin zu schwach ist, um daraus mehr als eine Beobachtung abzuleiten.
 
 ---
 
 ## 6. Grafiken speichern & Gesamteinschätzung
 
-**Was:** Alle 12 Grafiken werden noch einmal (identisch zu den Kapiteln 2–3) erzeugt und als PNG in `grafiken/` gespeichert — diesmal ohne Anzeige im Notebook, nur zum Abspeichern für Dashboard und Präsentation.
+**Was:** Das Notebook ruft per `subprocess.run()` ein externes Skript auf (`../scripts/Grafiken_Speichern.py`), das alle 12 Grafiken noch einmal (identisch zu den Kapiteln 2–3) erzeugt und als PNG in `grafiken/` speichert — diesmal ohne Anzeige im Notebook, nur zum Abspeichern für Dashboard und Präsentation.
+
+> ⚠️ **Defekter Verweis (Stand 2026-08-10):** Der im Notebook aufgerufene Pfad `scripts/Grafiken_Speichern.py` existiert im aktuellen `scripts/`-Ordner nicht mehr — die Datei (unter dem ursprünglichen Namen `grafiken_speichern.py`) wurde im Rahmen einer Aufräumaktion gelöscht. Ein erneuter Lauf dieser Zelle würde daher mit `returncode != 0` fehlschlagen (`FEHLER: ... FileNotFoundError` o. ä.), das im Notebook gespeicherte Zellen-Output ist noch von einem früheren, erfolgreichen Lauf vor der Löschung. Die 12 PNGs in `grafiken/` sind davon nicht betroffen (sie liegen bereits vor), aber ein frischer Notebook-Durchlauf würde an dieser Stelle abbrechen, bis entweder das Skript wiederhergestellt oder diese Zelle entfernt/anders implementiert wird.
 
 **Gesamtfazit des Notebooks:** Keine starken, eindeutigen Zusammenhänge zwischen Strukturmerkmalen und Qualitätsproblemen. Die einzigen statistisch abgesicherten Befunde sind `aerzte_pro_bett` und `pflege_pro_bett` (beide p < 0,001, aber beide nur schwach korreliert, r ≈ −0,14) sowie der Trägerschaft-Unterschied (ANOVA p < 0,001, aber mit dem in Grafik 10 aufgedeckten Größen-Störfaktor). `ist_konzern` und `fortbildungsquote` zeigen dagegen klar **keinen** Zusammenhang.
 
@@ -255,4 +271,4 @@ Kapitel 2 hat gezeigt: Manche Merkmale unterscheiden sich zwischen den Gruppen s
 
 ---
 
-*Zuletzt aktualisiert: 2026-07-30*
+*Zuletzt aktualisiert: 2026-08-10 — gegen den aktuellen Stand von `Notebooks/02_Analyse.ipynb` (39 Zellen, inkl. Outputs) abgeglichen. Alle Grafik-Befunde und Testergebnisse geprüft (keine Zahlenabweichungen gefunden), Pivot-Tabelle um die volle Drei-Träger-Übersicht ergänzt, neue Notebook-Zusammenfassungszelle referenziert, defekter Skriptverweis in Kapitel 6 dokumentiert.*

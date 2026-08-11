@@ -129,10 +129,10 @@
 - [x] Startanleitung schreiben → `README.md` erstellt
 - [x] Entscheidungen festhalten → `README.md` Abschnitt "Wichtige Entscheidungen"
 - [x] **Entscheidungsbegründungen ausformulieren** *(Folie 13: „festhalten, welche Entscheidungen ihr getroffen habt und warum")* — erledigt:
-  - [x] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)? → `Doku/MD/01_Exploration.md` Kap. 3, Schritt 7
-  - [x] Warum N99 ausgeschlossen? → `Doku/MD/01_Exploration.md` Kap. 3, Schritt 2
+  - [x] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)? → `Doku/MD/01_Exploration.md` Abschnitt 1.4, Schritt 7
+  - [x] Warum N99 ausgeschlossen? → `Doku/MD/01_Exploration.md` Abschnitt 1.4, Schritt 2
   - [x] Warum diese Merkmale (und nicht andere)? → je ein „Warum"-Abschnitt pro Merkmal in `Doku/MD/01_Exploration.md`, konsolidiert in `Doku/Word/Analysetabelle_Zusammenfassung.docx`
-  - [x] Warum `aerzte_pro_bett` über FA.csv statt SO.Personalliste? → `Doku/MD/01_Exploration.md` Kap. 6
+  - [x] Warum `aerzte_pro_bett` über FA.csv statt SO.Personalliste? → `Doku/MD/01_Exploration.md` Abschnitt 5
 - [x] **Notebook-Walkthroughs erstellt:** `Doku/MD/01_Exploration.md`, `Doku/MD/02_Analyse.md` und `Doku/MD/03_Decision_Tree.md` — erklären jeden Schritt der beiden Notebooks inkl. Begründung, mit allen Grafiken eingebettet, Konzept-Boxen (IQTIG, G-BA, p-Wert, Boxplot-Aufbau, „Diagramm lesen" je Grafik) und Klarstellung der „~1.900"-Zahl sowie des kleine-Zahlen-Effekts hinter der 100 %-Spitze in `auffaellig_quote`
 - [x] Kollegen-Zusammenfassung erstellt: `Doku/Word/Analysetabelle_Zusammenfassung.docx` (gewählte Merkmale, Ziel-Variablen, Quelltabellen, Merge-Kriterien, Endgröße der Analysetabelle)
 
