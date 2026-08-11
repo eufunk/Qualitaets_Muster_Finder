@@ -192,14 +192,9 @@ h1("1  Projektübersicht")
 
 h2("1.1  Fragestellung")
 body(
-    "Welche Krankenhausmerkmale h\u00e4ngen damit zusammen, dass ein Haus "
-    "überdurchschnittlich viele Qualit\u00e4tsprobleme aufweist?",
+    "Welche Krankenhausmerkmale hängen damit zusammen, dass ein Haus "
+    "überdurchschnittlich viele Qualitätsprobleme aufweist?",
     fett=True
-)
-body(
-    "Kein Zusammenhang ist ebenfalls ein valides Ergebnis — "
-    "Ehrlichkeit ist hier wichtiger als positive Befunde.",
-    italic=True, farbe=GRAU
 )
 
 h2("1.2  Datenbasis")
@@ -225,21 +220,6 @@ body(
     size=10, farbe=GRAU, italic=True
 )
 doc.add_paragraph()
-
-h2("1.3  Verwendete Python-Bibliotheken")
-tabelle(
-    ["Bibliothek", "Verwendungszweck"],
-    [
-        ("pandas",      "Daten laden, filtern, mergen, aggregieren (groupby, merge, pivot_table)"),
-        ("numpy",       "Numerische Berechnungen (Histogramm-Bins, Median)"),
-        ("matplotlib",  "Alle 12 Grafiken (Histogramm, Boxplot, Scatter, Balken, Heatmap)"),
-        ("seaborn",     "Korrelations-Heatmap (Grafik 8), Boxplot Träger×Betten (Grafik 10)"),
-        ("scipy.stats", "T-Test, ANOVA, Chi²-Test, Konfidenzintervalle"),
-        ("pathlib",     "Plattformunabhängige Dateipfade"),
-        ("python-docx", "Word-Dokumentation (dieses Dokument)"),
-    ],
-    col_widths=[3.5, 11.5]
-)
 
 doc.add_page_break()
 
@@ -590,45 +570,22 @@ body(
     farbe=GRAU, size=9.5
 )
 
-doc.add_page_break()
-
-# ═════════════════════════════════════════════════════════════════
-# 4. PROJEKTSTRUKTUR & REPRODUZIERBARKEIT
-# ═════════════════════════════════════════════════════════════════
-h1("4  Projektstruktur & Reproduzierbarkeit")
-
-h2("4.1  Datei-Übersicht")
-tabelle(
-    ["Datei / Ordner", "Inhalt"],
-    [
-        ("Notebooks/01_Exploration.ipynb", "Datenvorbereitung: CSV-Analyse → analysetabelle.csv"),
-        ("Notebooks/02_Analyse.ipynb",     "Deskriptive Analyse: 12 Grafiken, 5 Tests"),
-        ("Data/analysetabelle.csv",         "Zentrale Analysetabelle: 1.824 × 18"),
-        ("grafiken/g1–g12_*.png",           "Alle 12 Grafiken als PNG"),
-        ("scripts/Grafiken_Speichern.py",   "PNG-Export aller Grafiken (ohne Notebook)"),
-        ("Doku/MD/01_Exploration.md",        "Schritt-für-Schritt-Erklärung Notebook 1"),
-        ("Doku/MD/02_Analyse.md",            "Schritt-für-Schritt-Erklärung Notebook 2"),
-    ],
-    col_widths=[6.5, 8.5]
-)
-
-h2("4.2  Reproduzierbarkeit")
+h2("3.2  Ausblick: Inferenzstatistik (in Arbeit)")
 body(
-    "Der gesamte Analyse-Pipeline ist vollständig reproduzierbar: "
-    "Aus den Rohdaten in Data/CSV/ erzeugt das Ausführen von 01_Exploration.ipynb "
-    "die analysetabelle.csv, 02_Analyse.ipynb daraus alle 12 Grafiken. "
-    "Kein manueller Schritt ist nötig."
+    "Die Inferenzstatistik — T-Tests, Chi²-Test, ANOVA und 95 %-Konfidenzintervalle zur statistischen "
+    "Absicherung der in den 12 Grafiken sichtbaren Unterschiede — ist zum Zeitpunkt dieses Berichts noch "
+    "in Arbeit und wird in einer kommenden Version dieses Dokuments ergänzt."
 )
-bullet("End-to-end-Test durchgeführt: ", "2026-07-29 — fehlerfrei von Rohdaten bis Grafiken")
-bullet("Versionskontrolle: ", "Git-Repository · Rohdaten per .gitignore ausgeschlossen (zu groß)")
-bullet("Abhängigkeiten: ", "requirements.txt enthält alle 7 Pakete mit Versionen")
-
-doc.add_paragraph()
-trennlinie()
 body(
-    f"Stand: {datetime.date.today().strftime('%d.%m.%Y')} · "
-    "Nächster Schritt (Woche 3): Streamlit-Dashboard + Decision Tree",
-    farbe=GRAU, size=10, italic=True
+    "Warum ist das wichtig? Die Grafiken zeigen Unterschiede zwischen den beiden Gruppen — z. B. weniger "
+    "Ärzte und Pflegekräfte pro Bett bei Häusern mit vielen Qualitätsproblemen. Ein optisch sichtbarer "
+    "Unterschied in einer Stichprobe von 1.824 Häusern beweist aber noch nicht, dass dieser Unterschied "
+    "real ist und nicht nur zufällige Schwankung. Die Inferenzstatistik liefert genau diesen Nachweis: "
+    "Sie berechnet, wie wahrscheinlich der beobachtete Unterschied wäre, wenn es in Wirklichkeit gar "
+    "keinen echten Zusammenhang gäbe. Damit lässt sich zwischen 'zufälliger Schwankung' und "
+    "'statistisch abgesichertem Befund' unterscheiden — eine notwendige Ergänzung zur rein deskriptiven "
+    "Analyse, bevor belastbare Schlussfolgerungen für die Gesamtheit aller deutschen Krankenhäuser "
+    "gezogen werden können."
 )
 
 # ── Speichern ─────────────────────────────────────────────────────

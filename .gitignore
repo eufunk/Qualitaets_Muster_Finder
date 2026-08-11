@@ -12,6 +12,9 @@ __pycache__/
 *.pyo
 .ipynb_checkpoints/
 
+# Projekteigene virtuelle Umgebung (siehe README: `python -m venv .venv`)
+.venv/
+
 # Temporäre Skripte (interne Nutzung)
 datensatz_bericht.py
 grafiken_speichern.py

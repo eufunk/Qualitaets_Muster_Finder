@@ -28,8 +28,18 @@
 
 ### Installation
 ```bash
+python -m venv .venv
+.venv\Scripts\activate      # Windows (macOS/Linux: source .venv/bin/activate)
 pip install -r requirements.txt
 ```
+
+> Eigene, projekteigene `.venv` verwenden — nicht die venv eines anderen Projekts als Kernel/Interpreter auswählen. `requirements.txt` enthält u. a. `nbformat` und `ipykernel`, die für interaktive Grafiken (Plotly) und die Notebooks benötigt werden.
+
+### Notebooks in VS Code / Jupyter nutzen
+```bash
+.venv\Scripts\python -m ipykernel install --user --name qualitaets-muster-finder --display-name "Qualitaets-Muster-Finder (.venv)"
+```
+Danach in VS Code beim Öffnen eines Notebooks (`Notebooks/*.ipynb`) oben rechts den Kernel **„Qualitaets-Muster-Finder (.venv)"** auswählen.
 
 ### Starten
 ```bash

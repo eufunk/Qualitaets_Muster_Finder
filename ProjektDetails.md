@@ -82,7 +82,8 @@ QualitaetsMusterFinderProjekt/
 └── ⚙️ Konfiguration
     ├── .gitignore                → Schließt Data/ aus, außer analysetabelle.csv/.xlsx & modell_krankenhaus.pkl (per !-Ausnahme); schließt zusätzlich Aufgabenstellung/ aus
     ├── .devcontainer/devcontainer.json → ⚠️ verweist noch auf veralteten Pfad `streamlit_dashboard.py` statt `Dashboard/streamlit_dashboard.py`
-    └── requirements.txt          → 7 Pakete (streamlit, plotly, pandas, scikit-learn, joblib, scipy, numpy)
+    ├── requirements.txt          → 11 Pakete (streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn)
+    └── .venv/                    → NEU (2026-08-11): projekteigene virtuelle Umgebung + Jupyter-Kernel „Qualitaets-Muster-Finder (.venv)", per .gitignore ausgeschlossen
 ```
 
 ---
@@ -113,7 +114,7 @@ QualitaetsMusterFinderProjekt/
 - `scripts/grafiken_doku.py` — Generiert `Doku/Word/Grafiken_Dokumentation.docx`: erklärt alle 12 Grafiken aus `02_Analyse.ipynb`, Zahlen live berechnet
 - `scripts/datensatz_uebersicht.py` — Generiert `Doku/Word/Datensatz_Uebersicht.docx`: kompakte Klassifikation, welche der 86 Rohdaten-Dateien verwendet wurden, welche nicht, welche „vielleicht"
 - `scripts/analysetabelle_zusammenfassung.py` — Generiert `Doku/Word/Analysetabelle_Zusammenfassung.docx`: welche Merkmale/Ziel-Variable(n) aus welchen Quelltabellen, Merge-Kriterien (Left Join, Schlüssel je Tabelle), Endgröße — live berechnet, keine hartkodierten Zahlen
-- `scripts/erstelle_dozenten_doku.py` — Generiert `Doku/Dozent/Fortschrittsbericht_Qualitaets_Muster_Finder.docx` (max. 10 Seiten, Bausteine 1 & 2, für Zwischenpräsentation bei den Dozent:innen)
+- `scripts/erstelle_dozenten_doku.py` — Generiert `Doku/Dozent/Fortschrittsbericht_Qualitaets_Muster_Finder.docx` (max. 10 Seiten, Bausteine 1 & 2, für Zwischenpräsentation bei den Dozent:innen). Am 2026-08-11 an manuelle Word-Anpassungen angeglichen (Abschnitte „1.3 Verwendete Python-Bibliotheken" und „4 Projektstruktur & Reproduzierbarkeit" entfernt, ein Satz unter 1.1 gestrichen) — Skript und Datei sind wieder deckungsgleich, verifiziert per automatisiertem Absatz-für-Absatz-Vergleich (0 Unterschiede)
 - `scripts/erstelle_praesentationsskript.py` — Generiert das vollständige Sprechertext-Dokument (30 Min, 15 Folien, erzählend mit Übergängen)
 
 > **Hinweis (2026-08-10):** Im Zuge dieser Analyse wurden außerdem `Doku/MD/datensatz_bericht.py` (Alt-Leiche im Doku-Ordner), `scripts/word_dokumentation.py`, `scripts/insert_folie_datensatz.py`, `scripts/insert_folie_quelldateien.py`, `scripts/update_folie13.py`, `scripts/powerbi_anleitung.py`, `scripts/grafiken_speichern.py` und `scripts/datensatz_bericht.py` sowie `Dashboard/folie13_praesentation.py` gelöscht (nicht mehr im Arbeitsverzeichnis vorhanden) — offenbar ein manuelles Aufräumen abgeschlossener Einmal-Skripte (Folien-Editoren, PNG-Export-Skript) parallel zu dieser Analyse.
@@ -160,7 +161,7 @@ QualitaetsMusterFinderProjekt/
 - `Doku/PPT/Qualitaets_Muster_Finder_Teamvortrag.pptx` — Alternative PPTX für den 3er-Team-Vortrag
 - `Doku/PPT/Praesentationsskript_Qualitaets_Muster_Finder.docx` — Vollständiger Sprechertext (generiert von `erstelle_praesentationsskript.py`)
 - `Doku/PPT.zip` — Backup-Archiv der beiden PPTX-Dateien
-- `Doku/Dozent/Fortschrittsbericht_Qualitaets_Muster_Finder.docx` — Zwischenbericht für die Dozent:innen (max. 10 Seiten, generiert von `erstelle_dozenten_doku.py`)
+- `Doku/Dozent/Fortschrittsbericht_Qualitaets_Muster_Finder.docx` — Zwischenbericht für die Dozent:innen (max. 10 Seiten, generiert von `erstelle_dozenten_doku.py`). Am 2026-08-11 manuell in Word angepasst (zwei Abschnitte gekürzt); das Skript wurde daraufhin synchronisiert und erzeugt wieder exakt diesen Stand — ein erneuter Lauf ist damit wieder gefahrlos möglich
 - `Doku/Dozent/Sprechertext_Dozentenpraesentation.txt` — Sprechertext für die Dozenten-Zwischenpräsentation (Anfang Woche 3)
 
 > Es existieren also **zwei parallele Präsentationskonzepte**: ein Einzelvortrag (Python/Streamlit-fokussiert, `Praesentation_Folien_Beschreibung.md`) und ein Team-Vortrag zu dritt, bei dem zwei Kollegen den Power-BI-Teil beisteuern (`Praesentation_Team_Folien_Beschreibung.md`, Material dazu in `BI_Analyse/`). `ToDo.md` bezeichnet das Projekt weiterhin als „Soloprojekt — angepasst"; welches der beiden Konzepte final verwendet wird, ist in den Dokumenten nicht explizit festgelegt.
@@ -179,7 +180,8 @@ Enthält heute anderen Inhalt als in einer früheren Version dieses Dokuments be
 
 - `.gitignore` — Schließt `Data/*` aus (Rohdaten, 86 CSVs/Excels), außer den 3 `!`-Ausnahmen; schließt zusätzlich `Aufgabenstellung/` aus
 - `.devcontainer/devcontainer.json` — Codespaces-Konfiguration; ⚠️ `postAttachCommand` startet noch `streamlit run streamlit_dashboard.py` (alter Root-Pfad) statt `Dashboard/streamlit_dashboard.py`
-- `requirements.txt` — 7 Pakete: streamlit, plotly, pandas, scikit-learn, joblib, scipy, numpy
+- `requirements.txt` — 11 Pakete: streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn. `nbformat`/`ipykernel` seit 2026-08-11 ergänzt (interaktive Plotly-Grafik + eigener Jupyter-Kernel), `matplotlib`/`seaborn` ebenfalls seit 2026-08-11 ergänzt — fehlten trotz direkter Nutzung in allen Notebooks (siehe „Wichtige Entscheidungen")
+- `.venv/` — **NEU (2026-08-11):** projekteigene virtuelle Umgebung, per `.gitignore` ausgeschlossen. Als Jupyter-Kernel „Qualitaets-Muster-Finder (.venv)" registriert (`python -m ipykernel install --user --name qualitaets-muster-finder ...`) — siehe README „Notebooks in VS Code / Jupyter nutzen"
 
 ---
 
@@ -280,6 +282,12 @@ streamlit run Dashboard/streamlit_dashboard.py
 - ✅ Diverse Einmal-Skripte (Folien-Editoren, PNG-Export, alte Word-Generatoren) nach Gebrauch entfernt
 - ✅ Alle Dateien in `scripts/` auf Kleinschreibung umbenannt
 - ✅ `scripts/grafiken_dokumentation.py` (byteidentisches Duplikat von `grafiken_doku.py`) und `scripts/doku_generieren.py` (veraltete Vorversion von `projekt_doku.py`) gelöscht; `OUT_PATH` in `analysetabelle_zusammenfassung.py` auf `Doku/Word/` korrigiert
+- ✅ Grafik 1 in `02_Analyse.ipynb` auf Plotly umgestellt (Hover-Tooltips zeigen Bereich + Hausanzahl je Balken)
+- ✅ Projekteigene `.venv` angelegt und als Jupyter-Kernel registriert (`qualitaets-muster-finder`) — löst Kernel-Verwechslung mit einem fremden Projekt (`smart-job-analyzer`), die zu `nbformat`-Fehlern führte
+- ✅ `requirements.txt` um `nbformat`, `ipykernel`, `matplotlib`, `seaborn` ergänzt — letztere zwei fehlten trotz direkter Nutzung in allen drei Notebooks komplett
+- ✅ Echten End-to-End-Lauf von `02_Analyse.ipynb` über den neuen Kernel durchgeführt und dabei zwei matplotlib-3.11-Breaking-Changes gefunden und behoben: `boxplot(labels=...)` wurde entfernt (jetzt `tick_labels=...`) in den Grafik-2- und Grafik-5+6-Zellen
+- ✅ Grafiken 2–5(+6), 7, 9–12 in `02_Analyse.ipynb` ebenfalls auf Plotly mit Hover-Tooltips umgestellt (alle 12 Grafiken bis auf Grafik 8 jetzt interaktiv); mehrere Notebook-Markdown-Zellen um Begriffserklärungen ergänzt (univariat, Inferenzstatistik, T-Test, 50 %-Referenzlinie bei Grafik 7)
+- ✅ `scripts/erstelle_dozenten_doku.py` an manuelle Word-Anpassungen in `Fortschrittsbericht_Qualitaets_Muster_Finder.docx` angeglichen (siehe Datei-Übersicht oben) — per Absatz-für-Absatz-Vergleich auf 0 Unterschiede verifiziert
 
 ---
 
@@ -299,6 +307,8 @@ streamlit run Dashboard/streamlit_dashboard.py
 | **`ist_konzern` trotz fehlendem Signal ins Modell aufgenommen** | Chi²-Test zeigt keinen Zusammenhang (p=0,90), Decision Tree bestätigt mit 0 % Feature Importance. Bewusst drin gelassen: „Kein Zusammenhang" ist selbst ein dokumentiertes, vom Modell empirisch bestätigtes Ergebnis |
 | **`pflege_pro_bett` über `SO.Personalliste.csv` statt `AQ.Pflege.csv`** | `AQ.Pflege.csv` enthält nur Qualifikationsnachweise, keine Personal-Anzahlen. `SO.Personalliste.csv` hat direkt `SO.QBID` + `SO.Personal.Anzahl` mit Bereich `'Pflege'` |
 | **Erweiterungs-Merkmale aus Notebook 04 (noch) nicht ins Hauptmodell übernommen** | Trotz stärkerem Signal (`mittl_doku_rate` r=−0,237 > `aerzte_pro_bett` r=−0,14) bewusst als separate Explorationsanalyse dokumentiert statt spontan ins laufende Modell gemergt — Übernahme würde `01_Exploration.ipynb`, `analysetabelle.csv` und das trainierte Modell neu durchlaufen lassen und ist als expliziter Folgeschritt vorgesehen, nicht Teil des ursprünglichen Aufgabenumfangs |
+| **Grafik 1 als Plotly statt matplotlib** | Einzige Grafik mit Hover-Tooltips (Bereich + Hausanzahl je Balken) — bewusst nicht auf alle 12 Grafiken übertragen, um Umfang der Änderung begrenzt zu halten; erfordert `nbformat` zur Laufzeit für `fig.show()` in Jupyter |
+| **Projekteigene `.venv` statt geteilter/globaler Python-Umgebung** | Ein in VS Code versehentlich ausgewählter Kernel eines anderen, unabhängigen Projekts (`smart-job-analyzer`) führte zu schwer diagnostizierbaren `nbformat`-Fehlern beim Anzeigen der Plotly-Grafik. Eine dedizierte, per `requirements.txt` reproduzierbare `.venv` + eigener Jupyter-Kernel verhindert künftige Versions-/Abhängigkeitskonflikte zwischen Projekten |
 
 ---
 
