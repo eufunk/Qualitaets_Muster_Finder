@@ -63,8 +63,7 @@ QualitaetsMusterFinderProjekt/
 │   └── Doku/Dozent/ (1 Datei)     → Fortschrittsbericht für die Dozenten-Zwischenpräsentation
 │
 └── ⚙️ Konfiguration
-    ├── .gitignore                → Schließt Data/* aus (außer den 2 !-Ausnahmen), sowie scripts/, Doku/PPT/, Aufgabenstellung/ und weitere Einzeldateien
-    ├── .devcontainer/devcontainer.json → ⚠️ verweist noch auf veralteten Pfad `streamlit_dashboard.py` statt `Dashboard/streamlit_dashboard.py`
+    ├── .gitignore                → Schließt Data/* aus (außer den 2 !-Ausnahmen), sowie scripts/, Doku/PPT/, .devcontainer/, Aufgabenstellung/ und weitere Einzeldateien
     └── requirements.txt          → 11 Pakete (streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn)
 ```
 
@@ -133,9 +132,10 @@ QualitaetsMusterFinderProjekt/
 
 ### ⚙️ Konfiguration
 
-- `.gitignore` — Schließt `Data/*` aus (Rohdaten, 86 CSVs/Excels sowie `analysetabelle.xlsx`) außer den 2 `!`-Ausnahmen; schließt zusätzlich `scripts/`, `Doku/PPT/`, einzelne Markdown-/PDF-Dateien und `Aufgabenstellung/` aus
-- `.devcontainer/devcontainer.json` — Codespaces-Konfiguration; ⚠️ `postAttachCommand` startet noch `streamlit run streamlit_dashboard.py` (alter Root-Pfad) statt `Dashboard/streamlit_dashboard.py`
+- `.gitignore` — Schließt `Data/*` aus (Rohdaten, 86 CSVs/Excels sowie `analysetabelle.xlsx`) außer den 2 `!`-Ausnahmen; schließt zusätzlich `scripts/`, `Doku/PPT/`, `.devcontainer/`, einzelne Markdown-/PDF-Dateien und `Aufgabenstellung/` aus
 - `requirements.txt` — 11 Pakete: streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn
+
+> `.devcontainer/devcontainer.json` (GitHub-Codespaces-Konfiguration) liegt lokal vor, ist aber bewusst nicht versioniert — Codespaces wird für dieses Projekt nicht genutzt, das Deployment läuft über Streamlit Community Cloud.
 
 ---
 
@@ -225,7 +225,6 @@ streamlit run Dashboard/streamlit_dashboard.py
 - [ ] Abschlusspräsentation halten + gemeinsame Retrospektive
 
 **Code-/Doku-Aufräumen:**
-- [ ] `.devcontainer/devcontainer.json` auf `Dashboard/streamlit_dashboard.py` aktualisieren (verweist noch auf alten Root-Pfad)
 - [ ] Entscheiden, ob `mittl_doku_rate` und `notfall_stufe` aus `04_Potenzielle_Erweiterungen.ipynb` in `analysetabelle.csv` und das Modell übernommen werden
 - [ ] Toter Verweis in `Doku/MD/01_Exploration.md` auf die inzwischen gelöschte `BI_Analyse/`-Dokumentation bereinigen
 
@@ -234,7 +233,7 @@ streamlit run Dashboard/streamlit_dashboard.py
 - ✅ `02_Analyse.ipynb`, `03_Decision_Tree.ipynb` und `04_Potenzielle_Erweiterungen.ipynb` inkl. aller MD-Dokus gegen die korrigierte `analysetabelle.csv` neu ausgeführt
 - ✅ Alle Word-Dokument-Generatoren in `scripts/` und deren Ausgabedateien auf die korrigierten Kennzahlen aktualisiert
 - ✅ Fehlendes `scripts/Grafiken_Speichern.py` neu erstellt und alle 12 PNG-Grafiken mit den korrigierten Daten neu erzeugt
-- ✅ `.gitignore` überarbeitet: `scripts/`, `Doku/PPT/` und weitere lokale Arbeitsdateien vollständig von der Versionierung ausgeschlossen
+- ✅ `.gitignore` überarbeitet: `scripts/`, `Doku/PPT/`, `.devcontainer/` (ungenutzte Codespaces-Konfiguration) und weitere lokale Arbeitsdateien vollständig von der Versionierung ausgeschlossen
 
 ---
 

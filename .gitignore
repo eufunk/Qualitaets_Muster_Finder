@@ -38,3 +38,6 @@ Doku/MD/Praesentation_Team_Folien_Beschreibung.md
 
 # Externer Quellbericht (PDF) nicht einchecken
 Doku/IQTIG_Bericht-zum-Strukturierten-Dialog-2021_EJ-2020_2022-05-16-barrierefrei.pdf
+
+# GitHub-Codespaces-Konfiguration nicht einchecken (nicht genutzt, Deployment läuft über Streamlit Cloud)
+.devcontainer/
