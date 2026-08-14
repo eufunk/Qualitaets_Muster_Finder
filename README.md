@@ -3,7 +3,7 @@
 > **Projektfrage:** Welche Krankenhausmerkmale hängen damit zusammen, dass ein Haus überdurchschnittlich viele Qualitätsprobleme aufweist?
 
 **Live-Dashboard:** [Qualitäts-Muster-Finder Dashboard](https://appdashboardpy-dkgplgkkzczyvnwpfjjcsp.streamlit.app/)  
-**Datenbasis:** Qualitätsberichte 2023 — 1.824 deutsche Krankenhäuser (IQTIG)
+**Datenbasis:** Qualitätsberichte 2023 — 1.821 deutsche Krankenhäuser mit auswertbarer Qualitätsbewertung (IQTIG)
 
 ---
 
@@ -60,18 +60,16 @@ streamlit run Dashboard/streamlit_dashboard.py
 │   └── dashboard_utils.py       # Funktionen & Plots
 ├── model/
 │   └── modell_klasse.py         # Decision Tree Klasse
-├── scripts/
-│   ├── bi_datenanalyse.py       # BI-Tool-Vergleich (Word-Generator)
-│   └── datei_uebersicht.py   # Datei-Klassifikation (Word-Generator)
 ├── Data/
 │   ├── modell_krankenhaus.pkl   # Trainiertes Modell
-│   ├── analysetabelle.csv       # Datenbasis (1.824 Häuser)
-│   └── analysetabelle.xlsx      # Excel-Version
+│   └── analysetabelle.csv       # Datenbasis (1.821 Häuser)
 ├── requirements.txt
 └── grafiken/                    # PNG-Grafiken (optional)
 ```
 
 > ⚠️ Die Rohdaten in `Data/CSV/` und `Data/Excel/` (86 Dateien, bis 911 MB) sind **nicht** im Repository. Für den Dashboard-Betrieb werden nur `Data/analysetabelle.csv` und `Data/modell_krankenhaus.pkl` benötigt — diese beiden liegen zwar im sonst per `.gitignore` ausgeschlossenen `Data/`-Ordner, sind aber per expliziter `!`-Ausnahme trotzdem versioniert.
+>
+> Die Python-Skripte, die die Word-Dokumentation in `Doku/Word/` und `Doku/Dozent/` erzeugen, liegen lokal in `scripts/` — dieser Ordner ist per `.gitignore` bewusst nicht versioniert (siehe `ProjektDetails.md`).
 
 ---
 
@@ -85,43 +83,44 @@ streamlit run Dashboard/streamlit_dashboard.py
 | `Dashboard/streamlit_dashboard.py` | Haupt-App: 4 Seiten (Übersicht, Vergleiche, Ähnliche Häuser, Risiko-Rechner) |
 | `Dashboard/dashboard_utils.py` | Hilfsfunktionen: Daten laden, KPIs, Plots, Modell-Vorhersage |
 | `model/modell_klasse.py` | OOP-Wrapper `KrankenhausModell` (prepare, fit, evaluate, save, load) |
-| `scripts/bi_datenanalyse.py` | Generiert Word-Dokument: BI-Tool-Vergleich mit Kollegen |
-| `scripts/datei_uebersicht.py` | Generiert Word-Dokument: Datei-Klassifikation (A4-Übersicht) |
 | `Data/analysetabelle.csv` | Fertige Analysetabelle (Ergebnis aus Baustein 1) |
 | `Data/modell_krankenhaus.pkl` | Trainiertes Decision-Tree-Modell |
-| `Workflow.md` | Vollständige Dokumentation aller Entscheidungen |
+| `Doku/MD/Workflow.md` | Vollständige Dokumentation aller Entscheidungen |
 | `ToDo.md` | Aufgabenliste nach Baustein-Struktur |
+| `ProjektDetails.md` | Vollständige, versionierte Dateiübersicht |
 
 ---
 
 ## 🔑 Wichtige Entscheidungen — Warum haben wir das so gemacht?
 
+> ⚠️ **Korrektur (2026-08-14):** `QSErgBewStrukDialog` wurde ursprünglich falsch interpretiert (`R10` fälschlich als „auffällig" statt „nicht auffällig" gewertet). Der offizielle IQTIG-Bericht belegt das Gegenteil. Alle Zahlen unten sind bereits die korrigierten Werte — Details in `Doku/MD/01_Exploration.md`.
+
 ### Warum Median als Grenzwert für die Ziel-Variable?
-Die auffällig-Quote variiert zwischen 0 % und 100 %. Der Median (76,92 %) teilt die Häuser in genau zwei gleich große Gruppen — das ergibt eine **ausgewogene Klassenverteilung** (49 % vs. 51 %), was für Machine Learning optimal ist. Ein fixer Schwellenwert (z.B. 80 %) wäre willkürlich.
+Die auffällig-Quote variiert zwischen 0 % und 100 %. Der Median (5,88 %) teilt die Häuser in genau zwei etwa gleich große Gruppen — das ergibt eine **ausgewogene Klassenverteilung** (49,7 % vs. 50,3 %), was für Machine Learning optimal ist. Ein fixer Schwellenwert (z. B. 80 %) wäre willkürlich.
 
 ### Warum `QSErgBewStrukDialog` als Bewertungsspalte?
-Diese Spalte enthält den offiziellen Bewertungscode des Strukturierten Dialogs — das standardisierte Verfahren der deutschen Qualitätsberichterstattung. `R*` (rechnerisch auffällig) ist der einzige objektive, vergleichbare Indikator über alle Häuser hinweg.
+Diese Spalte enthält den offiziellen Bewertungscode des Strukturierten Dialogs — das standardisierte Verfahren der deutschen Qualitätsberichterstattung. Laut IQTIG-Bericht bedeutet `R10` „im Referenzbereich" (also **nicht** auffällig); jeder andere, bewertbare Code gilt als auffällig — der einzige objektive, vergleichbare Indikator über alle Häuser hinweg.
 
-### Warum N99 ausgeschlossen?
-`N99 = nicht bewertet` — diese Indikatoren haben **keinen Referenzwert** und können weder als auffällig noch als unauffällig gelten. Sie würden die Quote systematisch verfälschen. Nicht bewertet ≠ unauffällig.
+### Warum alle N*-Codes ausgeschlossen?
+`N01`, `N02` und `N99` bedeuten „nicht bewertet" — diese Indikatoren haben **keinen Referenzwert** und können weder als auffällig noch als unauffällig gelten. Sie würden die Quote systematisch verfälschen. Nicht bewertet ≠ unauffällig.
 
 ### Warum Deduplizierung über `(SO.QBID, QSQI.Indikator)` statt `QSQI.AEKey`?
 `QSQI.AEKey` ist eine **Haus-ID**, kein Indikator-Schlüssel. Ein Fehler hier hätte dazu geführt, dass pro Haus nur 1 Zeile übrig bleibt statt ~55. Die Deduplizierung über `(SO.QBID, QSQI.Indikator)` stellt sicher, dass jeder Indikator pro Haus genau einmal gezählt wird.
 
 ### Warum `aerzte_pro_bett` als wichtigstes Merkmal?
-Nicht wir haben das entschieden — der Decision Tree hat es aus den Daten gelernt: Feature Importance 53,6 %. Der T-Test bestätigt den Unterschied (p < 0,001). Häuser mit ≤ 0,271 Ärzten/Bett haben signifikant höhere Auffälligkeitsquoten.
+Nicht wir haben das entschieden — der Decision Tree hat es aus den Daten gelernt: Feature Importance 72,8 %. Der T-Test bestätigt den Unterschied (p < 0,0001). Häuser mit mehr Ärzten pro Bett haben signifikant höhere Auffälligkeitsquoten.
 
 ### Warum `max_depth=3` beim Decision Tree?
 Bewusst einfach gehalten: Ein Baum mit max. 3 Entscheidungsebenen ist **erklärbar** — man kann ihn in eigenen Worten vorlesen. Tiefere Bäume würden Overfitting riskieren und die Interpretierbarkeit verlieren. Ziel war ein verständliches Modell, nicht die höchste Accuracy.
 
-### Warum R² so niedrig (0,033)?
-Das ist ein **valides Ergebnis**, kein Fehler. Strukturmerkmale (Betten, Träger, Ärzte, Pflegepersonal, Konzernzugehörigkeit) erklären nur 3,3 % der Varianz in der Auffälligkeitsquote. Das bedeutet: Andere Faktoren (Patientenmix, Spezialisierung, Dokumentationsqualität) spielen eine viel größere Rolle — die aber nicht im Datensatz enthalten sind.
+### Warum R² negativ (−0,007)?
+Das ist ein **valides Ergebnis**, kein Fehler. Strukturmerkmale (Betten, Träger, Ärzte, Pflegepersonal, Konzernzugehörigkeit) erklären die stetige Auffälligkeitsquote linear nicht besser als der reine Durchschnittswert. Das bedeutet: Andere Faktoren (Patientenmix, Spezialisierung, Dokumentationsqualität) spielen eine viel größere Rolle — die aber nicht im Datensatz enthalten sind.
 
 ### Warum NaN bei `aerzte_pro_bett` nicht auffüllen?
 4 von 5 fehlenden Werten sind Tageskliniken mit `SO.Betten = 0`. Ärzte/Bett ist für diese Häuser **nicht definiert** — 0 Betten ergibt kein sinnvolles Verhältnis. NaN ist hier die korrekte Aussage: „nicht anwendbar".
 
 ### Warum `ist_konzern` trotz fehlendem Signal im Modell?
-Der Chi²-Test zeigt keinen Zusammenhang zwischen Konzernzugehörigkeit und Qualitätsproblemen (p=0,90), und der Decision Tree bestätigt das mit 0 % Feature Importance. Wir haben das Merkmal trotzdem aufgenommen, statt es vorab auszuschließen — das Modell soll selbst entscheiden, was relevant ist. „Kein Zusammenhang" ist auch hier ein valider, dokumentierter Befund.
+Der Chi²-Test zeigt keinen Zusammenhang zwischen Konzernzugehörigkeit und Qualitätsproblemen (p=0,2585), und der Decision Tree bestätigt das mit 0 % Feature Importance. Wir haben das Merkmal trotzdem aufgenommen, statt es vorab auszuschließen — das Modell soll selbst entscheiden, was relevant ist. „Kein Zusammenhang" ist auch hier ein valider, dokumentierter Befund.
 
 ---
 
@@ -129,16 +128,16 @@ Der Chi²-Test zeigt keinen Zusammenhang zwischen Konzernzugehörigkeit und Qual
 
 | Kennzahl | Wert |
 |----------|------|
-| Häuser analysiert | 1.824 |
-| Ø Indikatoren pro Haus | 54,7 |
-| Median auffällig-Quote | **76,92 %** |
-| Träger mit höchstem Anteil | Privat: **56,5 %** |
-| Signifikantester Unterschied | Ärzte/Bett (T-Test p < 0,001) |
-| Konzernhäuser | 358 von 1.824 (19,6 %) — kein signifikanter Zusammenhang (Chi² p=0,90) |
-| Decision Tree Accuracy | **63,6 %** (Basislinie: 50,7 %) |
-| R² (lineare Regression) | **0,033** — schwacher Zusammenhang |
+| Häuser analysiert | 1.821 |
+| Ø Indikatoren pro Haus | 42,6 |
+| Median auffällig-Quote | **5,88 %** |
+| Träger mit höchstem Anteil | Öffentlich: **53,5 %** — laut ANOVA aber NICHT signifikant (p = 0,969) |
+| Signifikantester Unterschied | Ärzte/Bett (T-Test p < 0,0001) |
+| Konzernhäuser | 358 von 1.821 (19,7 %) — kein signifikanter Zusammenhang (Chi² p=0,2585) |
+| Decision Tree Accuracy | **57,0 %** (Basislinie: 50,4 %) |
+| R² (lineare Regression) | **−0,007** — kein linear nutzbarer Zusammenhang |
 
-> **Fazit:** Keine starken, eindeutigen Zusammenhänge zwischen Strukturmerkmalen und Qualitätsproblemen. Privathäuser und niedrige Ärztedichte zeigen Tendenzen — aber kein klares Muster. **Kein Zusammenhang ist ein valides Ergebnis.**
+> **Fazit:** Keine starken, eindeutigen Zusammenhänge zwischen Strukturmerkmalen und Qualitätsproblemen. Mehr Personal pro Bett hängt mit mehr, nicht weniger, Qualitätsproblemen zusammen — der zuvor klarste Befund (Trägerschaft) ist nach der Korrektur statistisch nicht mehr abgesichert. **Kein Zusammenhang ist ein valides Ergebnis.**
 
 ---
 

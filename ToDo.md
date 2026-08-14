@@ -4,6 +4,8 @@
 >
 > Quelle: `Aufgabenstellung/Fragestellung.docx` & `Aufgabenstellung/Text_Presentation.docx`
 
+> ⚠️ **Korrektur (2026-08-14):** `QSErgBewStrukDialog` wurde ursprünglich falsch interpretiert (`R10` fälschlich als „auffällig" gewertet). Die Ziel-Variable wurde neu berechnet — alle Kennzahlen unten (Häuserzahl, Median, T-Test/ANOVA/R²-Werte) sind bereits die korrigierten Werte. Details: `Doku/MD/01_Exploration.md`, `ProjektDetails.md`.
+
 ---
 
 ## 📦 Baustein 1 — Daten vorbereiten *(Woche 1)*
@@ -24,7 +26,7 @@
 - [x] Target-Variable definieren: `"Hat überdurchschnittlich viele Probleme"` = liegt über dem Median
 - [x] Fallstricke prüfen:
   - [x] Doppelte Einträge entfernen (Deduplizierung über `SO.QBID + QSQI.Indikator`)
-  - [x] Nur tatsächlich bewertete Indikatoren einbeziehen (N99 ausgeschlossen — nicht bewertet ≠ unauffällig)
+  - [x] Nur tatsächlich bewertete Indikatoren einbeziehen (alle N*-Codes ausgeschlossen — nicht bewertet ≠ unauffällig)
   - [x] Nur echte QI-Zeilen (`QSQI.ArtDesWertes == 'QI'` — keine Zählkennzahlen EKez/TKez)
 
 ### Merkmale auswählen & zusammenführen
@@ -40,7 +42,7 @@
 - [x] Alle Merkmale + Zielgröße in **eine Analysetabelle** zusammenführen (1 Zeile = 1 Krankenhaus)
 - [x] Zusammenführung **per Skript** reproduzierbar machen (kein manuelles Zusammenklicken)
 - [x] **Analysetabelle aktualisieren** — `pflege_pro_bett` und `ist_konzern` sind jetzt Spalten 17+18 in `Data/analysetabelle.csv`
-- [x] **Bug behoben (2026-07-29):** `01_Exploration.ipynb` verglich beim Konzern-Join `Konzern.csv`s `SO.Standortnummer` fälschlich gegen `SO.QBID` statt gegen `SO.csv`s eigene `SO.Standortnummer`-Spalte → `ist_konzern` war für alle 1.824 Häuser 0. Nach Fix: 358 Konzernhäuser (19,6 %). Chi²-Test zeigt aber: kein signifikanter Zusammenhang mit `hat_viele_Probleme` (p=0,90) — Decision Tree bestätigt das mit 0 % Feature Importance für `ist_konzern`.
+- [x] **Bug behoben (2026-07-29):** `01_Exploration.ipynb` verglich beim Konzern-Join `Konzern.csv`s `SO.Standortnummer` fälschlich gegen `SO.QBID` statt gegen `SO.csv`s eigene `SO.Standortnummer`-Spalte → `ist_konzern` war für alle Häuser 0. Nach Fix: 358 Konzernhäuser (19,7 % von 1.821, Stand nach der Zielvariablen-Korrektur vom 2026-08-14). Chi²-Test zeigt aber: kein signifikanter Zusammenhang mit `hat_viele_Probleme` (p=0,2585) — Decision Tree bestätigt das mit 0 % Feature Importance für `ist_konzern`.
 
 ---
 
@@ -104,15 +106,15 @@
 - [x] Vergleichs-Basislinie festlegen (wie gut wäre bloßes Raten?)
 - [x] Decision Tree trainieren (`max_depth=3`)
 - [x] Modell bewerten: Genauigkeit auf **neuen** (Test-)Daten prüfen
-- [x] **Cross-Validation** (5-Fold CV) — 59,7 % ± 4,2 % Accuracy, bestätigt kein Overfitting
+- [x] **Cross-Validation** (5-Fold CV) — 61,6 % ± 3,7 % Accuracy, bestätigt kein Overfitting
 - [x] Baum in eigenen Worten vorlesen können (Verständnistest)
 - [x] Vorhersage: `"Hat überdurchschnittlich viele Probleme"` basierend auf Strukturmerkmalen
 - [x] **Metriken:** Accuracy, Precision, Recall, F1-Score, Confusion Matrix
-- [x] **R²-Metrik** erklärt und berechnet (R²=0,033 → bestätigt schwachen Zusammenhang)
-- [x] **Feature Importance** visualisiert (`aerzte_pro_bett` dominiert mit 53,6 %)
+- [x] **R²-Metrik** erklärt und berechnet (R²=−0,007 → kein linear nutzbarer Zusammenhang, siehe Korrektur-Hinweis oben)
+- [x] **Feature Importance** visualisiert (`aerzte_pro_bett` dominiert mit 72,8 %)
 - [x] **OOP** — Modell-Wrapper-Klasse `KrankenhausModell` implementiert *(2026-07-29: Notebook importiert die Klasse jetzt aus `modell_klasse.py` statt sie inline zu duplizieren — behebt zugleich einen `__main__`-Pickle-Bug, der das Dashboard zuvor beim Laden des Modells crashen ließ; 2026-07-30: Datei von `scripts/` nach `model/` verschoben)*
 - [x] **`joblib`** — Modell gespeichert als `Data/modell_krankenhaus.pkl`
-- [x] **Modell neu trainiert (2026-07-29)** mit `pflege_pro_bett` und `ist_konzern` als zusätzlichen Features. Accuracy 63,6 % (Basislinie 50,7 %). Feature Importance: `aerzte_pro_bett` 53,6 %, `pflege_pro_bett` 23,8 %, `SO.Betten` 22,6 %, alle anderen (inkl. `ist_konzern`) 0 %
+- [x] **Modell neu trainiert (2026-07-29, Metriken zuletzt am 2026-08-14 nach Zielvariablen-Korrektur aktualisiert)** mit `pflege_pro_bett` und `ist_konzern` als zusätzlichen Features. Accuracy 57,0 % (Basislinie 50,4 %). Feature Importance: `aerzte_pro_bett` 72,8 %, `SO.Betten` 16,5 %, `pflege_pro_bett` 10,8 %, alle anderen (inkl. `ist_konzern`) 0 %
 
 ---
 
@@ -188,13 +190,13 @@
 | **`merge()`** | Baustein 1 — 4 Tabellen zur Analysetabelle zusammengeführt |
 | **Boolesche Filter** | Baustein 1 & 2 — `df[df['hat_viele_Probleme']==1]` |
 | **f-Strings & Formatierung** | Baustein 1 & 2 — in allen Print-/Plot-Ausgaben |
-| **Lagemaße** (Median, Mittelwert) | Baustein 2 — Median-Quote 76,92 %, Vergleiche |
+| **Lagemaße** (Median, Mittelwert) | Baustein 2 — Median-Quote 5,88 %, Vergleiche |
 | **Streuungsmaße** (IQR, std) | Baustein 2 — `describe()` in Analyse |
 | **Korrelationskoeffizient** (Pearson) | Baustein 2 — Heatmap mit `.corr()` |
 | **Scatterplot, Barplot, Histogram, Boxplot, Heatmap** | Baustein 2 — alle 10 Grafiken |
-| **T-Test** (Aerzte/Bett) | t=6,002, **p<0,001 signifikant** | Baustein 2 — `02_Analyse.ipynb` |
-| **ANOVA** (Träger) | F=11,323, **p<0,001 signifikant** | Baustein 2 — `02_Analyse.ipynb` |
-| **Konfidenzintervalle** (95 %) | Wenige=[0,468–0,497], Viele=[0,402–0,433] | Baustein 2 — `02_Analyse.ipynb` |
+| **T-Test** (Aerzte/Bett) | t=−9,13, **p<0,0001 signifikant** | Baustein 2 — `02_Analyse.ipynb` |
+| **ANOVA** (Träger) | F=0,031, **p=0,969 NICHT signifikant** (Korrektur 2026-08-14, vorher fälschlich signifikant) | Baustein 2 — `02_Analyse.ipynb` |
+| **Konfidenzintervalle** (95 %) | Wenige=[0,389–0,416], Viele=[0,484–0,516] | Baustein 2 — `02_Analyse.ipynb` |
 | **`pivot_table()`** | Träger × Uni-Status | Baustein 2 — `02_Analyse.ipynb` |
 | **Feature Matrix X & Zielvariable y** | `analysetabelle.csv` | Baustein 1 |
 | **`train_test_split`** | 80/20, stratifiziert | Baustein 4 — `03_Decision_Tree.ipynb` |
@@ -207,11 +209,11 @@
 
 | IHK-Thema | Warum nicht abgedeckt | Wo nachholen |
 |-----------|----------------------|--------------|
-| **Inferenzstatistik** — T-Test, ANOVA | **✅ Ergänzt!** Beide signifikant (p<0,001) | Erledigt |
+| **Inferenzstatistik** — T-Test, ANOVA | **✅ Ergänzt!** T-Test signifikant (p<0,0001), ANOVA nach Korrektur NICHT mehr signifikant (p=0,969) | Erledigt |
 | **Konfidenzintervalle** | **✅ Ergänzt!** | Erledigt |
 | **Decision Tree — Gini/Entropy, Visualisierung** | **✅ Abgeschlossen!** | Baustein 4 |
 | **Metriken: Accuracy, Precision, Recall, F1, Confusion Matrix** | **✅ Abgeschlossen!** | Baustein 4 |
-| **R²-Metrik** *(kritisch — war in Präsentation ein Thema!)* | **✅ Berechnet!** R²=0,033 — erklärt und interpretiert | Baustein 4 |
+| **R²-Metrik** *(kritisch — war in Präsentation ein Thema!)* | **✅ Berechnet!** R²=−0,007 — erklärt und interpretiert | Baustein 4 |
 | **Streamlit** (Widgets, Session State, Formulare) | ✅ Implementiert — 4 Seiten live | Baustein 3 |
 | **`pivot_table()`** | **✅ Ergänzt!** | Baustein 2 |
 | **OOP / Klassen** | **✅ Implementiert!** Klasse `KrankenhausModell` | Baustein 4 |

@@ -45,7 +45,7 @@
 |-------------|-----------|
 | `R10`, `R20`, … | Rechnerisch **auffällig** (R* = Rote Ampel) |
 | `N01`, `N02`, … | **Nicht auffällig** (N* = Grüne Ampel) |
-| `N99` | **Nicht bewertet** — z. B. wegen zu geringer Fallzahl; ≠ "nicht auffällig"! |
+| `N99` | **Nicht bewertet** — Grund in den Rohdaten nicht dokumentiert; ≠ "nicht auffällig"! |
 
 ### Verknüpfungen zu anderen Dateien
 
@@ -143,7 +143,7 @@ auffaellig_quote["hat_viele_Probleme"] = (auffaellig_quote["auffaellig_quote"] >
 | Entscheidung | Begründung |
 |--------------|------------|
 | Nur `QSQI.ArtDesWertes == 'QI'` | `EKez`, `TKez`, `KKez` sind Zählkennzahlen, keine echten Qualitätsindikatoren — würden die Quote verzerren |
-| `N99` ausschließen | Bedeutet „nicht bewertet" (zu wenig Fälle), nicht „unauffällig" — sonst würden datenärmere Häuser künstlich besser bewertet |
+| `N99` ausschließen | Bedeutet „nicht bewertet" (Grund in den Rohdaten nicht dokumentiert), nicht „unauffällig" — sonst würden Häuser mit vielen N99-Indikatoren künstlich besser bewertet |
 | Deduplizierung über `(SO.QBID, QSQI.Indikator)` | Verhindert Mehrfachzählung desselben Indikators pro Haus |
 | Median als Schwelle | Robuster gegen Ausreißer; teilt die ~1.900 Häuser in zwei gleich große Gruppen |
 

@@ -1,8 +1,7 @@
 # Rohdaten — zu groß für GitHub (86 CSV-Dateien, bis 911 MB)
-# Ausnahme: die 3 Dateien, die das Dashboard tatsächlich braucht
+# Ausnahme: die Dateien, die das Dashboard tatsächlich braucht
 Data/*
 !Data/analysetabelle.csv
-!Data/analysetabelle.xlsx
 !Data/modell_krankenhaus.pkl
 Aufgabenstellung/
 
@@ -15,10 +14,8 @@ __pycache__/
 # Projekteigene virtuelle Umgebung (siehe README: `python -m venv .venv`)
 .venv/
 
-# Temporäre Skripte (interne Nutzung)
-datensatz_bericht.py
-grafiken_speichern.py
-powerbi_anleitung.py
+# Skript-Ordner komplett von Commits ausschließen
+scripts/
 
 # ZIP-Dateien nicht einchecken
 *.zip
@@ -31,5 +28,13 @@ powerbi_anleitung.py
 *.ppt
 *.pptx
 
+# Präsentations-Ordner komplett von Commits ausschließen
+Doku/PPT/
+Doku/MD/Praesentation_Folien_Beschreibung.md
+Doku/MD/Praesentation_Team_Folien_Beschreibung.md
+
 # Jupyter-Outputs optional ausschließen (auskommentieren um Outputs zu behalten)
 # *.ipynb
+
+# Externer Quellbericht (PDF) nicht einchecken
+Doku/IQTIG_Bericht-zum-Strukturierten-Dialog-2021_EJ-2020_2022-05-16-barrierefrei.pdf

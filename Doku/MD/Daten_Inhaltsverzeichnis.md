@@ -325,7 +325,7 @@ flowchart TD
 |------|-----------|
 | `R*` (R10, R20, R30 …) | **Rechnerisch auffällig** — Wert liegt außerhalb des Referenzbereichs → Signal für mögliches Qualitätsproblem |
 | `N*` (N01, N02 …) | **Nicht auffällig** — Wert liegt innerhalb des Referenzbereichs |
-| `N99` | **Nicht bewertet** — z. B. zu wenig Fälle, Indikator nicht anwendbar → wird in der Analyse **ausgeschlossen** |
+| `N99` | **Nicht bewertet** — Grund in den Rohdaten nicht dokumentiert (Vermutung „zu wenig Fälle" ließ sich anhand von `QSQI.FallzahlGrundgesamtheit` nicht bestätigen) → wird in der Analyse **ausgeschlossen** |
 
 ---
 
