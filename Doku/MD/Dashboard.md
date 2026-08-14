@@ -3,7 +3,7 @@
 > **Ziel des Dashboards:** Die Ergebnisse der Datenanalyse interaktiv erkunden — Zusammenhänge filtern, Häuser vergleichen und das Machine-Learning-Modell direkt ausprobieren.
 
 **Technologie:** Streamlit (`Dashboard/streamlit_dashboard.py`) + Plotly für alle Grafiken  
-**Datengrundlage:** `Data/analysetabelle.csv` (1.824 Krankenhäuser, Qualitätsberichte 2023, IQTIG)  
+**Datengrundlage:** `Data/analysetabelle.csv` (1.821 Krankenhäuser, Qualitätsberichte 2023, IQTIG)  
 **Modell:** `Data/modell_krankenhaus.pkl` (Decision Tree, `max_depth=3`)  
 **Deployment:** Streamlit Cloud
 
@@ -45,7 +45,7 @@ KPI = Key Performance Indicator — die wichtigsten Kennzahlen auf einen Blick. 
 
 ### Histogramm + Bundesland-Balkendiagramm
 
-- Histogramm: 30 Balken, gestrichelte Linie bei Median (76,92 %)
+- Histogramm: 30 Balken, gestrichelte Linie bei Median (5,88 %)
 - Bundesland-Diagramm: **nur wenn kein Bundesland-Filter aktiv** — sonst Hinweismeldung
 
 ---
@@ -56,9 +56,9 @@ KPI = Key Performance Indicator — die wichtigsten Kennzahlen auf einen Blick. 
 
 Vier Tabs:
 
-**Tab 1 — Trägerschaft:** Grouped Bar Chart + ausführlicher Erklärungstext (ANOVA, p-Wert, Störfaktor Hausgröße)
+**Tab 1 — Trägerschaft:** Grouped Bar Chart + ausführlicher Erklärungstext (ANOVA — p=0,969, NICHT signifikant; Störfaktor Hausgröße als Zusatzhinweis)
 
-**Tab 2 — Ärzte pro Bett:** Zwei Boxplots + gestrichelte Linie bei Split 0,271 + Erklärungstext (T-Test, Feature Importance 53,6 %)
+**Tab 2 — Ärzte pro Bett:** Zwei Boxplots + gestrichelte Linie bei Split 0,271 + Erklärungstext (T-Test, Feature Importance 72,8 %)
 
 **Tab 3 — Streudiagramm:**
 - Dropdown mit lesbaren Labels inkl. Beschreibung (z. B. `aerzte_pro_bett (Ärzte je Bett — Personalintensität)`)
@@ -76,18 +76,18 @@ Vier Tabs:
 - `select_slider` für Bettenzahl-Toleranz: ±10 % / ±20 % / **±30 % (Standard)** / ±50 %
 - Label des Bettenzahl-Inputs zeigt gewählte Toleranz dynamisch an
 - Button **„↪ Suchen"**
-- Ergebnis: Ø auffällig-Quote als HTML-Karte ohne Pfeil — z. B. „12,1 % unter Median" (grün)
+- Ergebnis: Ø auffällig-Quote als HTML-Karte ohne Pfeil — z. B. „2,1 % unter Median" (grün)
 
 ### Einzelhaus-Steckbrief
 
 - 8 HTML-Karten: Betten, Träger, Bundesland, Uni-Status, auffällig-Quote, Kategorie, Ärzte/Bett, Fortbildungsquote
-- Abstandswert: z. B. „17,8 % über Median" (rot) — kein Pfeil, kein Vorzeichen
+- Abstandswert: z. B. „5 % über Median" (rot) — kein Pfeil, kein Vorzeichen
 
 ---
 
 ## Seite 4 — Qualitäts-Vorhersage
 
-- Intro-Text + Warnbox (Accuracy 63,6 %, Basislinie 50,7 %, Grenzen des Modells)
+- Intro-Text + Warnbox (Accuracy 57,0 %, Basislinie 50,4 %, Grenzen des Modells)
 - Eingabe-Formular: 7 Merkmale in zwei Spalten
 - Button **„Ergebnis anzeigen"** — in der linken Spalte unter „Konzernhaus?"
 - Ergebnis-Block: Vorhersage-Kasten (grün/rot), P(Wenige/Viele), Erklärung des Schwellenwerts 0,271

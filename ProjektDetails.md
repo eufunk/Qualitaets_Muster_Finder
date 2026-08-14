@@ -64,7 +64,7 @@ QualitaetsMusterFinderProjekt/
 │
 └── ⚙️ Konfiguration
     ├── .gitignore                → Schließt Data/* aus (außer den 2 !-Ausnahmen), sowie scripts/, Doku/PPT/, .devcontainer/, Aufgabenstellung/ und weitere Einzeldateien
-    └── requirements.txt          → 11 Pakete (streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn)
+    └── requirements.txt          → 12 Pakete (streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn, statsmodels)
 ```
 
 ---
@@ -133,7 +133,7 @@ QualitaetsMusterFinderProjekt/
 ### ⚙️ Konfiguration
 
 - `.gitignore` — Schließt `Data/*` aus (Rohdaten, 86 CSVs/Excels sowie `analysetabelle.xlsx`) außer den 2 `!`-Ausnahmen; schließt zusätzlich `scripts/`, `Doku/PPT/`, `.devcontainer/`, einzelne Markdown-/PDF-Dateien und `Aufgabenstellung/` aus
-- `requirements.txt` — 11 Pakete: streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn
+- `requirements.txt` — 12 Pakete: streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn, statsmodels (statsmodels wird von Plotly fuer die Trendlinien im Streudiagramm-Tab benoetigt)
 
 > `.devcontainer/devcontainer.json` (GitHub-Codespaces-Konfiguration) liegt lokal vor, ist aber bewusst nicht versioniert — Codespaces wird für dieses Projekt nicht genutzt, das Deployment läuft über Streamlit Community Cloud.
 
@@ -234,6 +234,7 @@ streamlit run Dashboard/streamlit_dashboard.py
 - ✅ Alle Word-Dokument-Generatoren in `scripts/` und deren Ausgabedateien auf die korrigierten Kennzahlen aktualisiert
 - ✅ Fehlendes `scripts/Grafiken_Speichern.py` neu erstellt und alle 12 PNG-Grafiken mit den korrigierten Daten neu erzeugt
 - ✅ `.gitignore` überarbeitet: `scripts/`, `Doku/PPT/`, `.devcontainer/` (ungenutzte Codespaces-Konfiguration) und weitere lokale Arbeitsdateien vollständig von der Versionierung ausgeschlossen
+- ✅ `Dashboard/` (`streamlit_dashboard.py`, `dashboard_utils.py`) auf die korrigierten Kennzahlen umgestellt — u. a. Trägerschafts-Tab (ANOVA jetzt nicht signifikant), Feature Importance, Risiko-Rechner-Richtung (mehr Ärzte/Bett → höheres statt niedrigeres Risiko). Dabei zwei unabhängige, vorbestehende Bugs gefunden und behoben: fehlendes `statsmodels` (Streudiagramm-Trendlinien crashten) und veraltetes `Styler.applymap` (Ähnliche-Häuser-Suche crashte) — beide nicht mit der Zielvariablen-Korrektur zusammenhängend. Alle 4 Seiten inkl. Kern-Interaktionen per `streamlit.testing.v1.AppTest` verifiziert (keine Exceptions)
 
 ---
 

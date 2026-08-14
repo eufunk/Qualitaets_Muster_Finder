@@ -35,7 +35,7 @@ FARBE_WENIGE = "#2ecc71"   # gruen = wenige Probleme
 FARBE_MAP    = {0: FARBE_WENIGE, 1: FARBE_VIELE}
 LABEL_MAP    = {0: "Wenige Probleme", 1: "Viele Probleme"}
 
-MEDIAN_QUOTE = 0.7692      # aus Python-Analyse berechnet — nicht veraendern!
+MEDIAN_QUOTE = 0.0588      # aus Python-Analyse berechnet (Korrektur 2026-08-14) — nicht veraendern!
 DT_SPLIT     = 0.271       # Decision Tree Split-Wert fuer aerzte_pro_bett
 TRAEGER_COL  = "KH.Träger.Art"
 
@@ -52,7 +52,7 @@ def lade_daten(pfad: Path = DATA_PATH) -> pd.DataFrame:
       - Neue Hilfsspalten: Problemkategorie, Uni_Label, Groessenklasse
 
     Returns:
-        pd.DataFrame mit 1.824 Zeilen und erweiterten Spalten
+        pd.DataFrame mit 1.821 Zeilen und erweiterten Spalten
     """
     df = pd.read_csv(pfad, low_memory=False)
 
@@ -90,7 +90,7 @@ def _groesse_kategorie(betten: float) -> str:
 def _aerzte_risikoklasse(aerzte: float) -> str:
     if pd.isna(aerzte):
         return "Unbekannt"
-    return "Risiko hoch" if aerzte <= DT_SPLIT else "Risiko gering"
+    return "Risiko hoch" if aerzte > DT_SPLIT else "Risiko gering"
 
 
 def validiere_daten(df: pd.DataFrame) -> dict:
@@ -232,11 +232,15 @@ def erstelle_bundesland_balken(df: pd.DataFrame) -> go.Figure:
 
     fig = px.bar(
         stats, x="pct", y="SO.Bundesland", orientation="h",
-        text=stats["n"].apply(lambda x: f"n={x}"),
+        text=stats["n"].apply(lambda x: f"n={x} Häuser"),
+        custom_data=["n"],
         labels={"pct": "Anteil 'Viele Probleme'", "SO.Bundesland": ""},
         title="Anteil Haeuser mit vielen Problemen je Bundesland",
     )
-    fig.update_traces(marker_color=farben, textposition="outside")
+    fig.update_traces(
+        marker_color=farben, textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Anteil 'Viele Probleme': %{x:.1%}<br>Anzahl Häuser (n): %{customdata[0]}<extra></extra>",
+    )
     fig.add_vline(x=0.5, line_dash="dash", line_color="gray")
     fig.update_xaxes(tickformat=".0%")
     return fig
@@ -260,7 +264,7 @@ def erstelle_traeger_vergleich(df: pd.DataFrame) -> go.Figure:
         color="pct",
         color_continuous_scale=["#2ecc71", "#e74c3c"],
         labels={"pct": "Anteil 'Viele Probleme'", TRAEGER_COL: "Traegerschaft"},
-        title="Traeger-Vergleich (ANOVA p<0,001 signifikant)",
+        title="Traeger-Vergleich (ANOVA p=0,969 NICHT signifikant)",
     )
     fig.add_hline(y=0.5, line_dash="dash", line_color="gray",
                   annotation_text="50%-Linie")
@@ -271,7 +275,7 @@ def erstelle_traeger_vergleich(df: pd.DataFrame) -> go.Figure:
 
 
 def erstelle_boxplot_aerzte(df: pd.DataFrame) -> go.Figure:
-    """Box-Plot: aerzte_pro_bett nach Problemkategorie (T-Test p<0,001)."""
+    """Box-Plot: aerzte_pro_bett nach Problemkategorie (T-Test p<0,0001)."""
     fig = px.box(
         df.dropna(subset=["aerzte_pro_bett"]),
         x="Problemkategorie", y="aerzte_pro_bett",
@@ -282,7 +286,7 @@ def erstelle_boxplot_aerzte(df: pd.DataFrame) -> go.Figure:
         },
         points=False,
         labels={"aerzte_pro_bett": "Aerzte pro Bett"},
-        title="Aerzte pro Bett: MIT vs. OHNE viele Probleme (T-Test p<0,001)",
+        title="Aerzte pro Bett: MIT vs. OHNE viele Probleme (T-Test p<0,0001)",
     )
     fig.add_hline(y=DT_SPLIT, line_dash="dot", line_color="black",
                   annotation_text=f"Decision Tree Grenzwert: {DT_SPLIT}")
@@ -460,9 +464,10 @@ def berechne_risiko(
     risiko_text = "Viele Probleme" if vorhersage == 1 else "Wenige Probleme"
     risiko_farbe = FARBE_VIELE if vorhersage == 1 else FARBE_WENIGE
 
-    # Decision Tree Erklaerung (wichtigster Split)
-    _seite  = "darunter" if aerzte <= DT_SPLIT else "darüber"
-    _folge  = "viele Qualitätsprobleme wahrscheinlich" if aerzte <= DT_SPLIT else "wenige Qualitätsprobleme wahrscheinlich"
+    # Decision Tree Erklaerung (wichtigster Split) — Korrektur 2026-08-14:
+    # mehr Aerzte pro Bett haengt jetzt mit MEHR, nicht weniger, Qualitaetsproblemen zusammen
+    _seite  = "darüber" if aerzte > DT_SPLIT else "darunter"
+    _folge  = "viele Qualitätsprobleme wahrscheinlicher" if aerzte > DT_SPLIT else "wenige Qualitätsprobleme wahrscheinlicher (hängt zusätzlich von Pflegepersonal/Bettenzahl ab)"
     erklaerung = (
         f"Ausschlaggebend: Ärzte pro Bett = {aerzte:.3f} "
         f"(Schwellenwert {DT_SPLIT} — eingegebener Wert liegt {_seite} → {_folge})"

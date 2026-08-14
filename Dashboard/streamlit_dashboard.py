@@ -43,11 +43,6 @@ st.markdown(
     "[data-baseweb='select'] [data-baseweb='select-control']{min-height:2rem !important;height:2rem !important;}"
     "[data-testid='stSidebar']{display:none !important;}"
     "[data-testid='collapsedControl']{display:none !important;}"
-    ".nav-link{display:inline-block;padding:6px 16px;border-radius:5px;font-size:0.88rem;"
-    "font-weight:600;text-decoration:none;margin-left:6px;}"
-    ".nav-link-active{background:rgba(255,255,255,0.25);color:#fff;border:1px solid rgba(255,255,255,0.5);}"
-    ".nav-link-inactive{background:transparent;color:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.25);}"
-    ".nav-link-inactive:hover{background:rgba(255,255,255,0.12);color:#fff;}"
     "</style>",
     unsafe_allow_html=True,
 )
@@ -74,25 +69,29 @@ SEITEN = ["Gesamtüberblick", "Einflussfaktoren", "Häuser vergleichen", "Qualit
 _seite_aus_url = st.query_params.get("seite", SEITEN[0])
 seite = _seite_aus_url if _seite_aus_url in SEITEN else SEITEN[0]
 
-# Header mit integrierter Navigation ─────────────────────────────
-_nav_links = "".join([
-    f'<a href="?seite={s.replace(" ", "+")}" class="nav-link '
-    f'{"nav-link-active" if s == seite else "nav-link-inactive"}">{s}</a>'
-    for s in SEITEN
-])
+def _gehe_zu_seite(s):
+    st.query_params["seite"] = s
+
+# Header-Banner (Titel) ────────────────────────────────────────────
 st.markdown(
     f"<div style='background:#1a4f72;padding:14px 28px;border-radius:6px;"
-    f"margin-top:0;margin-bottom:16px;box-shadow:0 2px 6px rgba(0,0,0,.25);"
-    f"display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:8px;'>"
-    f"<div>"
+    f"margin-top:0;margin-bottom:10px;box-shadow:0 2px 6px rgba(0,0,0,.25);'>"
     f"<h1 style='color:#fff;font-size:1.8rem;margin:0 0 2px 0;line-height:1.2;'>"
     f"Dashboard für Qualitätsprobleme deutscher Krankenhäuser</h1>"
     f"<span style='color:#a8c8e8;font-size:0.82rem'>Datenbasis: Qualitätsberichte 2023 | IQTIG</span>"
-    f"</div>"
-    f"<div style='display:flex;align-items:center;flex-wrap:wrap;'>{_nav_links}</div>"
     f"</div>",
     unsafe_allow_html=True,
 )
+
+# Navigation als echte Streamlit-Buttons (kein <a href> — öffnet nie einen neuen Browser-Tab) ─
+_nav_cols = st.columns(len(SEITEN))
+for _i, _s in enumerate(SEITEN):
+    with _nav_cols[_i]:
+        st.button(
+            _s, key=f"nav_{_s}", on_click=_gehe_zu_seite, args=(_s,),
+            type="primary" if _s == seite else "secondary",
+            width="stretch",
+        )
 
 st.markdown("<div style='margin-bottom:4px'></div>", unsafe_allow_html=True)
 
@@ -131,7 +130,7 @@ if seite == "Gesamtüberblick":
     st.markdown(
         "Die vier Kennzahlen geben einen schnellen Überblick über den aktuell angezeigten Datensatz. "
         "**Krankenhäuser** — Anzahl der Häuser nach aktiven Filtern. "
-        "**Anteil 'Viele Probleme'** — wie viele Häuser als auffällig eingestuft wurden (Schwelle: Median ~77 %). "
+        "**Anteil 'Viele Probleme'** — wie viele Häuser als auffällig eingestuft wurden (Schwelle: Median ~6 %). "
         "**Ø auffällig-Quote** — von allen Qualitätsindikatoren, die für ein Haus bewertet wurden, "
         "wie viele davon vom IQTIG als rechnerisch auffällig eingestuft wurden (d. h. das Haus weicht "
         "statistisch negativ vom Bundesdurchschnitt ab). "
@@ -210,7 +209,9 @@ if seite == "Gesamtüberblick":
         st.plotly_chart(erstelle_bundesland_balken(df_gefiltert), use_container_width=True)
         st.caption(
             "Anteil der Krankenhäuser mit überdurchschnittlich vielen Qualitätsproblemen je Bundesland. "
-            "Werte über 50 % liegen über dem deutschlandweiten Durchschnitt."
+            "Werte über 50 % liegen über dem deutschlandweiten Durchschnitt. "
+            "Die Zahl an jedem Balken (**n**) zeigt, wie viele Krankenhäuser in diesem Bundesland ausgewertet wurden — "
+            "bei kleinem n (z. B. Bremen) kann schon ein einzelnes Haus den Prozentwert stark verschieben."
         )
     else:
         st.info(f"Bundesland-Vergleich ist ausgeblendet, da der Filter auf **{filter_bundesland}** gesetzt ist — ein Vergleich aller Bundesländer wäre nicht aussagekräftig.")
@@ -234,27 +235,28 @@ elif seite == "Einflussfaktoren":
         st.subheader("Trägerschaft vs. Anteil 'Viele Probleme'")
         st.plotly_chart(erstelle_traeger_vergleich(df), use_container_width=True)
         st.markdown(
-            "**Befund:** Private Häuser haben mit **56,5 %** den höchsten Anteil an Häusern "
-            "mit vielen Qualitätsproblemen — gegenüber 46,4 % (freigemeinnützig) und 46,7 % (öffentlich). \n\n"
-            "Der Unterschied wurde mit einer **ANOVA** (Varianzanalyse) getestet: "
-            "Diese Methode prüft, ob sich die drei Trägergruppen in ihrer durchschnittlichen "
+            "**Befund:** Öffentliche Häuser haben mit **53,5 %** den höchsten Anteil an Häusern "
+            "mit vielen Qualitätsproblemen — gegenüber 50,6 % (freigemeinnützig) und 43,8 % (privat). \n\n"
+            "Der Unterschied wurde mit einer **ANOVA** (Varianzanalyse) getestet — allerdings direkt auf "
+            "der stetigen Auffälligkeitsquote, nicht auf den hier gezeigten, in zwei Gruppen gesplitteten "
+            "Prozentsätzen. Diese Methode prüft, ob sich die drei Trägergruppen in ihrer durchschnittlichen "
             "Auffälligkeitsquote statistisch bedeutsam unterscheiden — oder ob die Unterschiede "
             "nur zufällig sind. \n\n"
             "Der **p-Wert** ist das Kernstück jedes statistischen Tests: Er gibt an, wie wahrscheinlich es wäre, "
             "den beobachteten Unterschied zu sehen, *wenn es in Wirklichkeit gar keinen Unterschied gibt*. "
             "Wir nutzen ihn hier, weil wir nicht einfach auf die Prozentzahlen schauen können — "
-            "bei 1.824 Krankenhäusern könnten Unterschiede auch rein durch Zufall entstehen. "
+            "bei 1.821 Krankenhäusern könnten Unterschiede auch rein durch Zufall entstehen. "
             "Der p-Wert sagt uns, ob wir dem Unterschied vertrauen dürfen. "
             "Liegt er unter 0,05 (5 %), gilt das Ergebnis als statistisch abgesichert. \n\n"
-            "Hier beträgt der **p-Wert < 0,001**: Die Wahrscheinlichkeit, dass dieser Unterschied "
-            "zwischen den Trägerarten rein zufällig entstanden ist, liegt unter 0,1 %. "
-            "Das Ergebnis ist damit **statistisch signifikant** — der Trägertyp hängt nachweislich "
-            "mit der Auffälligkeitsquote zusammen. \n\n"
-            "⚠️ **Wichtiger Vorbehalt:** Private Häuser sind im Median deutlich kleiner "
-            "(125 Betten gegenüber ~200–300 bei öffentlichen und freigemeinnützigen). "
-            "Da kleinere Häuser generell häufiger auffällig sind (weniger Fälle = weniger stabile Kennzahlen), "
-            "könnte der schlechtere Wert privater Häuser zumindest teilweise durch ihre geringere Größe "
-            "erklärt werden — und nicht nur durch die Trägerschaft selbst."
+            "Hier beträgt der **p-Wert 0,969** — praktisch 1. Das Ergebnis ist damit **NICHT statistisch "
+            "signifikant**: Die drei Trägerarten liegen im Mittelwert der stetigen Quote praktisch identisch "
+            "(8,56 % / 8,57 % / 8,72 %). Der oben sichtbare Unterschied in den Prozentsätzen entsteht erst "
+            "durch den Median-Split in zwei Gruppen — auf Ebene der eigentlichen Quote lässt sich kein "
+            "Trägerschafts-Effekt nachweisen. \n\n"
+            "⚠️ **Zusätzlicher Hinweis:** Private Häuser sind im Median deutlich kleiner "
+            "(125 Betten gegenüber 218 bzw. 232 bei freigemeinnützigen und öffentlichen Häusern). "
+            "Das bleibt methodisch relevant, ist hier aber zweitrangig — schon auf Ebene der stetigen "
+            "Quote gibt es keinen Trägereffekt, der durch die Größe erklärt werden müsste."
         )
 
     with tab2:
@@ -277,24 +279,26 @@ elif seite == "Einflussfaktoren":
             "Eine schmale Box bedeutet, dass die Häuser ähnlich aufgestellt sind. "
             "Eine breite Box bedeutet große Unterschiede innerhalb der Gruppe. \n\n"
             f"**Befund:** Häuser mit wenigen Problemen haben im Median **{df[df['hat_viele_Probleme']==0]['aerzte_pro_bett'].median():.3f} Ärzte pro Bett**, "
-            f"Häuser mit vielen Problemen nur **{df[df['hat_viele_Probleme']==1]['aerzte_pro_bett'].median():.3f}**. "
+            f"Häuser mit vielen Problemen **{df[df['hat_viele_Probleme']==1]['aerzte_pro_bett'].median():.3f}** — also mehr, nicht weniger. "
             "Das klingt nach einem kleinen Unterschied — macht aber bei einem Haus mit 300 Betten "
             "rund 20 Vollzeit-Ärzte mehr oder weniger aus. \n\n"
             "Ein **T-Test** hat geprüft, ob dieser Unterschied statistisch zuverlässig ist oder zufällig sein könnte. "
             "Der T-Test vergleicht die Mittelwerte zweier Gruppen und berechnet daraus einen p-Wert. "
-            "Ergebnis: t = 6,002, **p < 0,001** — die Wahrscheinlichkeit, dass dieser Unterschied "
-            "zufällig ist, liegt unter 0,1 %. Der Zusammenhang ist damit statistisch gesichert. \n\n"
+            "Ergebnis: t = −9,13, **p < 0,0001** — die Wahrscheinlichkeit, dass dieser Unterschied "
+            "zufällig ist, liegt weit unter 0,1 %. Der Zusammenhang ist damit statistisch gesichert. \n\n"
             f"Die gestrichelte Linie bei **{DT_SPLIT} Ärzte/Bett** ist der Trennwert, den der Decision Tree "
-            "automatisch gefunden hat: Häuser unterhalb dieser Grenze werden vom Modell als "
+            "automatisch gefunden hat: Häuser oberhalb dieser Grenze werden vom Modell tendenziell als "
             "Risikokandidat für viele Qualitätsprobleme eingestuft. \n\n"
-            "**Schlussfolgerung:** Mehr Ärzte pro Bett geht mit weniger Qualitätsproblemen einher. "
-            "Personalintensität ist nach Ärztedichte der stärkste erklärende Faktor im gesamten Datensatz. "
+            "**Schlussfolgerung:** Mehr Ärzte pro Bett geht mit mehr, nicht weniger, Qualitätsproblemen einher — "
+            "vermutlich weil Häuser mit mehr Personal auch mehr Indikatoren bewertet bekommen und damit mehr "
+            "Gelegenheiten für eine Auffälligkeit haben (derselbe Effekt wie bei `total_qi`, siehe Streudiagramm-Tab). "
+            "Personalintensität ist trotzdem der stärkste erklärende Faktor im gesamten Datensatz. "
             "Das zeigt die sogenannte **Feature Importance** des Decision Trees: "
             "Das Modell hat beim Training selbst bewertet, welche Merkmale am stärksten dazu beitragen, "
             "ein Haus als 'viele Probleme' oder 'wenige Probleme' einzustufen. "
-            "Bei **Ärzte pro Bett** liegt dieser Wert bei **53,6 %** — das bedeutet, "
-            "mehr als die Hälfte aller Entscheidungen im Modell hängen allein an diesem einen Merkmal. "
-            "Alle anderen Merkmale (Bettenzahl, Träger, Fortbildungsquote usw.) teilen sich die restlichen 46,4 % auf."
+            "Bei **Ärzte pro Bett** liegt dieser Wert bei **72,8 %** — das bedeutet, "
+            "fast drei Viertel aller Entscheidungen im Modell hängen allein an diesem einen Merkmal. "
+            "Alle anderen Merkmale (Bettenzahl, Pflegekräfte, Träger usw.) teilen sich die restlichen 27,2 % auf."
         )
 
     with tab3:
@@ -323,60 +327,59 @@ elif seite == "Einflussfaktoren":
 
         _erklaerungen = {
             "aerzte_pro_bett": (
-                "**Was die Linien zeigen:** Beide Linien fallen von links nach rechts — "
-                "je mehr Ärzte pro Bett, desto niedriger die Auffälligkeitsquote in beiden Gruppen. "
-                "Die rote Linie liegt dabei deutlich höher als die grüne: Bei gleicher Ärztedichte "
-                "haben Häuser mit vielen Problemen systematisch schlechtere Quoten. "
-                "Der **Schnittpunkt** der Linien markiert den Punkt, ab dem sich der Abstand zwischen "
-                "den Gruppen verändert — links davon ist der Unterschied größer als rechts. \n\n"
-                "**Schlussfolgerung:** Ärztedichte ist der stärkste Prädiktor im Datensatz (Feature Importance 53,6 %). "
-                "Die Trennung zwischen rot und grün ist hier am klarsten."
+                "**Was die Linien zeigen:** Die beiden Trendlinien verlaufen uneinheitlich: Bei Häusern "
+                "mit vielen Problemen sinkt die Quote mit steigender Ärztedichte leicht, bei Häusern mit "
+                "wenigen Problemen bleibt sie nahezu gleich. Die Punktwolken beider Gruppen überlappen stark. \n\n"
+                "**Wichtig — zwei verschiedene Blickwinkel:** Die klare Ärzte-Wirkung aus dem Boxplot-Tab "
+                "(Median 0,382 vs. 0,470 Ärzte/Bett) und der hohen Feature Importance (72,8 %) bezieht sich "
+                "auf den Vergleich zwischen den beiden GRUPPEN. Dieses Streudiagramm zeigt dagegen den "
+                "Zusammenhang mit der STETIGEN Quote innerhalb jeder Gruppe — der ist hier deutlich schwächer "
+                "und uneinheitlich. Beides sind gültige, aber unterschiedliche Perspektiven auf dieselben Daten. \n\n"
+                "**Schlussfolgerung:** Ärztedichte bleibt laut Decision Tree das mit Abstand wichtigste Merkmal — "
+                "aber nicht, weil sie die stetige Quote linear vorhersagt, wie dieses Diagramm zeigt."
             ),
             "SO.Betten": (
-                "**Was die Linien zeigen:** Beide Linien fallen leicht von links nach rechts — "
-                "größere Häuser (mehr Betten) tendieren zu etwas niedrigeren Auffälligkeitsquoten. "
-                "Der Effekt ist aber schwächer als bei der Ärztedichte (Korrelation r = −0,08). "
-                "Die Punktwolken beider Gruppen überlappen stark — Bettenzahl allein trennt die Gruppen kaum. \n\n"
-                "**Schlussfolgerung:** Hausgröße hat einen schwachen, aber messbaren Zusammenhang mit Qualität. "
-                "Kleine Häuser sind etwas häufiger auffällig — möglicherweise weil sie weniger stabile Fallzahlen haben."
+                "**Was die Linien zeigen:** Beide Linien verlaufen nahezu horizontal — die Bettenzahl hat "
+                "innerhalb keiner der beiden Gruppen einen erkennbaren linearen Einfluss auf die stetige Quote. "
+                "Die Punktwolken beider Gruppen überlappen stark. \n\n"
+                "**Hinweis:** Bezogen auf die Gruppenzugehörigkeit (viele vs. wenige Probleme) gibt es einen "
+                "schwachen, aber messbaren Zusammenhang (r = +0,14): größere Häuser gehören etwas häufiger zur "
+                "Gruppe 'viele Probleme'. Auf der hier gezeigten stetigen Quote ist davon praktisch nichts zu sehen "
+                "(r = −0,03). \n\n"
+                "**Schlussfolgerung:** Bettenzahl allein trennt die beiden Gruppen kaum."
             ),
             "fortbildungsquote": (
                 "**Warum sind die Linien fast horizontal?** Horizontale Regressionslinien bedeuten: "
                 "Egal wie hoch oder niedrig die Fortbildungsquote eines Hauses ist — "
                 "die Auffälligkeitsquote bleibt ungefähr gleich. "
                 "Es gibt keinen erkennbaren Zusammenhang zwischen diesen beiden Merkmalen. \n\n"
-                "**Warum überkreuzen sich die Linien nicht?** Weil beide Linien nahezu flach verlaufen "
-                "und die rote Gruppe generell höher liegt als die grüne — sie sind parallel verschoben, "
-                "nicht gegenläufig. Das bedeutet: Häuser mit vielen Problemen haben zwar "
-                "eine höhere Auffälligkeitsquote, aber die Fortbildungsquote ihrer Ärzte erklärt das nicht. \n\n"
-                "**Schlussfolgerung:** Fortbildungsquote ist kein Qualitätsprädiktor (r ≈ 0,01). "
+                "**Schlussfolgerung:** Fortbildungsquote ist kein Qualitätsprädiktor (r ≈ 0,03, praktisch null). "
                 "Ob Ärzte ihre Fortbildungspflicht erfüllen, hängt in diesem Datensatz nicht damit zusammen, "
-                "wie viele Indikatoren ein Haus im roten Bereich hat."
+                "wie hoch die Auffälligkeitsquote eines Hauses ist."
             ),
             "total_qi": (
-                "**Was die Linien zeigen:** Die rote Linie (viele Probleme) fällt von links nach rechts — "
-                "Häuser mit mehr bewerteten Indikatoren haben in dieser Gruppe tendenziell niedrigere Auffälligkeitsquoten. "
-                "Die grüne Linie (wenige Probleme) verläuft flacher oder steigt leicht an. \n\n"
-                "**Was bedeutet der Schnittpunkt ganz rechts?** "
-                "Bis zu einem bestimmten total_qi-Wert liegt die rote Gruppe höher als die grüne — das ist der erwartete Befund. "
-                "Ganz rechts kreuzen sich die Linien: Bei sehr vielen bewerteten Indikatoren nähern sich "
-                "die Gruppen einander an. Das bedeutet nicht, dass große Häuser plötzlich schlechter werden — "
-                "sondern dass bei sehr hohem total_qi die Einteilung in 'viele' vs. 'wenige Probleme' "
-                "weniger trennscharf wird. Die Datenpunkte in diesem Bereich sind außerdem spärlich, "
-                "was die Linie dort unzuverlässig macht. \n\n"
+                "**Was die Linien zeigen:** Beide Linien verlaufen nahezu flach, mit einem leicht fallenden "
+                "Trend bei Häusern mit vielen Problemen. \n\n"
+                "**Ein wichtiger Unterschied:** Bezogen auf die Gruppenzugehörigkeit (viele vs. wenige Probleme) "
+                "ist total_qi das stärkste Einzelmerkmal im gesamten Datensatz (r = +0,24) — Häuser mit mehr "
+                "bewerteten Indikatoren gehören häufiger zur Gruppe 'viele Probleme'. Auf der hier gezeigten "
+                "STETIGEN Quote ist der Zusammenhang dagegen schwach und sogar leicht negativ (r = −0,09). "
+                "Das ist kein Widerspruch: Der Median-Split, mit dem die beiden Gruppen gebildet werden, kann "
+                "Zusammenhänge sichtbar machen, die auf der stetigen Skala so nicht bestehen. \n\n"
                 "**Was ist total_qi?** Die Gesamtzahl der bewerteten Qualitätsindikatoren pro Haus "
-                "(nach Filterung von N99 und Nicht-QI-Typen). Kleine Häuser haben typischerweise weniger Fälle "
+                "(nach Filterung von N*-Codes und Nicht-QI-Typen). Kleine Häuser haben typischerweise weniger Fälle "
                 "je Indikator und werden daher seltener bewertet — ihr total_qi ist entsprechend niedriger. \n\n"
-                "**Schlussfolgerung:** total_qi ist ein indirekter Größenindikator (r = −0,28). "
-                "Er misst nicht die Qualität selbst, sondern wie umfangreich ein Haus bewertet werden konnte."
+                "**Schlussfolgerung:** total_qi ist ein Strukturmerkmal, kein Qualitätsmerkmal — ob es "
+                "'positiv' oder 'negativ' wirkt, hängt davon ab, ob man die Gruppenzugehörigkeit oder die "
+                "stetige Quote betrachtet."
             ),
         }
 
         st.markdown(
             _erklaerung_basis.format(merkmal) +
             _erklaerungen.get(merkmal, "") +
-            "\n\n**Tipp:** Wechsle das Merkmal oben und vergleiche — "
-            "**Ärzte pro Bett** zeigt die klarste Trennung aller verfügbaren Merkmale."
+            "\n\n**Tipp:** Wechsle das Merkmal oben und vergleiche — bei allen vier Merkmalen überlappen "
+            "sich die Punktwolken beider Gruppen stark, ein einzelnes Merkmal trennt hier keine klare Grenze."
         )
 
     with tab4:
@@ -385,7 +388,7 @@ elif seite == "Einflussfaktoren":
             "**Was ist eine Pivot-Tabelle?** Eine Pivot-Tabelle fasst viele Einzelwerte in einer kompakten "
             "Übersicht zusammen. Hier wird für jede Kombination aus Trägerart (Zeilen) und Uni-Status (Spalten) "
             "der **Durchschnitt der auffaellig_quote** aller Häuser in dieser Gruppe angezeigt. "
-            "Ein Wert von z. B. 0,77 bedeutet: Häuser in dieser Gruppe haben im Schnitt 77 % ihrer "
+            "Ein Wert von z. B. 0,09 bedeutet: Häuser in dieser Gruppe haben im Schnitt 9 % ihrer "
             "Qualitätsindikatoren im roten Bereich. \n\n"
             "**Wofür ist das nützlich?** Sie zeigt auf einen Blick, ob sich Trägerart und Uni-Status "
             "*gemeinsam* auf die Qualität auswirken — also ob z. B. private Uni-Kliniken anders abschneiden "
@@ -401,9 +404,12 @@ elif seite == "Einflussfaktoren":
             use_container_width=True,
         )
         st.markdown(
-            "**Befund:** Uni-Kliniken haben je nach Träger leicht niedrigere Auffälligkeitsquoten. "
-            "Der Unterschied ist aber gering — der Uni-Status allein erklärt die Qualitätsunterschiede nicht "
-            "(kein signifikanter Effekt in der statistischen Analyse)."
+            "**Befund:** Das Bild ist gemischt: Bei freigemeinnützigen und privaten Häusern haben "
+            "Uni-Kliniken eine niedrigere Auffälligkeitsquote als Nicht-Uni-Häuser (z. B. freigemeinnützig: "
+            "5,5 % vs. 8,6 %). Bei öffentlichen Häusern ist es umgekehrt — dort liegt die Uni-Klinik-Quote "
+            "höher (9,6 % vs. 8,6 %). Der Uni-Status wirkt sich also nicht einheitlich aus, sondern hängt "
+            "mit der Trägerart zusammen — ein Beispiel dafür, warum Merkmale gemeinsam statt isoliert "
+            "betrachtet werden sollten."
         )
 
 
@@ -460,7 +466,7 @@ elif seite == "Häuser vergleichen":
                     aehnliche.style
                     .format({"auffaellig_quote": "{:.1%}", "aerzte_pro_bett": "{:.3f}",
                              "fortbildungsquote": "{:.1%}"})
-                    .applymap(
+                    .map(
                         lambda v: f"background-color: {FARBE_VIELE}22" if v == "Viele Probleme"
                         else f"background-color: {FARBE_WENIGE}22",
                         subset=["Problemkategorie"]
@@ -490,7 +496,7 @@ elif seite == "Häuser vergleichen":
                 "und zur Bettenzahl (±Toleranz laut Schieberegler, einstellbar von ±10 % bis ±50 %) passen. "
                 "Die Tabelle ist nach Auffälligkeitsquote sortiert — "
                 "Häuser mit rotem Hintergrund in der Kategorie-Spalte haben viele Qualitätsprobleme. "
-                "Die zwei Kennzahlen unten zeigen den Gruppen-Durchschnitt im Vergleich zum Gesamtmedian aller ~1.824 Häuser."
+                "Die zwei Kennzahlen unten zeigen den Gruppen-Durchschnitt im Vergleich zum Gesamtmedian aller ~1.821 Häuser."
             )
 
     st.markdown("---")
@@ -499,8 +505,8 @@ elif seite == "Häuser vergleichen":
     st.subheader("🪪 Einzelhaus-Steckbrief")
     st.markdown(
         "Wähle ein Krankenhaus aus der Liste und sieh alle Kennzahlen auf einen Blick. "
-        "Der Abstandswert bei der auffällig-Quote zeigt die **Abweichung in Prozentpunkten** vom Gesamtmedian (~77 %): "
-        "z. B. bedeutet **17,8 % über Median**: das Haus hat eine um 17,8 % höhere Auffälligkeitsquote als der Durchschnitt — also mehr Indikatoren im roten Bereich → **rot**. "
+        "Der Abstandswert bei der auffällig-Quote zeigt die **Abweichung in Prozentpunkten** vom Gesamtmedian (~6 %): "
+        "z. B. bedeutet **5 % über Median**: das Haus hat eine um 5 Prozentpunkte höhere Auffälligkeitsquote als der Durchschnitt — also mehr Indikatoren im roten Bereich → **rot**. "
         "**Unter Median** bedeutet weniger auffällige Indikatoren als der Durchschnitt → **grün**."
     )
     haus_auswahl = st.selectbox(
@@ -603,15 +609,15 @@ elif seite == "Qualitäts-Vorhersage":
         "Gib die Merkmale eines Krankenhauses ein und das Modell schätzt, "
         "ob dieses Haus wahrscheinlich **viele oder wenige Qualitätsprobleme** haben wird. "
         "Grundlage ist ein Decision Tree — ein Entscheidungsbaum, der aus den Daten von "
-        "1.824 deutschen Krankenhäusern trainiert wurde. "
+        "1.821 deutschen Krankenhäusern trainiert wurde. "
         "Das Modell lernt dabei selbst, welche Merkmalskombinationen typisch für Häuser "
         "mit vielen Qualitätsproblemen sind."
     )
     st.warning(
         "**Wie gut ist dieses Modell?** "
-        "Das Modell trifft in **63,6 %** der Fälle die richtige Vorhersage. "
-        "Zum Vergleich: Würde man einfach immer die häufigste Kategorie raten, käme man auf 50,7 % — "
-        "das Modell ist also deutlich besser als reines Raten, aber weit von perfekt entfernt. \n\n"
+        "Das Modell trifft in **57,0 %** der Fälle die richtige Vorhersage. "
+        "Zum Vergleich: Würde man einfach immer die häufigste Kategorie raten, käme man auf 50,4 % — "
+        "das Modell ist also nur wenig besser als reines Raten. \n\n"
         "Die Strukturmerkmale (Betten, Träger, Personal usw.) erklären nur einen kleinen Teil davon, "
         "warum ein Haus viele Qualitätsprobleme hat. Andere Faktoren — z. B. Patientenstruktur oder "
         "Dokumentationsqualität — spielen eine größere Rolle, sind aber im Datensatz nicht enthalten. \n\n"
@@ -676,28 +682,30 @@ elif seite == "Qualitäts-Vorhersage":
 
         st.markdown("---")
         st.subheader("🧩 Wie kam das Modell zu dieser Einschätzung?")
-        _seite = "unter" if ein_aerzte <= DT_SPLIT else "über"
-        _bewertung = "erhöhtes Risiko" if ein_aerzte <= DT_SPLIT else "geringes Risiko"
+        _seite = "über" if ein_aerzte > DT_SPLIT else "unter"
+        _bewertung = "erhöhtes Risiko" if ein_aerzte > DT_SPLIT else "geringeres Risiko"
         st.markdown(
             f"Das Modell trifft seine Entscheidung hauptsächlich anhand eines einzigen Merkmals: "
-            f"**Ärzte pro Bett**. Dieses Merkmal erklärt über die Hälfte der Vorhersageleistung (53,6 %). \n\n"
-            f"Der kritische Schwellenwert liegt bei **{DT_SPLIT} Ärzte pro Bett**: \n\n"
-            f"- Liegt der Wert **darunter** → das Modell stuft das Haus als Kandidat ein, "
+            f"**Ärzte pro Bett**. Dieses Merkmal erklärt fast drei Viertel der Vorhersageleistung (72,8 %). \n\n"
+            f"Der wichtigste Schwellenwert liegt bei **{DT_SPLIT} Ärzte pro Bett**: \n\n"
+            f"- Liegt der Wert **darüber** → das Modell stuft das Haus tendenziell als Kandidat ein, "
             f"der **überdurchschnittlich viele auffällige Qualitätsindikatoren** haben wird\n"
-            f"- Liegt der Wert **darüber** → das Modell erwartet **wenige Qualitätsprobleme**\n\n"
+            f"- Liegt der Wert **darunter** → die Vorhersage hängt zusätzlich von Pflegepersonal und "
+            f"Bettenzahl ab, tendenziell aber **wenige Qualitätsprobleme**\n\n"
             f"Der eingegebene Wert beträgt **{ein_aerzte:.3f}** — das ist {_seite} dem Schwellenwert "
-            f"({DT_SPLIT}). Das Modell sieht daher **{_bewertung}** für dieses Haus."
+            f"({DT_SPLIT}). Das Modell sieht daher tendenziell **{_bewertung}** für dieses Haus "
+            f"(die tatsächliche Vorhersage oben berücksichtigt zusätzlich Pflegepersonal und Bettenzahl)."
         )
 
     st.markdown("---")
     st.subheader("⚗️ Feature Importance")
     import plotly.graph_objects as go
     fig_fi = go.Figure(go.Bar(
-        x=[0.5355, 0.2384, 0.2261, 0, 0, 0, 0],
+        x=[0.7277, 0.1648, 0.1075, 0, 0, 0, 0],
         y=[
             "Ärzte pro Bett",
-            "Pflegekräfte pro Bett",
             "Bettenzahl",
+            "Pflegekräfte pro Bett",
             "Trägerschaft",
             "Fortbildungsquote",
             "Uni-Klinik (ja/nein)",
@@ -713,8 +721,8 @@ elif seite == "Qualitäts-Vorhersage":
     )
     st.plotly_chart(fig_fi, use_container_width=True)
     st.caption(
-        "Ärzte pro Bett ist mit 53,6 % das wichtigste Merkmal — mehr als die Hälfte aller Modellentscheidungen "
-        "hängen daran. Pflegekräfte pro Bett (23,8 %) und Bettenzahl (22,6 %) folgen. "
+        "Ärzte pro Bett ist mit 72,8 % das mit Abstand wichtigste Merkmal — fast drei Viertel aller "
+        "Modellentscheidungen hängen daran. Bettenzahl (16,5 %) und Pflegekräfte pro Bett (10,8 %) folgen. "
         "Trägerschaft, Fortbildungsquote, Uni-Status und Konzernzugehörigkeit tragen 0 % bei — "
         "das Modell ignoriert sie vollständig."
     )
