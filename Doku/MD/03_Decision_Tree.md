@@ -2,7 +2,7 @@
 
 > Dieses Dokument erklärt Schritt für Schritt, was im Notebook `Notebooks/03_Decision_Tree.ipynb` passiert — und warum jeweils so entschieden wurde. Ergebnis: ein trainierter und gespeicherter Decision-Tree-Klassifikator, drei Grafiken (`grafiken/`) und eine quantitative Aussage darüber, wie gut Strukturmerkmale von Krankenhäusern Qualitätsprobleme vorhersagen können.
 
-> **⚠️ Korrektur (2026-08-14):** Die Ziel-Variable `hat_viele_Probleme` wurde in `01_Exploration.ipynb` korrigiert (`QSErgBewStrukDialog` war zuvor falsch interpretiert, siehe `BI_Analyse`-Dokumentation). Das Modell wurde mit der korrigierten `Data/analysetabelle.csv` neu trainiert — **alle Kennzahlen in diesem Dokument sind neu** und weichen teils deutlich von der ursprünglichen Version ab (Accuracy 63,6 %→57,0 %, R² auf `auffaellig_quote` sogar negativ statt +3,3 %, Feature-Importance-Rangfolge unverändert, aber Gewichte stark verschoben).
+> **⚠️ Korrektur (2026-08-14):** Die Ziel-Variable `hat_viele_Probleme` wurde in `01_Exploration.ipynb` korrigiert (`QSErgBewStrukDialog` war zuvor falsch interpretiert). Das Modell wurde mit der korrigierten `Data/analysetabelle.csv` neu trainiert — **alle Kennzahlen in diesem Dokument sind neu** und weichen teils deutlich von der ursprünglichen Version ab (Accuracy 63,6 %→57,0 %, R² auf `auffaellig_quote` sogar negativ statt +3,3 %, Feature-Importance-Rangfolge unverändert, aber Gewichte stark verschoben).
 
 **Projektfrage:** Können Strukturmerkmale eines Krankenhauses (Größe, Träger, Personal, …) maschinell vorhersagen, ob es überdurchschnittlich viele Qualitätsprobleme hat?
 
