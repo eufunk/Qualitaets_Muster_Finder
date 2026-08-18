@@ -44,3 +44,6 @@ Doku/IQTIG_Bericht-zum-Strukturierten-Dialog-2021_EJ-2020_2022-05-16-barrierefre
 
 # Persönliches Archiv der Nutzerin — rein manuell gepflegt, nicht versionieren
 Doku/Archiv/
+
+# Lokale Server-Log-Dateien (z. B. beim Neustarten von streamlit run entstanden)
+*.log
