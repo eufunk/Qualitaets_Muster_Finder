@@ -41,3 +41,6 @@ Doku/IQTIG_Bericht-zum-Strukturierten-Dialog-2021_EJ-2020_2022-05-16-barrierefre
 
 # GitHub-Codespaces-Konfiguration nicht einchecken (nicht genutzt, Deployment läuft über Streamlit Cloud)
 .devcontainer/
+
+# Persönliches Archiv der Nutzerin — rein manuell gepflegt, nicht versionieren
+Doku/Archiv/
