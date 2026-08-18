@@ -235,8 +235,8 @@ if seite == "Gesamtüberblick":
     _farbige_metrik(_h2, "Viele Probleme",  _n_viele/len(df_gefiltert),  _n_viele,  FARBE_VIELE)
     st.plotly_chart(erstelle_quote_histogramm(df_gefiltert), use_container_width=True)
     st.caption(
-        f"Trennlinie = Median {kpis['median_quote']:.1%}. Farbe zeigt die Gruppe jedes Krankenhauses (gr\u00fcn = wenige, rot = viele Probleme). "
-        "Balken nahe dem Median erscheinen gemischt, weil ein Balken einen Quotenbereich abdeckt, in dem Krankenh\u00e4user aus beiden Gruppen liegen k\u00f6nnen."
+        f"Trennlinie = Median {kpis['median_quote']:.1%}. Balken links der Linie = H\u00e4user mit wenigen Problemen (gr\u00fcn), "
+        "Balken rechts = H\u00e4user mit vielen Problemen (rot)."
     )
 
     st.markdown("---")

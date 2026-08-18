@@ -165,6 +165,12 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
             "SO.Longitude":     False,
             "Problemkategorie": False,
         },
+        labels={
+            "SO.Betten":        "Betten",
+            "SO.Bundesland":    "Bundesland",
+            TRAEGER_COL:        "Trägerschaft",
+            "auffaellig_quote": "Auffällig-Quote",
+        },
         zoom=5,
         center={"lat": 51.2, "lon": 10.4},
         mapbox_style="open-street-map",
@@ -181,27 +187,43 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
 
 
 def erstelle_quote_histogramm(df: pd.DataFrame) -> go.Figure:
-    """Histogramm der auffaellig-Quote — Bins explizit berechnet, Linie passt exakt."""
-    # Bins einmal berechnen, dann für Balken UND Linie nutzen (wie im Notebook)
-    data_all   = df["auffaellig_quote"].dropna().values
-    data_wenig = df[df["hat_viele_Probleme"] == 0]["auffaellig_quote"].dropna().values
-    data_viel  = df[df["hat_viele_Probleme"] == 1]["auffaellig_quote"].dropna().values
+    """
+    Histogramm der auffaellig-Quote. Faerbung wie im Notebook (Grafik 1): jeder Balken wird
+    komplett anhand seines Bin-Mittelpunkts eingefaerbt (vor/nach Median) — nicht anhand der
+    einzelnen Haeuser darin gestapelt. Ein gestapelter Balken waere teilweise rot, sobald sein
+    Wertebereich die Medianlinie ueberlappt, auch wenn er optisch noch "davor" liegt — das war
+    fuer Dashboard-Betrachter nicht nachvollziehbar.
+    """
+    data_all = df["auffaellig_quote"].dropna().values
+    data_min, data_max = 0.0, float(data_all.max())
 
-    counts_all,   bin_edges = np.histogram(data_all,   bins=30)
-    counts_wenig, _         = np.histogram(data_wenig, bins=bin_edges)
-    counts_viel,  _         = np.histogram(data_viel,  bins=bin_edges)
+    # Bin-Kanten getrennt vor/nach dem Median aufbauen, damit der Median garantiert genau auf
+    # einer Bin-Kante liegt (nicht mittendrin) — sonst faerbt ein einzelner Bin ueber die
+    # Medianlinie hinweg komplett gruen, und die Linie landet mitten im Balken statt an der
+    # Grenze zwischen gruenem und rotem Balken.
+    n_bins_gesamt = 30
+    anteil_vor    = (MEDIAN_QUOTE - data_min) / (data_max - data_min)
+    n_vor         = max(1, round(n_bins_gesamt * anteil_vor))
+    n_nach        = max(1, n_bins_gesamt - n_vor)
 
-    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
-    bin_width   = (bin_edges[1] - bin_edges[0]) * 0.92  # 8% Lücke
+    kanten_vor  = np.linspace(data_min, MEDIAN_QUOTE, n_vor + 1)
+    kanten_nach = np.linspace(MEDIAN_QUOTE, data_max, n_nach + 1)
+    bin_edges   = np.concatenate([kanten_vor, kanten_nach[1:]])  # Median-Kante nur einmal
+
+    counts_all, _ = np.histogram(data_all, bins=bin_edges)
+    bin_centers   = (bin_edges[:-1] + bin_edges[1:]) / 2
+    bin_widths    = (bin_edges[1:] - bin_edges[:-1]) * 0.92  # 8% Lücke
+
+    vor = bin_centers < MEDIAN_QUOTE
 
     fig = go.Figure()
     fig.add_trace(go.Bar(
-        x=bin_centers, y=counts_wenig, name="Wenige Probleme",
-        marker_color=FARBE_WENIGE, width=bin_width,
+        x=bin_centers[vor], y=counts_all[vor],
+        name="Wenige Probleme", marker_color=FARBE_WENIGE, width=bin_widths[vor],
     ))
     fig.add_trace(go.Bar(
-        x=bin_centers, y=counts_viel, name="Viele Probleme",
-        marker_color=FARBE_VIELE, width=bin_width,
+        x=bin_centers[~vor], y=counts_all[~vor],
+        name="Viele Probleme", marker_color=FARBE_VIELE, width=bin_widths[~vor],
     ))
     # Linie auf exakter Balkenhöhe (passt garantiert, gleiche Bins)
     fig.add_trace(go.Scatter(
@@ -218,7 +240,6 @@ def erstelle_quote_histogramm(df: pd.DataFrame) -> go.Figure:
         annotation_position="top right",
     )
     fig.update_layout(
-        barmode="stack",
         xaxis=dict(tickformat=".0%", title="Anteil auffälliger QI"),
         yaxis=dict(title="Anzahl Krankenhäuser"),
         title="Verteilung der auffällig-Quote",
