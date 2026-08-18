@@ -170,7 +170,13 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
         mapbox_style="open-street-map",
     )
     fig.update_traces(marker={"size": 8, "opacity": 0.7})
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=620)
+    fig.update_layout(
+        margin={"r": 0, "t": 0, "l": 0, "b": 0}, height=620,
+        legend=dict(
+            x=0.01, y=0.99, xanchor="left", yanchor="top",
+            bgcolor="rgba(255,255,255,0.85)", bordercolor="#ccc", borderwidth=1,
+        ),
+    )
     return fig
 
 

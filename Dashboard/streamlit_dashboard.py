@@ -72,6 +72,16 @@ seite = _seite_aus_url if _seite_aus_url in SEITEN else SEITEN[0]
 def _gehe_zu_seite(s):
     st.query_params["seite"] = s
 
+def _farbige_metrik(spalte, label, anteil, anzahl, farbe):
+    """Wie st.metric(), aber mit frei waehlbarer Textfarbe fuer den Wert (Wenige=gruen, Viele=rot)."""
+    spalte.markdown(
+        f"<div style='line-height:1.25'>"
+        f"<div style='font-size:0.875rem;color:#6c757d'>{label}</div>"
+        f"<div style='font-size:1.75rem;font-weight:600;color:{farbe}'>{anteil:.1%} ({anzahl:,} Häuser)</div>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+
 # Header-Banner (Titel) ────────────────────────────────────────────
 st.markdown(
     f"<div style='background:#1a4f72;padding:14px 28px;border-radius:6px;"
@@ -107,7 +117,14 @@ if seite == "Gesamtüberblick":
     # ── Filter direkt auf der Seite ──────────────────────────────
     _fc1, _fc2, _fc3, _fc4 = st.columns([2, 2, 2, 1], vertical_alignment="bottom")
     filter_bundesland = _fc1.selectbox("Bundesland", get_bundesland_optionen(df), key="filter_bl")
-    filter_traeger    = _fc2.selectbox("Trägerschaft", get_traeger_optionen(df), key="filter_tr")
+    filter_traeger    = _fc2.selectbox(
+        "Trägerschaft", get_traeger_optionen(df), key="filter_tr",
+        help=(
+            "„Unbekannt“ steht für 28 von 1.821 Häusern, bei denen die Trägerart in den "
+            "Rohdaten fehlt. Diese Häuser werden bewusst als eigene Kategorie sichtbar "
+            "gehalten, statt unbemerkt aus Filtern und Diagrammen zu verschwinden."
+        ),
+    )
     filter_uni        = _fc3.selectbox("Klinik-Typ", ["Alle", "Normale Klinik", "Uni-Klinik"], key="filter_uni_key")
     _fc4.button("↺ Zurücksetzen", on_click=_reset_filters, use_container_width=True)
 
@@ -128,24 +145,33 @@ if seite == "Gesamtüberblick":
     kpis = berechne_kpis(df_gefiltert)
 
     st.markdown(
-        "Die fünf Kennzahlen geben einen schnellen Überblick über den aktuell angezeigten Datensatz. "
-        "**Krankenhäuser** — Anzahl der Häuser nach aktiven Filtern. "
-        "**Anteil 'Viele Probleme'** — wie viele Häuser als auffällig eingestuft wurden (Schwelle: Median ~6 %). "
-        "**Ø auffällig-Quote** — von allen Qualitätsindikatoren, die für ein Haus bewertet wurden, "
-        "wie viele davon vom IQTIG als rechnerisch auffällig eingestuft wurden (d. h. das Haus weicht "
-        "statistisch negativ vom Bundesdurchschnitt ab) — **jedes Haus zählt gleich viel**, unabhängig davon, "
-        "wie viele Indikatoren es hat. "
-        "**Gesamtquote** — dieselbe Berechnung, aber über **alle Indikatoren aller Häuser zusammen** "
-        "(Summe auffällige Indikatoren ÷ Summe aller bewerteten Indikatoren) — hier zählt jeder einzelne "
-        "Indikator gleich viel, nicht jedes Haus. Die beiden Quoten unterscheiden sich, weil kleine Häuser "
-        "mit wenigen Indikatoren beim Haus-Mittelwert stärker durchschlagen als in der Gesamtquote. "
-        "**Ø Ärzte pro Bett** — durchschnittliche Ärztedichte."
+        "Die fünf Kennzahlen geben einen schnellen Überblick über den aktuell angezeigten Datensatz "
+        "— gepunktet unterstrichene Werte zeigen beim Hovern eine genauere Erklärung."
     )
 
     # KPI-Karten
     _diff_50  = kpis['pct_viele'] - 0.5
     _richt_50 = "über 50 %" if _diff_50 > 0 else "unter 50 %"
     _farbe_50 = "#c0392b" if _diff_50 > 0 else "#1a6b3a"
+    _n_viele_tip = int(round(kpis['pct_viele'] * kpis['n_haeuser']))
+    _tip_pctviele = (
+        "Schwelle: Median der auffällig-Quote (5,88 %) — Häuser darüber zählen als "
+        f"'viele Probleme'.&#10;&#10;"
+        f"{_n_viele_tip:,} von {kpis['n_haeuser']:,} Häusern ({kpis['pct_viele']:.1%}) liegen "
+        "über diesem Wert."
+    )
+    _tip_avg = (
+        f"Im Schnitt sind bei jedem Krankenhaus {kpis['avg_quote']:.1%} seiner bewerteten "
+        f"Indikatoren auffällig — berechnet, indem für jedes der {kpis['n_haeuser']:,} Häuser "
+        "einzeln der Anteil ermittelt und dann gemittelt wird."
+    )
+    _sum_auffaellig = int(df_gefiltert["auffaellig_n"].sum())
+    _sum_total_qi   = int(df_gefiltert["total_qi"].sum())
+    _tip_gesamt = (
+        f"{kpis['gesamt_quote']:.1%} aller bewerteten Qualitätsindikatoren "
+        f"({_sum_auffaellig:,} von {_sum_total_qi:,}) sind auffällig — unabhängig davon, zu "
+        "welchem Haus sie gehören."
+    )
     st.markdown(f"""
 <table style="width:100%;border-collapse:collapse;margin-bottom:12px;background:#f8f9fa;
               border-radius:8px;overflow:hidden;border:1px solid #dee2e6">
@@ -154,24 +180,24 @@ if seite == "Gesamtüberblick":
       <th style="padding:8px 16px">Krankenhäuser gesamt</th>
       <th style="padding:8px 16px">Anteil mit vielen Qualitätsproblemen</th>
       <th style="padding:8px 16px">Ø auffällig-Quote pro Haus</th>
-      <th style="padding:8px 16px">Gesamtquote</th>
+      <th style="padding:8px 16px">Bundesweite Auffälligkeitsquote</th>
       <th style="padding:8px 16px">Ø Ärzte pro Bett</th>
     </tr>
   </thead>
   <tbody>
     <tr style="text-align:center;font-size:1.4rem;font-weight:700">
       <td style="padding:10px 16px;border-right:1px solid #dee2e6">{kpis['n_haeuser']:,}</td>
-      <td style="padding:10px 16px;border-right:1px solid #dee2e6">
+      <td style="padding:10px 16px;border-right:1px solid #dee2e6;cursor:help" title="{_tip_pctviele}">
         {kpis['pct_viele']:.1%}
-        <div style="font-size:0.8rem;font-weight:500;color:{_farbe_50}">{abs(_diff_50):.1%} {_richt_50}</div>
+        <div style="font-size:0.8rem;font-weight:500;color:{_farbe_50};text-decoration:underline dotted">{abs(_diff_50):.1%} {_richt_50} ⓘ</div>
       </td>
-      <td style="padding:10px 16px;border-right:1px solid #dee2e6">
+      <td style="padding:10px 16px;border-right:1px solid #dee2e6;cursor:help" title="{_tip_avg}">
         {kpis['avg_quote']:.1%}
-        <div style="font-size:0.8rem;font-weight:400;color:#6c757d">Ø je Haus (Häuser gleich gewichtet)</div>
+        <div style="font-size:0.8rem;font-weight:400;color:#6c757d;text-decoration:underline dotted">Ø je Haus ⓘ</div>
       </td>
-      <td style="padding:10px 16px;border-right:1px solid #dee2e6">
+      <td style="padding:10px 16px;border-right:1px solid #dee2e6;cursor:help" title="{_tip_gesamt}">
         {kpis['gesamt_quote']:.1%}
-        <div style="font-size:0.8rem;font-weight:400;color:#6c757d">Alle Indikatoren zusammen</div>
+        <div style="font-size:0.8rem;font-weight:400;color:#6c757d;text-decoration:underline dotted">Alle Indikatoren zusammen ⓘ</div>
       </td>
       <td style="padding:10px 16px">
         {kpis['avg_aerzte']:.3f}
@@ -190,8 +216,8 @@ if seite == "Gesamtüberblick":
     # Karte — volle Breite
     st.subheader("Regionale Verteilung")
     _c1, _c2 = st.columns(2)
-    _c1.metric("Wenige Probleme", f"{_n_wenige/len(df_gefiltert):.1%}", help=f"{_n_wenige:,} Häuser")
-    _c2.metric("Viele Probleme",  f"{_n_viele/len(df_gefiltert):.1%}",  help=f"{_n_viele:,} Häuser")
+    _farbige_metrik(_c1, "Wenige Probleme", _n_wenige/len(df_gefiltert), _n_wenige, FARBE_WENIGE)
+    _farbige_metrik(_c2, "Viele Probleme",  _n_viele/len(df_gefiltert),  _n_viele,  FARBE_VIELE)
     _koord_ok = df_gefiltert[["SO.Latitude","SO.Longitude"]].dropna().shape[0]
     if _koord_ok == 0:
         st.warning("⚠️ Keine Koordinaten verfügbar — Karte kann nicht angezeigt werden.")
@@ -205,8 +231,8 @@ if seite == "Gesamtüberblick":
     # Histogramm — volle Breite darunter
     st.subheader("Verteilung der auff\u00e4llig-Quote")
     _h1, _h2 = st.columns(2)
-    _h1.metric("Wenige Probleme", f"{_n_wenige/len(df_gefiltert):.1%}", help=f"{_n_wenige:,} H\u00e4user")
-    _h2.metric("Viele Probleme",  f"{_n_viele/len(df_gefiltert):.1%}",  help=f"{_n_viele:,} H\u00e4user")
+    _farbige_metrik(_h1, "Wenige Probleme", _n_wenige/len(df_gefiltert), _n_wenige, FARBE_WENIGE)
+    _farbige_metrik(_h2, "Viele Probleme",  _n_viele/len(df_gefiltert),  _n_viele,  FARBE_VIELE)
     st.plotly_chart(erstelle_quote_histogramm(df_gefiltert), use_container_width=True)
     st.caption(
         f"Trennlinie = Median {kpis['median_quote']:.1%}. Farbe zeigt die Gruppe jedes Krankenhauses (gr\u00fcn = wenige, rot = viele Probleme). "
