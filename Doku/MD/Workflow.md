@@ -339,7 +339,7 @@ Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhäng
 | `02_Analyse.md` | Schritt-für-Schritt-Erklärung von `02_Analyse.ipynb` — was gemacht wurde und warum |
 | `03_Decision_Tree.md` | Schritt-für-Schritt-Erklärung von `03_Decision_Tree.ipynb` — was gemacht wurde und warum |
 | `04_Potenzielle_Erweiterungen.md` | Schritt-für-Schritt-Erklärung von `04_Potenzielle_Erweiterungen.ipynb` — seit 2026-08-14 an die Korrektur angepasst |
-| `Dashboard.md` | Erklärung des Streamlit-Dashboards: Seiten, Zweck, Bedienung |
+| `05_Dashboard.md` | Erklärung des Streamlit-Dashboards: technische Umsetzung, Seiten, Zweck, Bedienung |
 | `Daten_Inhaltsverzeichnis.md` | Tabellarische Übersicht aller 86 CSV-Dateien mit Relevanz-Einstufung |
 | `Qualitätsindikator.md` | Detaildokumentation von `QS.Qualitätsindikator.csv` und seiner Rolle als Ziel-Variable |
 | `Praesentation_Folien_Beschreibung.md` | Folienbeschreibung für die Einzelpräsentator-Variante |

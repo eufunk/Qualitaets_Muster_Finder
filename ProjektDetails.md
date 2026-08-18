@@ -56,7 +56,7 @@ QualitaetsMusterFinderProjekt/
 │   ├── Doku/MD/ (8 Dateien)       → Markdown-Dokumentation
 │   │   ├── Workflow.md, 01_Exploration.md, 02_Analyse.md, 03_Decision_Tree.md
 │   │   ├── 04_Potenzielle_Erweiterungen.md → Walkthrough zum Bonus-Notebook
-│   │   ├── Dashboard.md                    → Doku zur Dashboard-Bedienung/Layout
+│   │   ├── 05_Dashboard.md                 → Doku zur Dashboard-Bedienung/Layout
 │   │   ├── Daten_Inhaltsverzeichnis.md     → Übersicht aller 86 CSV-Dateien
 │   │   └── Qualitätsindikator.md           → Deep-Dive zur größten Rohdatei (QS.Qualitätsindikator.csv, 911,7 MB)
 │   ├── Doku/Word/ (7 Dateien)     → Word-Exporte, siehe Datei-Übersicht unten
@@ -106,7 +106,7 @@ QualitaetsMusterFinderProjekt/
 - `Doku/MD/02_Analyse.md` — Schritt-für-Schritt-Erklärung von `02_Analyse.ipynb`
 - `Doku/MD/03_Decision_Tree.md` — Schritt-für-Schritt-Erklärung von `03_Decision_Tree.ipynb`
 - `Doku/MD/04_Potenzielle_Erweiterungen.md` — Walkthrough zu `04_Potenzielle_Erweiterungen.ipynb` inkl. Hypothesen, Ergebnissen und Empfehlungen je geprüfter Datei
-- `Doku/MD/Dashboard.md` — Doku zu Aufbau, Navigation und Seiten des Streamlit-Dashboards
+- `Doku/MD/05_Dashboard.md` — Doku zu Aufbau, Navigation und Seiten des Streamlit-Dashboards
 - `Doku/MD/Daten_Inhaltsverzeichnis.md` — Übersicht aller 86 CSV-Dateien
 - `Doku/MD/Qualitätsindikator.md` — Deep-Dive zu `QS.Qualitätsindikator.csv` (911,7 MB, größte Rohdatei, 29 Spalten)
 
@@ -116,7 +116,7 @@ QualitaetsMusterFinderProjekt/
 - `Datensatz_Uebersicht.docx` — Datei-Klassifikation aller 86 Rohdaten
 - `Grafiken_Dokumentation.docx` — Erklärung aller 12 Analyse-Grafiken
 - `Analysetabelle_Zusammenfassung.docx` — Merkmale, Ziel-Variable, Quelltabellen, Merge-Kriterien, Endgröße
-- `Dashboard_Uebersicht.docx` — Word-Fassung von `Doku/MD/Dashboard.md`
+- `Dashboard_Uebersicht.docx` — Word-Fassung von `Doku/MD/05_Dashboard.md`
 - `ML_Doku.docx` — Word-Fassung des Decision-Tree-Walkthroughs
 - `Praesentation_Folienvorschlag.docx` — Foliengliederungs-Vorschlag (30 Min, 15 Folien)
 
