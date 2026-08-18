@@ -128,12 +128,17 @@ if seite == "Gesamtüberblick":
     kpis = berechne_kpis(df_gefiltert)
 
     st.markdown(
-        "Die vier Kennzahlen geben einen schnellen Überblick über den aktuell angezeigten Datensatz. "
+        "Die fünf Kennzahlen geben einen schnellen Überblick über den aktuell angezeigten Datensatz. "
         "**Krankenhäuser** — Anzahl der Häuser nach aktiven Filtern. "
         "**Anteil 'Viele Probleme'** — wie viele Häuser als auffällig eingestuft wurden (Schwelle: Median ~6 %). "
         "**Ø auffällig-Quote** — von allen Qualitätsindikatoren, die für ein Haus bewertet wurden, "
         "wie viele davon vom IQTIG als rechnerisch auffällig eingestuft wurden (d. h. das Haus weicht "
-        "statistisch negativ vom Bundesdurchschnitt ab). "
+        "statistisch negativ vom Bundesdurchschnitt ab) — **jedes Haus zählt gleich viel**, unabhängig davon, "
+        "wie viele Indikatoren es hat. "
+        "**Gesamtquote** — dieselbe Berechnung, aber über **alle Indikatoren aller Häuser zusammen** "
+        "(Summe auffällige Indikatoren ÷ Summe aller bewerteten Indikatoren) — hier zählt jeder einzelne "
+        "Indikator gleich viel, nicht jedes Haus. Die beiden Quoten unterscheiden sich, weil kleine Häuser "
+        "mit wenigen Indikatoren beim Haus-Mittelwert stärker durchschlagen als in der Gesamtquote. "
         "**Ø Ärzte pro Bett** — durchschnittliche Ärztedichte."
     )
 
@@ -149,6 +154,7 @@ if seite == "Gesamtüberblick":
       <th style="padding:8px 16px">Krankenhäuser gesamt</th>
       <th style="padding:8px 16px">Anteil mit vielen Qualitätsproblemen</th>
       <th style="padding:8px 16px">Ø auffällig-Quote pro Haus</th>
+      <th style="padding:8px 16px">Gesamtquote</th>
       <th style="padding:8px 16px">Ø Ärzte pro Bett</th>
     </tr>
   </thead>
@@ -161,7 +167,11 @@ if seite == "Gesamtüberblick":
       </td>
       <td style="padding:10px 16px;border-right:1px solid #dee2e6">
         {kpis['avg_quote']:.1%}
-        <div style="font-size:0.8rem;font-weight:400;color:#6c757d">Anteil auffälliger Indikatoren</div>
+        <div style="font-size:0.8rem;font-weight:400;color:#6c757d">Ø je Haus (Häuser gleich gewichtet)</div>
+      </td>
+      <td style="padding:10px 16px;border-right:1px solid #dee2e6">
+        {kpis['gesamt_quote']:.1%}
+        <div style="font-size:0.8rem;font-weight:400;color:#6c757d">Alle Indikatoren zusammen</div>
       </td>
       <td style="padding:10px 16px">
         {kpis['avg_aerzte']:.3f}

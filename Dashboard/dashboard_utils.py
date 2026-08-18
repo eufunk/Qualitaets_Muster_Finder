@@ -127,6 +127,7 @@ def berechne_kpis(df: pd.DataFrame) -> dict:
         "pct_viele":          n_viele / n,
         "avg_quote":          df["auffaellig_quote"].mean(),
         "median_quote":       df["auffaellig_quote"].median(),
+        "gesamt_quote":       df["auffaellig_n"].sum() / df["total_qi"].sum(),
         "avg_aerzte":         df["aerzte_pro_bett"].mean(),
         "avg_fortbildung":    df["fortbildungsquote"].mean(),
         "n_uni":              df["SO.Uni"].sum(),
