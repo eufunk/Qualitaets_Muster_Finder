@@ -45,8 +45,8 @@ QualitaetsMusterFinderProjekt/
 │   ├── analysetabelle.csv        → Zentrale Analysetabelle (1.821 Häuser × 18 Spalten)
 │   └── modell_krankenhaus.pkl    → Trainiertes Decision-Tree-Modell
 │
-├── 🖼️ grafiken/ (18) — 14 PNG-Grafiken + 4 Dashboard-Screenshots
-│   ├── g1_auffaellig_quote.png … g12_konzern_vergleich.png, confusion_matrix.png, decision_tree.png, feature_importance.png
+├── 🖼️ grafiken/ (16) — 12 PNG-Grafiken + 4 Dashboard-Screenshots
+│   ├── g1_auffaellig_quote.png … g13_feature_importance.png (durchgehend g+Nummer benannt)
 │   └── screenshots/ → 4 Dashboard-Screenshots (einflussfaktoren, gesamtuberblick, haeuser_vergleichen, qualitaets_vorhersage.png)
 │
 ├── 📄 Dokumentation

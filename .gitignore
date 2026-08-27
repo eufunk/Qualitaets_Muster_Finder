@@ -36,8 +36,9 @@ Doku/MD/Praesentation_Team_Folien_Beschreibung.md
 # Jupyter-Outputs optional ausschließen (auskommentieren um Outputs zu behalten)
 # *.ipynb
 
-# Externer Quellbericht (PDF) nicht einchecken
+# Externe Quellberichte (PDF) nicht einchecken
 Doku/IQTIG_Bericht-zum-Strukturierten-Dialog-2021_EJ-2020_2022-05-16-barrierefrei.pdf
+Doku/IQTIG_Bundesqualitaetsbericht-2023_2023-11-08.pdf
 
 # GitHub-Codespaces-Konfiguration nicht einchecken (nicht genutzt, Deployment läuft über Streamlit Cloud)
 .devcontainer/

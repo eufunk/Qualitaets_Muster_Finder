@@ -12,10 +12,36 @@
 Gibt es Zusammenhänge zwischen Strukturmerkmalen eines Krankenhauses (Größe, Trägerschaft, Personal, Region, Uni-Status, Konzernzugehörigkeit, Fortbildung) und der Häufigkeit, mit der ein Haus in seinen Qualitätsindikatoren auffällig wird? Ausdrücklich Teil der Aufgabenstellung: Ein „kein Zusammenhang gefunden" ist ein genauso gültiges Ergebnis wie ein gefundener Zusammenhang.
 
 ### 2. Warum ist „Kein Zusammenhang ist ein valides Ergebnis" für dieses Projekt relevant?
-Weil es sich real bewahrheitet hat: Nach der Korrektur der Ziel-Variable (siehe Block C) war der zuvor auffälligste Befund — die Trägerschaft — statistisch nicht mehr signifikant (ANOVA p = 0,969), und das lineare Modell hatte auf der stetigen Zielgröße sogar ein negatives R² (−0,007). Der Satz stammt wörtlich aus dem Kick-off-Briefing des Dozenten (`Aufgabenstellung/Text_Presentation.docx`) und war als ausdrückliche Warnung gedacht, Ergebnisse nicht „schönzurechnen".
+Weil es sich in diesem konkreten Projekt tatsächlich bewahrheitet hat — nicht nur eine theoretische Warnung geblieben ist. Zwei Beispiele aus der eigenen Analyse: Die Trägerschaft galt zunächst als der klarste Befund der gesamten Untersuchung, ist nach der Korrektur der Ziel-Variable aber statistisch nicht mehr signifikant (ANOVA p = 0,969) — der Zusammenhang war nicht real. Und das lineare Modell erreichte auf der stetigen Zielgröße sogar ein negatives R² (−0,007), also eine schlechtere Vorhersage als der bloße Durchschnittswert. Beides sind echte „Kein Zusammenhang"-Ergebnisse, keine gescheiterten Analysen.
+
+Der Satz selbst stammt wörtlich aus dem Einführungsvortrag des Dozenten (`Aufgabenstellung/Text_Presentation.docx`) — als ausdrückliche Warnung davor, ein Ergebnis so lange zu drehen, bis am Ende doch ein vorzeigbarer Zusammenhang „gefunden" wird.
 
 ### 3. Was bedeutet „auffällig" bei einem Qualitätsindikator? Ist ein auffälliges Haus automatisch schlecht?
-Nein. „Rechnerisch auffällig" heißt nur: Ein gemessener Wert liegt außerhalb eines vorab definierten Referenzbereichs — das ist ein statistisches Signal, kein automatisches Urteil. Ob wirklich ein Qualitätsproblem vorliegt, klärt danach der „Strukturierte Dialog" zwischen Krankenhaus und Landesgeschäftsstelle. Unsere Ziel-Variable bildet nur die rechnerische Auffälligkeit ab, nicht das Endergebnis dieses Dialogs.
+Nein. „Rechnerisch auffällig" heißt nur: Ein gemessener Wert liegt außerhalb eines vorab definierten Referenzbereichs — ein statistisches Signal, kein Urteil. Ob wirklich ein Qualitätsproblem vorliegt, klärt danach der „Strukturierte Dialog": IQTIG bewertet bundesweit rechnerisch, eine Landesgeschäftsstelle (je Bundesland unterschiedlich organisiert, z. B. Landesärztekammer) klärt danach lokal mit dem Haus, ob es ein echtes Problem, ein Dokumentationsfehler oder ein Fallmix-Effekt ist — das mündet in die U-/A-Codes. Unsere Ziel-Variable bildet nur die erste, rechnerische Stufe ab, nicht dieses Endergebnis.
+
+**Steht der Referenzbereich in unseren Rohdaten?** Ja, direkt in `QS.Qualitätsindikator.csv`: `QSQI.Referenzwert` (Schwellenwert), `QSQI.Operator` (Vergleichsrichtung, z. B. `<=`) und `QSQI.Ergebnis` (gemessener Wert) — pro Indikator individuell von IQTIG festgelegt. Im Projekt nutzen wir diese Spalten nicht selbst zum Nachrechnen, sondern übernehmen direkt `QSErgBewStrukDialog`, IQTIGs fertige Bewertung.
+
+**Was, wenn wir selbst nachgerechnet hätten?** Als Kontrollrechnung geprüft (`01_Exploration_Ref.ipynb`/`.md`) — beide Pfade starten identisch, filtern dann nach unterschiedlichen Kriterien:
+
+| Schritt | Offizieller Pfad | Eigenberechnungs-Pfad |
+|---|---:|---:|
+| 0. Rohdaten | 417.799 | 417.799 |
+| 1. Nach QI-Filter | 308.726 | 308.726 |
+| 2. Nächstes Kriterium | 198.770 (N*-Codes entfernt) | 207.844 (Operator vorhanden) |
+| 3. Letztes Kriterium | 77.537 (Duplikate entfernt) | 111.061 (Ergebnis nicht maskiert) |
+| Häuser am Ende | **1.821** | **1.710** |
+
+„Nicht maskiert" = Datenschutz bei kleinen Fallzahlen: Bei wenigen Fällen ersetzt IQTIG den echten Wert durch „≤3" (23 % der Zeilen) — ohne exakten Wert kein eigener Vergleich möglich, diese Zeilen fallen bei der Eigenberechnung raus. Drei echte Beispielzeilen:
+
+| SO.QBID | Indikator (gekürzt) | Ergebnis | Referenzwert | Bewertung |
+|---|---|---|---|---|
+| 6858 | Infektionen bei Gallenblasenentfernung | ≤3 | 3 | R10 |
+| 6416 | Komplikationen (Blutgerinnsel, Lungenentzündung, Herz-Kreislauf) | ≤3 | 3,29 | R10 |
+| 6325 | Blasenkatheter länger als 24 Stunden | ≤3 | 7,25 | R10 |
+
+Trotz unbekanntem Ergebnis überall R10 (nicht auffällig) — plausibel, weil selbst der ungünstigste mögliche Wert (3) noch im Referenzbereich liegt (Details: `01_Exploration_Ref.md`).
+
+Die beiden Pfade teilen sich die ersten beiden Schritte komplett — dieselben Rohdaten, derselbe QI-Filter —, filtern ab Schritt 2 aber nach völlig unterschiedlichen Kriterien: Der offizielle Pfad filtert nach **Bewertungsinhalt** (ist der Code überhaupt eine echte Bewertung, keine Dopplung), der Eigenberechnungs-Pfad filtert nach **Datenverfügbarkeit** (stehen Referenzwert und Operator überhaupt zur Verfügung, ist das Ergebnis nicht aus Datenschutzgründen maskiert). Das Ergebnis: 111 Häuser weniger als bei der offiziellen Methode, und selbst bei den verbleibenden 1.710 Häusern nur eine kleinere, andere Auswahl an Indikatoren pro Haus. Details und die Auswirkung auf die Ziel-Variable (Median 5,00 % statt 5,88 %, nur 75,9 % Übereinstimmung bei der Gruppenzuordnung): siehe `01_Exploration_Ref.md`.
 
 ### 4. Wer sind IQTIG und G-BA, und warum sind sie relevant?
 IQTIG (Institut für Qualitätssicherung und Transparenz im Gesundheitswesen) ist die Bundesbehörde, die im Auftrag des G-BA (Gemeinsamer Bundesausschuss, oberstes Beschlussgremium der Selbstverwaltung im deutschen Gesundheitswesen) die jährlichen Qualitätsberichte aller deutschen Krankenhäuser erhebt, auswertet und veröffentlicht. Unsere gesamte Datenbasis (Berichtsjahr 2023) stammt aus diesen offiziellen Berichten.

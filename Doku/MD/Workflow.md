@@ -176,7 +176,7 @@
 
 ### 2.1 Vorgehen
 
-12 Grafiken aus `Data/analysetabelle.csv`. Jede Grafik mit automatisch berechnetem Befundsatz. Farbschema: 🟢 grün = wenige Probleme, 🔴 rot = viele Probleme. Grafiken gespeichert in `grafiken/`. Grafik 11 (Pflegekräfte/Bett) und Grafik 12 (Konzernvergleich) am 2026-07-29 ergänzt.
+10 Grafiken aus `Data/analysetabelle.csv`. Jede Grafik mit automatisch berechnetem Befundsatz. Farbschema: 🟢 grün = wenige Probleme, 🔴 rot = viele Probleme. Grafiken gespeichert in `grafiken/`. Pflegekräfte/Bett am 2026-07-29 ergänzt (mittlerweile in Grafik 5+6 zusammen mit Ärzte/Bett dargestellt); Konzernvergleich (Grafik 9) ebenfalls am 2026-07-29 ergänzt, Fortbildungsquote (Grafik 10) später als eigene Grafik ausgegliedert.
 
 > ⚠️ **Korrektur (2026-08-14):** Die Ziel-Variable `hat_viele_Probleme` wurde neu berechnet (siehe Baustein 1). Alle Befunde ab hier basieren auf der korrigierten `Data/analysetabelle.csv` und weichen teils deutlich von der ursprünglichen Auswertung ab — insbesondere haben sich bei fast allen Merkmalen die Richtungen der Zusammenhänge umgekehrt. Details siehe `02_Analyse.md`.
 
@@ -355,13 +355,11 @@ Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhäng
 | `grafiken/g2_bettenzahl.png` | Bettenzahl MIT vs. OHNE Probleme |
 | `grafiken/g3_traegerschaft.png` | Trägerschaft-Vergleich |
 | `grafiken/g4_uni.png` | Uni-Kliniken vs. normale Häuser |
-| `grafiken/g5_6_fortbildung_aerzte.png` | Fortbildungsquote & Ärzte/Bett |
-| `grafiken/g7_bundesland.png` | Anteil je Bundesland |
+| `grafiken/g5_6_aerzte_pflege.png` | Ärzte/Bett & Pflegekräfte/Bett |
+| `grafiken/g7_bundesland_kachelkarte.png` | Anteil je Bundesland (Kachelkarte) |
 | `grafiken/g8_korrelation.png` | Korrelationsmatrix |
-| `grafiken/g9_scatter_betten_aerzte.png` | Scatter Bettenzahl vs. Ärzte/Bett |
-| `grafiken/g10_stoerfaktor_traeger.png` | Störfaktor Träger × Bettengröße |
-| `grafiken/g11_pflege_pro_bett.png` | Pflegekräfte pro Bett MIT vs. OHNE viele Probleme *(2026-07-29)* |
-| `grafiken/g12_konzern_vergleich.png` | Konzernhaus vs. unabhängiges Haus *(2026-07-29)* |
-| `grafiken/confusion_matrix.png` | Confusion Matrix Decision Tree |
-| `grafiken/decision_tree.png` | Visualisierung Entscheidungsbaum |
-| `grafiken/feature_importance.png` | Feature Importance Balkendiagramm |
+| `grafiken/g9_konzern_vergleich.png` | Konzernhaus vs. unabhängiges Haus |
+| `grafiken/g10_fortbildungsquote.png` | Fortbildungsquote MIT vs. OHNE viele Probleme |
+| `grafiken/g11_confusion_matrix.png` | Confusion Matrix Decision Tree |
+| `grafiken/g12_decision_tree.png` | Visualisierung Entscheidungsbaum |
+| `grafiken/g13_feature_importance.png` | Feature Importance Balkendiagramm |

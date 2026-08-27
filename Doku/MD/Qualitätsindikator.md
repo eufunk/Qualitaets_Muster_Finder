@@ -176,7 +176,7 @@ In diesem Notebook wird `QS.Qualitätsindikator.csv` **nicht direkt geladen**. S
 | Spalte | Herkunft | Verwendung in 02_Analyse |
 |--------|----------|--------------------------|
 | `auffaellig_quote` | QS.Qualitätsindikator | Grafik 1: Verteilungshistogramm |
-| `hat_viele_Probleme` | QS.Qualitätsindikator | **Gruppierungsmerkmal in allen Grafiken 2–12** |
+| `hat_viele_Probleme` | QS.Qualitätsindikator | **Gruppierungsmerkmal in allen Grafiken 2–10** |
 | `total_qi` | QS.Qualitätsindikator | Grafik 8: Korrelationsmatrix (`r = −0.28` mit `hat_viele_Probleme`) |
 
 ### Grafiken mit direktem QS.Qualitätsindikator-Bezug
@@ -187,13 +187,11 @@ In diesem Notebook wird `QS.Qualitätsindikator.csv` **nicht direkt geladen**. S
 | **Grafik 2** | Bettenzahl MIT vs. OHNE viele Probleme (Boxplot) | `hat_viele_Probleme` |
 | **Grafik 3** | Trägerschaft — Anteil Viele Probleme (Balken) | `hat_viele_Probleme` |
 | **Grafik 4** | Uni-Kliniken vs. normale Häuser | `hat_viele_Probleme` |
-| **Grafik 5+6** | Fortbildungsquote & Ärzte/Bett MIT vs. OHNE | `hat_viele_Probleme` |
+| **Grafik 5+6** | Ärzte/Bett & Pflegekräfte/Bett MIT vs. OHNE | `hat_viele_Probleme` |
 | **Grafik 7** | Bundesland — Anteil Viele Probleme | `hat_viele_Probleme` |
 | **Grafik 8** | Korrelationsmatrix (inkl. `auffaellig_quote`) | `auffaellig_quote`, `hat_viele_Probleme`, `total_qi` |
-| **Grafik 9** | Scatter: Bettenzahl vs. Ärzte/Bett (eingefärbt) | `hat_viele_Probleme` |
-| **Grafik 10** | Störfaktor: Bettengröße je Trägerschaft | `hat_viele_Probleme` |
-| **Grafik 11** | Pflegekräfte/Bett MIT vs. OHNE | `hat_viele_Probleme` |
-| **Grafik 12** | Konzernhaus vs. unabhängiges Haus | `hat_viele_Probleme` |
+| **Grafik 9** | Konzernhaus vs. unabhängiges Haus | `hat_viele_Probleme` |
+| **Grafik 10** | Fortbildungsquote MIT vs. OHNE | `hat_viele_Probleme` |
 
 ---
 
@@ -229,19 +227,19 @@ In diesem Notebook wird `QS.Qualitätsindikator.csv` **nicht direkt geladen**. S
 
 ---
 
-**Grafik 5+6 — Fortbildungsquote & Ärzte pro Bett MIT vs. OHNE**
+**Grafik 5+6 — Ärzte pro Bett & Pflegekräfte pro Bett MIT vs. OHNE**
 
-> **Aus QS.Qualitätsindikator:** `hat_viele_Probleme` definiert die beiden Boxplot-Gruppen (grün = wenige, rot = viele Probleme). Die eigentlichen Messwerte (Fortbildungsquote, Ärzte/Bett) kommen aus anderen Quellen — QS.Qualitätsindikator liefert die **Vergleichsachse**. Ärzte/Bett zeigt einen klaren Unterschied (Md: 0,468 vs. 0,390).
+> **Aus QS.Qualitätsindikator:** `hat_viele_Probleme` definiert die beiden Boxplot-Gruppen (grün = wenige, rot = viele Probleme). Die eigentlichen Messwerte (Ärzte/Bett, Pflegekräfte/Bett) kommen aus anderen Quellen — QS.Qualitätsindikator liefert die **Vergleichsachse**. Beide Merkmale zeigen einen klaren Unterschied (Ärzte Md: 0,468 vs. 0,390; Pflege Md: 1,041 vs. 0,892).
 
-![Grafik 5+6](../../grafiken/g5_6_fortbildung_aerzte.png)
+![Grafik 5+6](../../grafiken/g5_6_aerzte_pflege.png)
 
 ---
 
 **Grafik 7 — Bundesland: Anteil Viele Probleme**
 
-> **Aus QS.Qualitätsindikator:** Pro Bundesland wird der Anteil der Häuser mit `hat_viele_Probleme` = 1 als horizontaler Balken dargestellt. Das Bundesland (`SO.Bundesland`) stammt aus `SO.csv`. Rot = über 50 %, grün = unter 50 %. Höchster Wert: Saarland (63,2 %, n=19).
+> **Aus QS.Qualitätsindikator:** Pro Bundesland wird der Anteil der Häuser mit `hat_viele_Probleme` = 1 als Kachel in einer schematischen Deutschlandkarte dargestellt. Das Bundesland (`SO.Bundesland`) stammt aus `SO.csv`. Rot = hoher Anteil, grün = niedriger Anteil. Höchster Wert: Saarland (63,2 %, n=19).
 
-![Grafik 7](../../grafiken/g7_bundesland.png)
+![Grafik 7](../../grafiken/g7_bundesland_kachelkarte.png)
 
 ---
 
@@ -253,35 +251,19 @@ In diesem Notebook wird `QS.Qualitätsindikator.csv` **nicht direkt geladen**. S
 
 ---
 
-**Grafik 9 — Scatter: Bettenzahl vs. Ärzte pro Bett**
-
-> **Aus QS.Qualitätsindikator:** Jeder Punkt ist ein Krankenhaus, eingefärbt nach `hat_viele_Probleme` (grün/rot). Beide Achsen (Betten, Ärzte/Bett) kommen aus anderen Quellen — QS.Qualitätsindikator liefert die **Farbe** = die Qualitätseinstufung jedes Hauses.
-
-![Grafik 9](../../grafiken/g9_scatter_betten_aerzte.png)
-
----
-
-**Grafik 10 — Störfaktor: Bettengröße je Trägerschaft**
-
-> **Aus QS.Qualitätsindikator:** Indirekte Rolle — diese Grafik prüft, ob der Trägereffekt (Grafik 3) durch Hausgrößenunterschiede konfundiert ist. `hat_viele_Probleme` ist hier nicht direkt eingezeichnet, aber der Befund aus Grafik 3 (privat = mehr Probleme) muss vor diesem Hintergrund interpretiert werden.
-
-![Grafik 10](../../grafiken/g10_stoerfaktor_traeger.png)
-
----
-
-**Grafik 11 — Pflegekräfte pro Bett MIT vs. OHNE**
-
-> **Aus QS.Qualitätsindikator:** Wie Grafik 5+6 — `hat_viele_Probleme` definiert die zwei Boxplot-Gruppen. Pflegekräfte/Bett stammt aus `SO.Personalliste.csv`. Ergebnis: Häuser mit weniger Pflegepersonal pro Bett haben tendenziell mehr Qualitätsprobleme (T-Test signifikant).
-
-![Grafik 11](../../grafiken/g11_pflege_pro_bett.png)
-
----
-
-**Grafik 12 — Konzernhaus vs. unabhängiges Haus**
+**Grafik 9 — Konzernhaus vs. unabhängiges Haus**
 
 > **Aus QS.Qualitätsindikator:** `hat_viele_Probleme` bestimmt die Balkenhöhe pro Gruppe. Konzernzugehörigkeit kommt aus `Konzern.csv`. Ergebnis: Praktisch kein Unterschied — Chi²-Test nicht signifikant. QS.Qualitätsindikator zeigt hier, dass Konzernstruktur kein Qualitätsprädiktor ist.
 
-![Grafik 12](../../grafiken/g12_konzern_vergleich.png)
+![Grafik 9](../../grafiken/g9_konzern_vergleich.png)
+
+---
+
+**Grafik 10 — Fortbildungsquote MIT vs. OHNE**
+
+> **Aus QS.Qualitätsindikator:** Wie Grafik 5+6 — `hat_viele_Probleme` definiert die zwei Boxplot-Gruppen. Fortbildungsquote stammt aus `QS.Fortbildung.csv`. Ergebnis: identische Mediane in beiden Gruppen — kein Zusammenhang mit Qualitätsproblemen erkennbar.
+
+![Grafik 10](../../grafiken/g10_fortbildungsquote.png)
 
 ### Inferenzstatistik mit QS.Qualitätsindikator-Bezug
 
@@ -371,7 +353,7 @@ QS.Qualitätsindikator.csv (911 MB)
 analysetabelle.csv  ← JOIN mit SO.csv, QS.Fortbildung.csv, FA.Personalliste.csv, Konzern.csv
 │
 ├── 02_Analyse.ipynb
-│   ├── Grafiken 1–12 (Verteilung, Gruppenvergleiche, Korrelationen)
+│   ├── Grafiken 1–10 (Verteilung, Gruppenvergleiche, Korrelationen)
 │   ├── T-Tests, ANOVA, Chi²-Tests
 │   └── Befundzusammenfassung
 │

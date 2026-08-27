@@ -1,6 +1,6 @@
 # 📊 02_Analyse.ipynb — Was wurde gemacht und warum?
 
-> Dieses Dokument erklärt Schritt für Schritt, was im Notebook `Notebooks/02_Analyse.ipynb` passiert — und warum jeweils so entschieden wurde. Ergebnis: 12 Grafiken (`grafiken/`), fünf statistische Tests und eine erste inhaltliche Einschätzung, ob Krankenhausmerkmale mit Qualitätsproblemen zusammenhängen.
+> Dieses Dokument erklärt Schritt für Schritt, was im Notebook `Notebooks/02_Analyse.ipynb` passiert — und warum jeweils so entschieden wurde. Ergebnis: 10 Grafiken (`grafiken/`), fünf statistische Tests und eine erste inhaltliche Einschätzung, ob Krankenhausmerkmale mit Qualitätsproblemen zusammenhängen.
 
 > **⚠️ Korrektur (2026-08-14):** Die Ziel-Variable `hat_viele_Probleme` wurde in `01_Exploration.ipynb` korrigiert (`QSErgBewStrukDialog` war zuvor falsch interpretiert — R10 wurde als „auffällig" statt korrekt als „nicht auffällig" gezählt, belegt durch den offiziellen IQTIG-Bericht). Dadurch haben 72,5 % der Krankenhäuser die Gruppe gewechselt, und **mehrere Befunde in diesem Dokument haben sich in der Richtung umgekehrt** — u. a. Bettenzahl, Ärzte/Bett, Pflege/Bett und Trägerschaft. Dieses Dokument beschreibt bereits die korrigierte Version.
 
@@ -17,13 +17,13 @@
 
 ## 1. Setup & Daten laden
 
-**Was:** `Data/analysetabelle.csv` geladen, `SO.Latitude`/`SO.Longitude` von Komma- auf Punkt-Dezimalschreibweise umgestellt (dieselbe Fallstricke wie in `01_Exploration.ipynb`, hier nochmal nötig, weil dieses Notebook unabhängig von jenem läuft). Einheitliches Farbschema festgelegt: 🟢 Grün = wenige Probleme, 🔴 Rot = viele Probleme — zieht sich durch alle 12 Grafiken.
+**Was:** `Data/analysetabelle.csv` geladen, `SO.Latitude`/`SO.Longitude` von Komma- auf Punkt-Dezimalschreibweise umgestellt (dieselbe Fallstricke wie in `01_Exploration.ipynb`, hier nochmal nötig, weil dieses Notebook unabhängig von jenem läuft). Einheitliches Farbschema festgelegt: 🟢 Grün = wenige Probleme, 🔴 Rot = viele Probleme — zieht sich durch alle 10 Grafiken.
 
 **Ergebnis:** 1.821 Zeilen × 18 Spalten, Ziel-Variable verteilt auf 916 (wenige Probleme) vs. 905 (viele Probleme).
 
 ---
 
-## 2. Jedes Merkmal einzeln betrachten (Grafiken 1–7, 11–12)
+## 2. Jedes Merkmal einzeln betrachten (Grafiken 1–7, 9–10)
 
 ### Warum einzeln, bevor man Zusammenhänge sucht?
 
@@ -42,6 +42,19 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 **Medianlinie = grau gestrichelt:** `ax.axvline(median, color="gray", linestyle="--", ...)` — Median ist 0,0588, als **6 %** beschriftet. Das ist genau der Schwellenwert, mit dem `hat_viele_Probleme` gebaut wurde.
 
 **Warum das wichtig ist:** Bevor man Gruppen vergleicht, muss man wissen, wie die Ziel-Variable selbst aussieht. Die extrem schiefe Verteilung (Median 6 %, aber Maximum 100 %) bedeutet: Die meisten Häuser haben nur sehr wenige auffällige Indikatoren — „viele Probleme" ist hier eine **relative**, keine absolute Aussage (siehe Median-Split-Erklärung in `01_Exploration.md`).
+
+> **📌 Gesamtquote übers ganze Land: zwei Sichtweisen (Vergleich mit Power BI)**
+> Für den Teamvortrag wird eine einzige Auffälligkeitsquote über alle 1.821 Häuser gebraucht, um sie mit der Power-BI-Zahl (~9,1 %) zu vergleichen. Dafür gibt es zwei sinnvolle Mittelungen, die leicht unterschiedliche Werte liefern:
+>
+> | Zahl | Bedeutung | Herkunft / Berechnung |
+> |---|---|---|
+> | **5.978** | Anzahl auffälliger Indikator-Bewertungen (H/U/A/D/S), aufsummiert über alle 1.821 Häuser | `df["auffaellig_n"].sum()` |
+> | **77.537** | Anzahl aller bewerteten Indikator-Zeilen, aufsummiert über alle 1.821 Häuser (nach N*-Ausschluss & Duplikat-Entfernung, siehe Folie-6-Pipeline) | `df["total_qi"].sum()` |
+> | **1.821** | Anzahl Krankenhäuser in der finalen Analysetabelle | Zeilenzahl von `analysetabelle.csv` |
+> | **7,71 %** | Indikatorgewichtete Gesamtquote — jeder einzelne Indikator zählt gleich viel, große Häuser mit vielen Indikatoren dominieren dadurch stärker | 5.978 ÷ 77.537 |
+> | **8,62 %** | Hausgewichtete Gesamtquote — jedes Haus zählt gleich viel, unabhängig von seiner Größe | `df["auffaellig_quote"].mean()` |
+>
+> Beide Prozentzahlen beschreiben denselben Sachverhalt, nur mit unterschiedlicher Gewichtung — kein Widerspruch, sondern zwei legitime Blickwinkel auf dieselbe Verteilung.
 
 ### Grafik 2 — Bettenzahl
 
@@ -73,7 +86,7 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 
 > **⚠️ Richtung umgekehrt gegenüber der ursprünglichen, fehlerhaften Auswertung:** Vorher hatte privat mit 56,5 % den **höchsten** Anteil. Jetzt hat privat mit 43,8 % den **niedrigsten** Anteil — öffentlich liegt jetzt vorn (53,5 %). Wichtig: Die ANOVA in Kapitel 4 zeigt, dass sich die zugrunde liegende kontinuierliche `auffaellig_quote` zwischen den drei Trägerarten praktisch **nicht** unterscheidet (0,0856 / 0,0857 / 0,0872, F=0,03, p=0,97) — dieser Balkendiagramm-Unterschied entsteht vermutlich, weil der Median-Schnitt bei sehr ähnlichen, eng beieinanderliegenden Quoten schon durch kleine Verschiebungen unterschiedlich viele Häuser auf die eine oder andere Seite fallen lässt, nicht durch einen echten Trägereffekt.
 
-**Warum interessiert uns das:** Hypothese: Träger könnten unterschiedliche Qualitätsanreize haben (z. B. Kostendruck bei privaten Häusern). Optisch der auffälligste Unterschied — aber die ANOVA in Kapitel 4 relativiert das deutlich (siehe Warnhinweis oben) und noch nicht um Störfaktoren bereinigt (Grafik 10).
+**Warum interessiert uns das:** Hypothese: Träger könnten unterschiedliche Qualitätsanreize haben (z. B. Kostendruck bei privaten Häusern). Optisch der auffälligste Unterschied — aber die ANOVA in Kapitel 4 relativiert das deutlich (siehe Warnhinweis oben).
 
 ### Grafik 4 — Uni-Kliniken vs. normale Häuser
 
@@ -87,31 +100,31 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 
 **Warum interessiert uns das:** Uni-Kliniken behandeln oft schwerere Fälle — höhere oder (durch bessere Ausstattung) niedrigere Auffälligkeit wären beide plausibel. Ergebnis: jetzt ein deutlicher Unterschied zugunsten von mehr Auffälligkeit bei Uni-Kliniken — möglicherweise, weil komplexere Fälle auch mehr/andere Indikatoren auslösen (vgl. `total_qi`-Korrelation, Grafik 8).
 
-### Grafik 5 + 6 — Fortbildungsquote & Ärzte pro Bett
+### Grafik 5 + 6 — Ärzte pro Bett & Pflegekräfte pro Bett
 
-![Grafik 5+6 — Fortbildungsquote & Ärzte pro Bett](../../grafiken/g5_6_fortbildung_aerzte.png)
+![Grafik 5+6 — Ärzte pro Bett & Pflegekräfte pro Bett](../../grafiken/g5_6_aerzte_pflege.png)
 
-**Diagramm lesen:** Zwei Boxplots nebeneinander — links das Merkmal `fortbildungsquote`, rechts `aerzte_pro_bett`. Beide sind **eigenständige Diagramme mit eigener Y-Achse**; die Höhen sind untereinander nicht vergleichbar, nur jeweils innerhalb eines Diagramms. In jedem Diagramm stehen die beiden Gruppen nebeneinander: **grün = wenige Probleme, rot = viele Probleme** (durchgängiges Farbschema des Projekts). Aufbau jeder Box wie bei Grafik 2: Die Box umfasst die mittleren 50 % der Häuser, der waagerechte Strich darin ist der **Median**, die Antennen zeigen den übrigen Wertebereich. Unterschied zu Grafik 2: Hier sind Ausreißer-Punkte **ausgeblendet** (`showfliers=False`), damit die Boxen nicht von wenigen Extremwerten zusammengedrückt werden.
+**Diagramm lesen:** Zwei Boxplots nebeneinander — links das Merkmal `aerzte_pro_bett`, rechts `pflege_pro_bett`. Beide sind **eigenständige Diagramme mit eigener Y-Achse**; die Höhen sind untereinander nicht vergleichbar, nur jeweils innerhalb eines Diagramms. In jedem Diagramm stehen die beiden Gruppen nebeneinander: **grün = wenige Probleme, rot = viele Probleme** (durchgängiges Farbschema des Projekts). Aufbau jeder Box wie bei Grafik 2: Die Box umfasst die mittleren 50 % der Häuser, der waagerechte Strich darin ist der **Median**, die Antennen zeigen den übrigen Wertebereich. Unterschied zu Grafik 2: Hier sind Ausreißer-Punkte **ausgeblendet** (`showfliers=False`), damit die Boxen nicht von wenigen Extremwerten zusammengedrückt werden.
 
-**Worauf man beim Vergleich achtet:** Nicht die Antennen, sondern **wie stark sich die beiden Boxen gegeneinander verschieben**. Links (Fortbildungsquote) liegen grüne und rote Box praktisch übereinander, beide Mediane sind exakt gleich (0,667) — kein Unterschied. Rechts (Ärzte pro Bett) ist die rote Box sichtbar **nach oben** verschoben: Bei Häusern mit vielen Problemen liegt der Median höher als bei Häusern mit wenigen Problemen. Die Boxen überlappen weiterhin stark — das allein macht noch keinen Beweis —, aber anders als links ist hier überhaupt eine Verschiebung da, die sich lohnt, in Kapitel 4 mit einem Test zu prüfen.
+**Worauf man beim Vergleich achtet:** Nicht die Antennen, sondern **wie stark sich die beiden Boxen gegeneinander verschieben**. In beiden Diagrammen ist die rote Box sichtbar **nach oben** verschoben: Bei Häusern mit vielen Problemen liegt der Median jeweils höher als bei Häusern mit wenigen Problemen. Die Boxen überlappen weiterhin stark — das allein macht noch keinen Beweis —, aber die sichtbare Verschiebung lohnt sich, in Kapitel 4 mit einem Test zu prüfen.
 
 **Befund:**
-- Fortbildungsquote: Median wenige Probleme = 0,667, viele Probleme = 0,667 — **identisch, kein Unterschied.**
 - Ärzte pro Bett: Median wenige Probleme = 0,382, viele Probleme = 0,470 — **sichtbarer Unterschied.**
+- Pflegekräfte pro Bett: Median wenige Probleme = 0,891, viele Probleme = 1,047 — **sichtbarer Unterschied, gleiches Muster.**
 
-> **⚠️ Richtung umgekehrt gegenüber der ursprünglichen, fehlerhaften Auswertung:** Vorher hatten Häuser mit vielen Problemen den **niedrigeren** Ärzte/Bett-Median (0,390 vs. 0,468). Jetzt ist es umgekehrt: Häuser mit vielen Problemen haben den **höheren** Median (0,470 vs. 0,382). Mehr Ärzte pro Bett geht jetzt tendenziell mit mehr, nicht weniger, Qualitätsproblemen einher.
+> **⚠️ Richtung umgekehrt gegenüber der ursprünglichen, fehlerhaften Auswertung:** Vorher hatten Häuser mit vielen Problemen bei beiden Merkmalen den **niedrigeren** Median (Ärzte 0,390 vs. 0,468; Pflege 0,892 vs. 1,041). Jetzt ist es umgekehrt: Häuser mit vielen Problemen haben jeweils den **höheren** Median (Ärzte 0,470 vs. 0,382; Pflege 1,047 vs. 0,891). Mehr Personal pro Bett geht jetzt tendenziell mit mehr, nicht weniger, Qualitätsproblemen einher.
 
-**Warum interessiert uns das:** Beide waren als plausible Kandidaten motiviert (`01_Exploration.md`, Abschnitt 5). Hier trennen sich die Hypothesen zum ersten Mal: Fortbildungsquote scheint **keine** Rolle zu spielen, Ärzte pro Bett schon — wird in Kapitel 4 dieses Dokuments (Inferenzstatistik) statistisch geprüft und ist auch in `03_Decision_Tree.ipynb` ein wichtiges Merkmal.
+**Warum interessiert uns das:** Beide Merkmale waren als plausible Kandidaten motiviert (`01_Exploration.md`, Abschnitt 5+6) und zeigen hier dasselbe Muster — ein erster Hinweis, dass beide Merkmale Ähnliches messen (bestätigt sich in Grafik 8 als Korrelation von r = 0,577 der beiden Merkmale untereinander). Beide werden in Kapitel 4 dieses Dokuments (Inferenzstatistik) statistisch geprüft; Ärzte pro Bett ist zudem in `03_Decision_Tree.ipynb` das wichtigste Merkmal.
 
-**Welche Schlüsse man daraus ziehen sollte:** Zwei unterschiedliche Konsequenzen für zwei Merkmale, die beide plausibel klangen.
-- **Fortbildungsquote:** Identische Mediane sind ein starkes Signal, dass hier **kein** Zusammenhang mit Qualitätsproblemen besteht — dieses Merkmal kann man für die weitere Analyse gedanklich zurückstellen, ganz ohne Test.
-- **Ärzte pro Bett:** Die sichtbare, aber moderate Verschiebung reicht **allein nicht** als Beweis (dafür überlappen sich die Boxen noch zu stark) — sie reicht aber, um das Merkmal als ernsten Kandidaten für den T-Test in Kapitel 4 dieses Dokuments zu behalten. Der optische Eindruck aus diesem Boxplot bestätigt sich dort (p < 0,0001), jetzt mit umgekehrtem Vorzeichen.
+**Welche Schlüsse man daraus ziehen sollte:** Die sichtbare, aber moderate Verschiebung reicht bei beiden Merkmalen **allein nicht** als Beweis (dafür überlappen sich die Boxen noch zu stark) — sie reicht aber, um beide als ernste Kandidaten für den T-Test in Kapitel 4 dieses Dokuments zu behalten. Der optische Eindruck aus diesem Boxplot bestätigt sich dort für beide Merkmale (p < 0,0001), jetzt mit umgekehrtem Vorzeichen.
 
 > **📌 Was bedeutet „p < 0,001"?** Der **p-Wert** beantwortet eine ganz bestimmte Frage: *Angenommen, es gäbe in Wirklichkeit gar keinen Unterschied zwischen "wenige" und "viele Probleme" — wie wahrscheinlich wäre es dann, per Zufall trotzdem einen Unterschied wie den beobachteten (oder größer) zu messen?* `p < 0,001` heißt: Diese Wahrscheinlichkeit liegt unter 0,1 % — unter 1 von 1.000. Das ist so unwahrscheinlich, dass man die Annahme "kein echter Unterschied" verwirft und den Unterschied als **statistisch signifikant** (also: wahrscheinlich real, nicht nur Stichprobenrauschen) bezeichnet. Übliche Schwelle dafür ist **α = 0,05** (5 %) — alles darunter gilt als signifikant, `p < 0,001` ist also ein besonders starkes Ergebnis. Wichtig: Der p-Wert sagt nichts darüber, **wie groß oder wie wichtig** der Unterschied ist, nur wie unwahrscheinlich er durch reinen Zufall entstanden wäre. Details zum konkreten Test (T-Test) folgen in Kapitel 4 dieses Dokuments.
 
 ### Grafik 7 — Bundesland
 
-![Grafik 7 — Bundesland](../../grafiken/g7_bundesland.png)
+![Grafik 7 — Bundesland](../../grafiken/g7_bundesland_kachelkarte.png)
+
+**Diagramm lesen:** Eine Kachel je Bundesland in schematischer Anordnung (keine echten Geodaten), eingefärbt nach Anteil „viele Probleme" — grün = niedrig, rot = hoch. Jede Kachel zeigt Kürzel, Anteil in Prozent und die Gruppengröße `n=...`.
 
 **Befund:** Rheinland-Pfalz (64,0 %, n=89) und Sachsen-Anhalt (61,8 %, n=55) haben den höchsten Anteil, Thüringen (36,0 %, n=50) und Baden-Württemberg (37,3 %, n=220) den niedrigsten.
 
@@ -119,19 +132,9 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 
 **Warum interessiert uns das:** Region könnte über Landesvorgaben oder Versorgungsstrukturen mit Qualität zusammenhängen. **Einschränkung:** Manche Bundesländer haben nur wenige Häuser (z. B. Bremen: n=14 Häuser) — ein einzelnes Haus kann den Landes-Durchschnitt verschieben. Mit Vorsicht zu lesen.
 
-### Grafik 11 — Pflegekräfte pro Bett 
+### Grafik 9 — Konzernvergleich 
 
-![Grafik 11 — Pflegekräfte pro Bett](../../grafiken/g11_pflege_pro_bett.png)
-
-**Befund:** Median wenige Probleme = 0,891, viele Probleme = 1,047 — ähnliches Muster wie Ärzte pro Bett (Grafik 5+6), inklusive derselben Richtungsumkehr.
-
-> **⚠️ Richtung umgekehrt gegenüber der ursprünglichen, fehlerhaften Auswertung:** Vorher hatten Häuser mit vielen Problemen den **niedrigeren** Pflege/Bett-Median (0,892 vs. 1,041). Jetzt haben Häuser mit vielen Problemen den **höheren** Median (1,047 vs. 0,891) — genau wie bei Ärzte pro Bett.
-
-**Warum interessiert uns das:** Dieselbe Personalintensitäts-Hypothese wie bei den Ärzten (`01_Exploration.md`, Abschnitt 6). Das ähnliche (jetzt: gleichgerichtete) Muster zu `aerzte_pro_bett` ist ein erster Hinweis, dass beide Merkmale Ähnliches messen (wird in Grafik 8 als Korrelation sichtbar).
-
-### Grafik 12 — Konzernvergleich 
-
-![Grafik 12 — Konzernvergleich](../../grafiken/g12_konzern_vergleich.png)
+![Grafik 9 — Konzernvergleich](../../grafiken/g9_konzern_vergleich.png)
 
 **Diagramm lesen:** Wie bei Grafik 4 steht hier **pro Gruppe ein Balken** — Höhe = Anteil der Häuser dieser Gruppe mit vielen Problemen. Die Beschriftung über jedem Balken (**n=1.463 Häuser** bzw. **n=358 Häuser**) gibt die **Gruppengröße** an, also wie viele der 1.821 Häuser insgesamt unabhängig bzw. einem Konzern zugehörig sind — nicht zu verwechseln mit der Balkenhöhe (die zeigt nur den *Anteil in Prozent*, nicht die Anzahl).
 
@@ -139,13 +142,21 @@ Erst muss jedes Merkmal für sich geprüft werden — sinnvoll verteilt? Ausrei�
 
 **Warum interessiert uns das:** Die Hypothese aus `01_Exploration.md` Abschnitt 7 (zentrale Qualitätssicherung im Konzern beeinflusst die Auffälligkeit) bestätigt sich hier schon optisch nicht — die Balken liegen nah beieinander. Wird in Kapitel 4 dieses Dokuments mit dem Chi²-Test formal bestätigt.
 
+### Grafik 10 — Fortbildungsquote
+
+![Grafik 10 — Fortbildungsquote](../../grafiken/g10_fortbildungsquote.png)
+
+**Befund:** Median wenige Probleme = 0,667, viele Probleme = 0,667 — **identisch, kein Unterschied.**
+
+**Warum interessiert uns das:** Anders als bei Ärzten und Pflegekräften pro Bett (Grafik 5+6) zeigt die Fortbildungsquote **keinen** erkennbaren Zusammenhang mit Qualitätsproblemen — identische Mediane sind ein starkes Signal, dass dieses Merkmal für die weitere Analyse gedanklich zurückgestellt werden kann, ganz ohne Test. Auch „kein Zusammenhang" ist ein valides Ergebnis.
+
 ---
 
-## 3. Zusammenhänge zwischen Merkmalen (Grafiken 8–10)
+## 3. Zusammenhänge zwischen Merkmalen (Grafik 8)
 
 ### Übergang: Von Einzelbetrachtung zu Zusammenhängen
 
-Kapitel 2 hat jedes Merkmal isoliert betrachtet. Jetzt geht es um zwei neue Fragen: **Welches Merkmal hängt am stärksten mit der Ziel-Variable zusammen** (Grafik 8), und **hängen die Merkmale auch untereinander zusammen**, sodass ein scheinbarer Befund eigentlich durch ein drittes, verstecktes Merkmal verursacht wird — ein sogenannter **Störfaktor** (Grafik 9–10, ausführlich erklärt bei Grafik 10)?
+Kapitel 2 hat jedes Merkmal isoliert betrachtet. Jetzt geht es um eine neue Frage: **Welches Merkmal hängt am stärksten mit der Ziel-Variable zusammen** — dargestellt in einer einzigen Korrelationsmatrix (Grafik 8)?
 
 ### Grafik 8 — Korrelationsmatrix
 
@@ -173,35 +184,11 @@ Kapitel 2 hat jedes Merkmal isoliert betrachtet. Jetzt geht es um zwei neue Frag
 
 **Wichtiger Nebenbefund:** `aerzte_pro_bett` und `pflege_pro_bett` korrelieren auch **untereinander** recht stark (r = 0,577, praktisch unverändert zur ursprünglichen Auswertung) — Häuser mit vielen Ärzten pro Bett haben tendenziell auch viel Pflegepersonal pro Bett. Das ist ein Hinweis auf **Multikollinearität**: Beide Merkmale könnten teilweise dieselbe zugrundeliegende Eigenschaft messen („allgemeine Personalausstattung"), nicht zwei komplett unabhängige Informationen.
 
-### Grafik 9 — Scatter: Bettenzahl vs. Ärzte pro Bett
-
-![Grafik 9 — Scatter Bettenzahl vs. Ärzte pro Bett](../../grafiken/g9_scatter_betten_aerzte.png)
-
-**Was:** Streudiagramm, jeder Punkt ein Haus, eingefärbt nach Ziel-Variable.
-
-**Befund:** Kein klares Trennmuster — die grünen (wenige Probleme) und roten (viele Probleme) Punkte überlappen stark.
-
-**Warum interessiert uns das:** Ein Streudiagramm zeigt, ob sich zwei Gruppen anhand von zwei Merkmalen gemeinsam trennen lassen — mehr als eine einzelne Korrelationszahl verrät. Starke Überlappung bestätigt: Mit diesen beiden Merkmalen allein lässt sich kein Haus zuverlässig der einen oder anderen Gruppe zuordnen.
-
-### Grafik 10 — Störfaktor: Trägerschaft × Bettengröße
-
-![Grafik 10 — Störfaktor Trägerschaft × Bettengröße](../../grafiken/g10_stoerfaktor_traeger.png)
-
-> **📌 Was ist ein Störfaktor?** Ein Störfaktor (auch Confounder) ist eine **dritte Variable**, die mit beiden Seiten eines beobachteten Zusammenhangs gleichzeitig zu tun hat und dadurch einen Zusammenhang vortäuschen oder verstärken kann, der bei genauerem Hinsehen ganz oder teilweise etwas anderes erklärt. Konkretes Beispiel hier: Grafik 3 zeigte, dass private Häuser einen höheren Anteil an Qualitätsproblemen haben als andere Trägerarten. Bevor man daraus schließt "privat verursacht schlechtere Qualität", muss man prüfen, ob Träger und Häuser mit vielen Problemen vielleicht beide mit einer dritten Eigenschaft zusammenhängen — hier: der **Größe** des Hauses. Genau das prüft dieses Diagramm.
-
-**Diagramm lesen:** Drei Boxplots nebeneinander, einer pro Trägerart (`privat`, `freigemeinnützig`, `öffentlich`) — Y-Achse ist die Bettenzahl. Aufbau jeder Box wie bei den vorigen Boxplots: Box = mittlere 50 % der Häuser, Strich in der Box = Median, Antennen = übriger Wertebereich (Ausreißer hier ausgeblendet). Anders als bei Grafik 2/5+6 geht es hier **nicht** um "wenige vs. viele Probleme" (keine grün/rot-Einfärbung), sondern rein um die Bettengröße je Trägerart — die drei Farben unterscheiden nur die drei Trägerarten.
-
-**Was:** Boxplot der Bettenzahl, gruppiert nach Trägerart.
-
-**Befund:** Private Häuser sind im Median weiterhin deutlich kleiner (125 Betten) als freigemeinnützige (218) und öffentliche (232) — dieser Befund hängt nicht von der Ziel-Variable ab und ist von der Korrektur praktisch unberührt.
-
-**Warum interessiert uns das — der wichtigste Punkt in diesem Abschnitt:** Private Häuser sind systematisch **kleiner**. Kleinere Häuser haben pro Qualitätsindikator weniger Fälle — das kann die statistische Schwankungsbreite erhöhen und macht es wahrscheinlicher, rein zufällig außerhalb eines Referenzbereichs zu landen. Der scheinbare „Träger-Effekt" aus Grafik 3 könnte also (teilweise) ein **Größen-Effekt** sein. Nach der Korrektur zeigt die ANOVA in Kapitel 4 zusätzlich, dass die kontinuierliche Auffällig-Quote sich zwischen den Trägerarten ohnehin praktisch nicht unterscheidet — der Störfaktor-Verdacht aus diesem Abschnitt bleibt also relevant, ist aber inzwischen nicht mehr die einzige Einschränkung zum Träger-Befund.
-
 ---
 
 ### Zwischenstand im Notebook: „Zusammenfassung der deskriptiven Befunde"
 
-Direkt nach Grafik 12 enthält das Notebook eine eigene Markdown-Zelle mit einer kompakten **Kernbefunde-Tabelle**, die alle 12 Grafiken auf einen Blick zusammenfasst (Richtung + Stärke jedes Zusammenhangs mit `hat_viele_Probleme`) — inhaltlich deckt sie sich mit den Einzelbefunden aus Kapitel 2–3 dieses Dokuments, dient im Notebook aber als Brücke, bevor die Befunde im nächsten Schritt statistisch abgesichert werden.
+Direkt nach Grafik 10 enthält das Notebook eine eigene Markdown-Zelle mit einer kompakten **Kernbefunde-Tabelle**, die alle 10 Grafiken auf einen Blick zusammenfasst (Richtung + Stärke jedes Zusammenhangs mit `hat_viele_Probleme`) — inhaltlich deckt sie sich mit den Einzelbefunden aus Kapitel 2–3 dieses Dokuments, dient im Notebook aber als Brücke, bevor die Befunde im nächsten Schritt statistisch abgesichert werden.
 
 ---
 
@@ -229,7 +216,7 @@ Kapitel 2 hat gezeigt: Manche Merkmale unterscheiden sich zwischen den Gruppen s
 
 > **⚠️ Richtung umgekehrt gegenüber der ursprünglichen, fehlerhaften Auswertung:** Vorher hatte „wenige Probleme" den höheren Mittelwert (1,072 vs. 0,951). Jetzt hat „viele Probleme" den höheren Mittelwert (1,091 vs. 0,936) — dieselbe Umkehrung wie bei Ärzte pro Bett.
 
-**Warum das wichtig ist:** Bestätigt den optischen Eindruck aus Grafik 11 statistisch. Zusammen mit der in Kapitel 3 erwähnten Korrelation zwischen `aerzte_pro_bett` und `pflege_pro_bett` (r = 0,577) deutet das darauf hin, dass hier möglicherweise ein gemeinsamer, übergeordneter Effekt „Personalausstattung" gemessen wird, nicht zwei völlig unabhängige Phänomene.
+**Warum das wichtig ist:** Bestätigt den optischen Eindruck aus Grafik 5+6 statistisch. Zusammen mit der in Kapitel 3 erwähnten Korrelation zwischen `aerzte_pro_bett` und `pflege_pro_bett` (r = 0,577) deutet das darauf hin, dass hier möglicherweise ein gemeinsamer, übergeordneter Effekt „Personalausstattung" gemessen wird, nicht zwei völlig unabhängige Phänomene.
 
 ### Chi²-Test: Konzernzugehörigkeit vs. viele Probleme *(ergänzt 2026-07-29)*
 
@@ -244,7 +231,7 @@ Kapitel 2 hat gezeigt: Manche Merkmale unterscheiden sich zwischen den Gruppen s
 
 χ² = 1,277, **p = 0,2585** → **nicht signifikant**, über α = 0,05.
 
-**Warum das wichtig ist:** Bestätigt Grafik 12 statistisch: Es gibt weiterhin **keinen** nachweisbaren Zusammenhang zwischen Konzernzugehörigkeit und Qualitätsproblemen — die Schlussfolgerung ändert sich durch die Korrektur nicht, auch wenn χ² und p-Wert jetzt andere Werte haben als vorher (χ²=0,015, p=0,90). p=0,26 bedeutet: Ein Unterschied wie der beobachtete (oder größer) wäre bei tatsächlicher Unabhängigkeit in rund 26 von 100 Fällen zu erwarten — deutlich über der 5-%-Schwelle, also kein statistisch abgesicherter Zusammenhang.
+**Warum das wichtig ist:** Bestätigt Grafik 9 statistisch: Es gibt weiterhin **keinen** nachweisbaren Zusammenhang zwischen Konzernzugehörigkeit und Qualitätsproblemen — die Schlussfolgerung ändert sich durch die Korrektur nicht, auch wenn χ² und p-Wert jetzt andere Werte haben als vorher (χ²=0,015, p=0,90). p=0,26 bedeutet: Ein Unterschied wie der beobachtete (oder größer) wäre bei tatsächlicher Unabhängigkeit in rund 26 von 100 Fällen zu erwarten — deutlich über der 5-%-Schwelle, also kein statistisch abgesicherter Zusammenhang.
 
 ### ANOVA: auffällig-Quote nach Trägerschaft
 
@@ -254,7 +241,7 @@ Kapitel 2 hat gezeigt: Manche Merkmale unterscheiden sich zwischen den Gruppen s
 
 > **⚠️ Wichtigste Umkehrung durch die Korrektur:** In der ursprünglichen, fehlerhaften Auswertung war dieses Ergebnis **hoch signifikant** (F=11,32, p<0,001) und galt als „klarster Befund" der ganzen Analyse. Mit der korrigierten Ziel-Variable sind die drei Trägerarten-Mittelwerte praktisch **identisch** (0,0856 / 0,0857 / 0,0872) — die ANOVA findet **keinen** statistisch signifikanten Unterschied mehr. Das relativiert den auf den ersten Blick klaren Balkendiagramm-Unterschied in Grafik 3 erheblich: Dort wird die kontinuierliche Quote erst durch den Median-Split in zwei Gruppen geteilt, und schon kleine, nicht signifikante Unterschiede in der Quote können dabei zu sichtbar unterschiedlichen Prozentsätzen führen.
 
-**Warum das wichtig ist:** Anders als vorher zeigt die ANOVA jetzt, dass der in Grafik 3 sichtbare Unterschied zwischen den Trägerarten **nicht** statistisch abgesichert ist — er könnte allein durch Stichprobenrauschen um den Median-Schnitt herum entstehen. Der in Grafik 10 gezeigte Störfaktor (Bettengröße je Trägerart) bleibt zwar weiterhin ein methodisch relevanter Punkt, ist hier aber zweitrangig geworden: Es gibt schon auf Ebene der kontinuierlichen Quote keinen Trägereffekt, der bereinigt werden müsste.
+**Warum das wichtig ist:** Anders als vorher zeigt die ANOVA jetzt, dass der in Grafik 3 sichtbare Unterschied zwischen den Trägerarten **nicht** statistisch abgesichert ist — er könnte allein durch Stichprobenrauschen um den Median-Schnitt herum entstehen. Der Störfaktor Bettengröße je Trägerart bleibt zwar weiterhin ein methodisch relevanter Punkt, ist hier aber zweitrangig geworden: Es gibt schon auf Ebene der kontinuierlichen Quote keinen Trägereffekt, der bereinigt werden müsste.
 
 ### 95 %-Konfidenzintervalle: Ärzte pro Bett
 
@@ -288,7 +275,7 @@ Kapitel 2 hat gezeigt: Manche Merkmale unterscheiden sich zwischen den Gruppen s
 
 ## 6. Grafiken speichern & Gesamteinschätzung
 
-**Was:** Das Notebook ruft per `subprocess.run()` ein externes Skript auf (`../scripts/Grafiken_Speichern.py`), das alle 12 Grafiken noch einmal (identisch zu den Kapiteln 2–3) erzeugt und als PNG in `grafiken/` speichert — diesmal ohne Anzeige im Notebook, nur zum Abspeichern für Dashboard und Präsentation.
+**Was:** Das Notebook ruft per `subprocess.run()` ein externes Skript auf (`../scripts/Grafiken_Speichern.py`), das alle 10 Grafiken noch einmal (identisch zu den Kapiteln 2–3) erzeugt und als PNG in `grafiken/` speichert — diesmal ohne Anzeige im Notebook, nur zum Abspeichern für Dashboard und Präsentation.
 
 > ✅ **Behoben (2026-08-17):** `scripts/Grafiken_Speichern.py` fehlte zwischenzeitlich im `scripts/`-Ordner (vermutlich versehentlich bei einer früheren Aufräumaktion gelöscht, da nie versioniert) und wurde neu erstellt. Diese Zelle läuft jetzt wieder fehlerfrei durch und hat alle 12 PNGs in `grafiken/` mit der korrigierten Ziel-Variable neu erzeugt — sie zeigen den aktuellen, korrigierten Stand.
 

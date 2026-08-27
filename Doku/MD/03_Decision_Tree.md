@@ -141,7 +141,7 @@ Die Klasse hat einen klaren praktischen Nutzen: Dieselbe `KrankenhausModell`-Kla
 
 Konkret: Bei `max_depth=3` hat der Baum maximal 8 Endknoten (Blätter). Jede Entscheidungsregel ist im Baumdiagramm direkt ablesbar und erklärbar. Bei `max_depth=5` wären es bis zu 32 Blätter — der Baum würde zwar auf den Trainingsdaten besser abschneiden, aber die 5-Fold Cross-Validation (61,6 %) zeigt, dass die generelle Vorhersagekraft der Daten begrenzt ist. Ein tieferer Baum würde dieses Limit nicht verbessern, sondern nur schwerer interpretierbar und weniger zuverlässig auf neuen Daten.
 
-![Entscheidungsbaum](../../grafiken/decision_tree.png)
+![Entscheidungsbaum](../../grafiken/g12_decision_tree.png)
 
 **Wie liest man dieses Diagramm?**
 Man startet oben am **Wurzelknoten** (erster Kasten ganz oben) und folgt für ein konkretes Krankenhaus dem Pfad nach unten:
@@ -211,7 +211,7 @@ In unserem Fall gibt es zwei mögliche Irrtümer:
 
 Diese beiden Fehlertypen haben unterschiedliche Konsequenzen, daher ist es wichtig, sie getrennt zu betrachten.
 
-![Confusion Matrix](../../grafiken/confusion_matrix.png)
+![Confusion Matrix](../../grafiken/g11_confusion_matrix.png)
 
 > Im Diagramm steht auf der **X-Achse „Predicted label"** (= was das Modell vorhergesagt hat) und auf der **Y-Achse „True label"** (= was tatsächlich der Fall ist, also die echte Gruppe des Krankenhauses laut IQTIG-Daten).
 
@@ -248,7 +248,7 @@ Nach dem Training berechnet der Decision Tree automatisch, wie wichtig jedes Mer
 **Warum ist das nützlich?**
 Feature Importance beantwortet die Frage: *Welche Merkmale hat das Modell tatsächlich genutzt — und welche haben keine Rolle gespielt?* Das ist eine Rückkopplung zur inhaltlichen Analyse: Wenn das Modell dieselben Merkmale als wichtig einstuft, die auch in den statistischen Tests aus Baustein 2 herausgestochen sind, stärkt das die Glaubwürdigkeit des Ergebnisses.
 
-![Feature Importance](../../grafiken/feature_importance.png)
+![Feature Importance](../../grafiken/g13_feature_importance.png)
 
 > **X-Achse „Wichtigkeit"** = Anteil dieses Merkmals an der gesamten Vorhersageleistung des Modells (in %). Ein Wert von 72,8 % bedeutet: fast drei Viertel aller Entscheidungen im Baum basieren allein auf diesem Merkmal, wie stark jedes Merkmal zur Reduktion der Gini-Unreinheit beiträgt — je höher, desto öfter und weiter oben im Baum wird das Merkmal für Verzweigungen genutzt.
 
