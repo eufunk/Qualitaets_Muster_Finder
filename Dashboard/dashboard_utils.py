@@ -146,7 +146,7 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
     """
     df_karte = df.dropna(subset=["SO.Latitude", "SO.Longitude"]).copy()
 
-    fig = px.scatter_mapbox(
+    fig = px.scatter_map(
         df_karte,
         lat="SO.Latitude",
         lon="SO.Longitude",
@@ -173,7 +173,7 @@ def erstelle_karte(df: pd.DataFrame) -> go.Figure:
         },
         zoom=5,
         center={"lat": 51.2, "lon": 10.4},
-        mapbox_style="open-street-map",
+        map_style="open-street-map",
     )
     fig.update_traces(marker={"size": 8, "opacity": 0.7})
     fig.update_layout(
