@@ -75,8 +75,8 @@ Lädt die gesamte Datei (911 MB, 29 Spalten) und zeigt die ersten 3 Zeilen.
 | `H20`/`H99` | Einrichtung auf rechnerische Auffälligkeit hingewiesen | Ja |
 | `U30`–`33`/`U99` | Nach Strukturiertem Dialog qualitativ unauffällig | Ja (initial), entkräftet |
 | `A40`–`42`/`A99` | Nach Strukturiertem Dialog qualitativ auffällig | Ja, bestätigt |
-| `D50`/`51`/`99` | Bewertung nicht möglich (fehlerhafte Doku) | Nicht bewertbar |
-| `S90`/`91`/`99` | Sonstiges | Nicht bewertbar |
+| `D50`/`51`/`99` | Bewertung nicht möglich (fehlerhafte Doku) | Ja |
+| `S90`/`91`/`99` | Sonstiges | Ja |
 
 `R10` bedeutet also „unauffällig", nicht „auffällig" — die frühere Annahme `R* = auffällig` war invertiert. Details und Beweis (u. a. eine Summenprobe: H+U+A+D+S ergibt exakt die im IQTIG-Bericht gemeldete Zahl „Rechnerisch auffällige Ergebnisse gesamt") in `BI_Analyse/Korrektur_Auffaellig_Quote_Dokumentation.docx`.
 

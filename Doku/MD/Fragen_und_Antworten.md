@@ -83,7 +83,7 @@ R10 bedeutet „Ergebnis liegt im Referenzbereich" — also **nicht** auffällig
 | H20/H99 | Auf Auffälligkeit hingewiesen | nicht auffällig | auffällig |
 | U30–33/U99 | Qualitativ unauffällig (entkräftet) | nicht auffällig | auffällig (initial gezählt) |
 | A40–42/A99 | Qualitativ auffällig (bestätigt) | nicht auffällig | auffällig, bestätigt |
-| D50/51/99 · S90/91/99 | Nicht bewertbar/Sonstiges | nicht auffällig | nicht bewertbar — ausgeschlossen |
+| D50/51/99 · S90/91/99 | Nicht bewertbar/Sonstiges | nicht auffällig | auffällig |
 
 ### 12. Wie habt ihr sichergestellt, dass die korrigierte Interpretation jetzt richtig ist?
 Per Summenprobe gegen den offiziellen IQTIG-Bericht: Die Summe der als auffällig gezählten Codes (H+U+A+D+S) unter der neuen Interpretation ergibt exakt die im IQTIG-Bericht veröffentlichte Zahl „Rechnerisch auffällige Ergebnisse gesamt". Zusätzlich kommen unsere Python-Auswertung und die unabhängige Power-BI-Auswertung der Kollegen jetzt zum selben Ergebnis — ein zweiter, unabhängiger Beleg.

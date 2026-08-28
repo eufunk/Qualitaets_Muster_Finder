@@ -28,8 +28,9 @@ scripts/
 *.ppt
 *.pptx
 
-# Präsentations-Ordner komplett von Commits ausschließen
-Doku/PPT/
+# Präsentations-Ordner von Commits ausschließen — außer explizit eingecheckte Dateien
+Doku/PPT/*
+!Doku/PPT/Projektbegleitende_Praesentation.pptx
 Doku/MD/Praesentation_Folien_Beschreibung.md
 Doku/MD/Praesentation_Team_Folien_Beschreibung.md
 
