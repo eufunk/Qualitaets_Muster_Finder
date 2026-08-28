@@ -248,29 +248,89 @@ def erstelle_quote_histogramm(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def erstelle_bundesland_balken(df: pd.DataFrame) -> go.Figure:
-    """Horizontalbalken: Anteil 'Viele Probleme' je Bundesland."""
+# (row, col) — schematische Deutschlandkarte aus Kacheln, keine echten Geodaten.
+# Identisches Layout wie grafiken/g7_bundesland_kachelkarte.png (Grafiken_Speichern.py),
+# damit Dashboard und statische Grafik übereinstimmen.
+BUNDESLAND_LAYOUT = {
+    "Schleswig-Holstein":       (0, 2),
+    "Hamburg":                  (1, 1),
+    "Mecklenburg-Vorpommern":   (1, 3),
+    "Bremen":                   (2, 0),
+    "Niedersachsen":            (2, 1),
+    "Berlin":                   (2, 2),
+    "Brandenburg":              (2, 3),
+    "Nordrhein-Westfalen":      (3, 0),
+    "Sachsen-Anhalt":           (3, 1),
+    "Sachsen":                  (3, 3),
+    "Hessen":                   (4, 1),
+    "Thüringen":                (4, 2),
+    "Rheinland-Pfalz":          (5, 0),
+    "Bayern":                   (5, 2),
+    "Saarland":                 (6, 0),
+    "Baden-Württemberg":        (6, 1),
+}
+BUNDESLAND_ABKUERZUNG = {
+    "Schleswig-Holstein": "SH", "Hamburg": "HH", "Mecklenburg-Vorpommern": "MV",
+    "Bremen": "HB", "Niedersachsen": "NI", "Berlin": "BE", "Brandenburg": "BB",
+    "Nordrhein-Westfalen": "NW", "Sachsen-Anhalt": "ST", "Sachsen": "SN",
+    "Hessen": "HE", "Thüringen": "TH", "Rheinland-Pfalz": "RP", "Bayern": "BY",
+    "Saarland": "SL", "Baden-Württemberg": "BW",
+}
+
+
+def erstelle_bundesland_kachelkarte(df: pd.DataFrame) -> go.Figure:
+    """Schematische Deutschlandkarte aus Kacheln: Anteil 'Viele Probleme' je Bundesland,
+    farblich zwischen Gruen (niedrig) und Rot (hoch). Interaktive Entsprechung zu
+    grafiken/g7_bundesland_kachelkarte.png, mit Hover-Tooltip pro Kachel."""
+    import plotly.colors as pc
+
     stats = (
         df.groupby("SO.Bundesland")
         .agg(pct=("hat_viele_Probleme", "mean"), n=("hat_viele_Probleme", "count"))
         .reset_index()
-        .sort_values("pct")
+        .set_index("SO.Bundesland")
     )
-    farben = [FARBE_VIELE if p > 0.5 else FARBE_WENIGE for p in stats["pct"]]
+    stats["pct"] *= 100
+    p_min, p_max = stats["pct"].min(), stats["pct"].max()
+    spanne = (p_max - p_min) or 1.0
+    colorscale = [[0.0, FARBE_WENIGE], [0.5, "#f5f5f5"], [1.0, FARBE_VIELE]]
 
-    fig = px.bar(
-        stats, x="pct", y="SO.Bundesland", orientation="h",
-        text=stats["n"].apply(lambda x: f"n={x} Häuser"),
-        custom_data=["n"],
-        labels={"pct": "Anteil 'Viele Probleme'", "SO.Bundesland": ""},
-        title="Anteil Haeuser mit vielen Problemen je Bundesland",
+    fig = go.Figure()
+    xs, ys, hover = [], [], []
+    for land, (row, col) in BUNDESLAND_LAYOUT.items():
+        pct = stats.loc[land, "pct"]
+        n = int(stats.loc[land, "n"])
+        t = (pct - p_min) / spanne
+        farbe = pc.sample_colorscale(colorscale, [t])[0]
+        x0, y0 = col, -row
+        fig.add_shape(
+            type="rect", x0=x0, y0=y0, x1=x0 + 0.92, y1=y0 + 0.92,
+            fillcolor=farbe, line=dict(color="white", width=2),
+        )
+        fig.add_annotation(x=x0 + 0.46, y=y0 + 0.64, text=f"<b>{BUNDESLAND_ABKUERZUNG[land]}</b>",
+                            showarrow=False, font=dict(size=15, color="#1a1a1a"))
+        fig.add_annotation(x=x0 + 0.46, y=y0 + 0.38, text=f"{pct:.0f} %",
+                            showarrow=False, font=dict(size=12, color="#1a1a1a"))
+        fig.add_annotation(x=x0 + 0.46, y=y0 + 0.14, text=f"n={n}",
+                            showarrow=False, font=dict(size=10, color="#2c2c2c"))
+        xs.append(x0 + 0.46)
+        ys.append(y0 + 0.46)
+        hover.append(f"<b>{land}</b><br>Anteil 'Viele Probleme': {pct:.1f} %<br>Anzahl Häuser (n): {n}<extra></extra>")
+
+    # Unsichtbare Marker je Kachel, ausschliesslich fuer den Hover-Tooltip
+    fig.add_trace(go.Scatter(
+        x=xs, y=ys, mode="markers",
+        marker=dict(size=70, opacity=0, symbol="square"),
+        hovertemplate=hover, showlegend=False,
+    ))
+
+    fig.update_xaxes(visible=False, range=[-0.2, 4.2])
+    fig.update_yaxes(visible=False, range=[-6.2, 1.0], scaleanchor="x", scaleratio=1)
+    fig.update_layout(
+        title="Anteil Häuser mit vielen Problemen je Bundesland",
+        margin=dict(l=10, r=10, t=40, b=10), height=560,
+        plot_bgcolor="white",
     )
-    fig.update_traces(
-        marker_color=farben, textposition="outside",
-        hovertemplate="<b>%{y}</b><br>Anteil 'Viele Probleme': %{x:.1%}<br>Anzahl Häuser (n): %{customdata[0]}<extra></extra>",
-    )
-    fig.add_vline(x=0.5, line_dash="dash", line_color="gray")
-    fig.update_xaxes(tickformat=".0%")
     return fig
 
 

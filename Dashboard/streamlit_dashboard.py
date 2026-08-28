@@ -17,7 +17,7 @@ import pandas as pd
 import plotly.express as px
 from dashboard_utils import (
     lade_daten, validiere_daten, berechne_kpis,
-    erstelle_karte, erstelle_quote_histogramm, erstelle_bundesland_balken,
+    erstelle_karte, erstelle_quote_histogramm, erstelle_bundesland_kachelkarte,
     erstelle_traeger_vergleich, erstelle_boxplot_aerzte,
     erstelle_streudiagramm, erstelle_pivot_traeger_uni,
     finde_aehnliche, haus_steckbrief,
@@ -242,11 +242,11 @@ if seite == "Gesamtüberblick":
     st.markdown("---")
     if filter_bundesland == "Alle":
         st.subheader("Vergleich nach Bundesland")
-        st.plotly_chart(erstelle_bundesland_balken(df_gefiltert), use_container_width=True)
+        st.plotly_chart(erstelle_bundesland_kachelkarte(df_gefiltert), use_container_width=True)
         st.caption(
-            "Anteil der Krankenhäuser mit überdurchschnittlich vielen Qualitätsproblemen je Bundesland. "
-            "Werte über 50 % liegen über dem deutschlandweiten Durchschnitt. "
-            "Die Zahl an jedem Balken (**n**) zeigt, wie viele Krankenhäuser in diesem Bundesland ausgewertet wurden — "
+            "Schematische Deutschlandkarte (keine echten Geodaten) — Farbe zeigt den Anteil der Krankenhäuser "
+            "mit überdurchschnittlich vielen Qualitätsproblemen je Bundesland, von Grün (niedrig) bis Rot (hoch). "
+            "Die Zahl **n** in jeder Kachel zeigt, wie viele Krankenhäuser in diesem Bundesland ausgewertet wurden — "
             "bei kleinem n (z. B. Bremen) kann schon ein einzelnes Haus den Prozentwert stark verschieben."
         )
     else:
