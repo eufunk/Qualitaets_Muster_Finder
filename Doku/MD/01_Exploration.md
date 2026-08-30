@@ -2,15 +2,13 @@
 
 > Dieses Dokument erklärt Schritt für Schritt, was im Notebook `Notebooks/01_Exploration.ipynb` passiert — und warum jeweils so entschieden wurde. Ergebnis des gesamten Notebooks: `Data/analysetabelle.csv` (1.821 Krankenhäuser × 18 Spalten), die zentrale Datengrundlage für Baustein 2–4.
 
-> **⚠️ Korrektur (2026-08-14):** Die Bewertungsspalte `QSErgBewStrukDialog` wurde ursprünglich falsch gelesen — Code `R10` wurde als „auffällig" gezählt. Der offizielle IQTIG-Bericht (*Bericht zum Strukturierten Dialog 2021, Erfassungsjahr 2020*) belegt: `R10` bedeutet „Ergebnis liegt im Referenzbereich", also **nicht auffällig** — das genaue Gegenteil. Dieses Dokument beschreibt die bereits korrigierte Version des Notebooks. Details zu Fehler, Beweis und Auswirkung: `BI_Analyse/Korrektur_Auffaellig_Quote_Dokumentation.docx`.
-
 **Projektfrage:** Welche Krankenhausmerkmale hängen damit zusammen, dass ein Haus überdurchschnittlich viele Qualitätsprobleme aufweist?
 
 **Reihenfolge im Notebook (bewusste Designentscheidung):** Das Notebook baut zuerst die **Ziel-Variable y** (`QS.Qualitätsindikator.csv`, Abschnitt 1) und erst danach die **Merkmale X** (`SO.csv`, Abschnitt 2 ff.). Das ist eine Umstellung gegenüber einer früheren Notebook-Version, die mit den Stammdaten begann. Begründung direkt aus der Notebook-Einleitung: „Zuerst bauen wir, was wir erklären wollen (y = Ziel-Variable), dann bauen wir die erklärenden Merkmale (X)." Inhaltlich ändert das nichts an den Ergebnissen — nur die Lesereihenfolge folgt jetzt der logischen Abhängigkeit statt der Dateistruktur.
 
 > **📌 Woher kommt „~1.900 Krankenhäuser"?** Die Zahl steht wörtlich in der Original-Aufgabenstellung (`Aufgabenstellung/Fragestellung.docx`, Abschnitt „Die Daten": „Qualitätsindikatoren (C-1.2): Bewertungen für ~1.900 Krankenhäuser"). Es ist aber nur eine grobe Rundung des Auftraggebers, keine berechnete Zahl.
 >
-> Tatsächlich nachgezählt: **2.310** eindeutige Häuser in `SO.csv` (Rohdaten) und **1.824** eindeutige Häuser in `QS.Qualitätsindikator.csv` — beides schon in den ungefilterten Rohdaten so, nicht erst durch Bereinigung entstanden. Die finale Zeilenzahl von `analysetabelle.csv` ist aber **1.821**, nicht 1.824: Die übrigen 486 Häuser aus `SO.csv` haben keine Zeile in `QS.Qualitätsindikator.csv` und fallen beim Merge in Abschnitt 4 automatisch raus — zusätzlich haben 3 der 1.824 Häuser unter der korrigierten Definition (Abschnitt 1.4) keine einzige bewertbare Zeile mehr (alle ihre Indikatoren sind mit einem N\*-Code versehen) und fallen bei der Ziel-Variablen-Berechnung selbst schon raus.
+> Tatsächlich nachgezählt: **2.310** eindeutige Häuser in `SO.csv` (Rohdaten) und **1.824** eindeutige Häuser in `QS.Qualitätsindikator.csv` — beides schon in den ungefilterten Rohdaten so, nicht erst durch Bereinigung entstanden. Die finale Zeilenzahl von `analysetabelle.csv` ist aber **1.821**, nicht 1.824: Die übrigen 486 Häuser aus `SO.csv` haben keine Zeile in `QS.Qualitätsindikator.csv` und fallen beim Merge in Abschnitt 4 automatisch raus — zusätzlich haben 3 der 1.824 Häuser laut der Definition in Abschnitt 1.4 keine einzige bewertbare Zeile mehr (alle ihre Indikatoren sind mit einem N\*-Code versehen) und fallen bei der Ziel-Variablen-Berechnung selbst schon raus.
 
 ---
 
@@ -66,7 +64,7 @@ Lädt die gesamte Datei (911 MB, 29 Spalten) und zeigt die ersten 3 Zeilen.
 
 **Wie wird `QSErgBewStrukDialog` gefunden?** Der Spaltenname enthält Abkürzungen: `Erg` = Ergebnis, `Bew` = Bewertung, `Struk` = Strukturierter, `Dialog` = Dialog. Eine Suche nach dem Teilstring `'bew'` trifft `qsergbewstrukdialog` und findet die Spalte.
 
-**Wichtig — korrigierte Interpretation:** `QSErgBewStrukDialog` hat sieben Bewertungskategorien, nicht zwei. Belegt durch den offiziellen IQTIG-Bericht (*Bericht zum Strukturierten Dialog 2021, EJ 2020*, Tabelle 2 + Tabelle 4):
+**Wichtig:** `QSErgBewStrukDialog` hat sieben Bewertungskategorien, nicht zwei. Belegt durch den offiziellen IQTIG-Bericht (*Bericht zum Strukturierten Dialog 2021, EJ 2020*, Tabelle 2 + Tabelle 4):
 
 | Code | Bedeutung | Auffällig? |
 |---|---|---|
@@ -78,7 +76,7 @@ Lädt die gesamte Datei (911 MB, 29 Spalten) und zeigt die ersten 3 Zeilen.
 | `D50`/`51`/`99` | Bewertung nicht möglich (fehlerhafte Doku) | Ja |
 | `S90`/`91`/`99` | Sonstiges | Ja |
 
-`R10` bedeutet also „unauffällig", nicht „auffällig" — die frühere Annahme `R* = auffällig` war invertiert. Details und Beweis (u. a. eine Summenprobe: H+U+A+D+S ergibt exakt die im IQTIG-Bericht gemeldete Zahl „Rechnerisch auffällige Ergebnisse gesamt") in `BI_Analyse/Korrektur_Auffaellig_Quote_Dokumentation.docx`.
+`R10` bedeutet also „unauffällig", nicht „auffällig". Beleg: eine Summenprobe — H+U+A+D+S ergibt exakt die im IQTIG-Bericht gemeldete Zahl „Rechnerisch auffällige Ergebnisse gesamt".
 
 ### 1.3 — Alle Spalten mit kleiner Kardinalität prüfen
 
@@ -88,11 +86,11 @@ Lädt die gesamte Datei (911 MB, 29 Spalten) und zeigt die ersten 3 Zeilen.
 
 **Warum diese Designentscheidungen:**
 - **Nur `QSQI.ArtDesWertes == 'QI'`** — andere Typen (`EKez`, `TKez`, `TKEZ`, `KKez`) sind reine Zählkennzahlen ohne Auffällig/Unauffällig-Bewertung, keine echten Qualitätsindikatoren. Sie würden `total_qi` verwässern.
-- **Alle N\*-Codes ausschließen** (`N01`, `N02`, `N99`), nicht nur `N99` — laut IQTIG-Tabelle 2 bedeutet die ganze N-Kategorie „Bewertung nicht vorgesehen", nicht nur `N99`. Ursprünglich wurde nur `N99` ausgeschlossen und `N01`/`N02` fälschlich als „nicht auffällig" mitgezählt.
+- **Alle N\*-Codes ausschließen** (`N01`, `N02`, `N99`), nicht nur `N99` — laut IQTIG-Tabelle 2 bedeutet die ganze N-Kategorie „Bewertung nicht vorgesehen", nicht nur `N99`.
 - **Deduplizierung über `(SO.QBID, QSQI.Indikator)`, nicht über `QSQI.AEKey`** — `AEKey` sieht wie ein Indikator-Schlüssel aus, ist aber tatsächlich pro Haus vergeben. Hätte man darüber dedupliziert, wäre pro Haus nur eine einzige Zeile übrig geblieben statt ~43 — die Ziel-Variable wäre unbrauchbar geworden, ohne dass der Fehler beim ersten Hinsehen auffällt.
 - **Median als Schwelle** (nicht Mittelwert oder ein fixer Wert wie 80 %) — robuster gegenüber Ausreißern und teilt die Häuser automatisch in zwei etwa gleich große Gruppen. Ein Modell, das nur die häufigere Klasse rät, läge sonst schon fast immer richtig, ohne etwas gelernt zu haben.
 
-**Berechnungsschritte (korrigiert):**
+**Berechnungsschritte:**
 
 | Schritt | Code | Was |
 |---|---|---|
@@ -104,7 +102,7 @@ Lädt die gesamte Datei (911 MB, 29 Spalten) und zeigt die ersten 3 Zeilen.
 | 6 | `auffaellig_quote = auffaellig_n / total_qi` | Anteil auffälliger Indikatoren berechnen |
 | 7 | `quote > Median → hat_viele_Probleme` | Aus der Quote ein 0/1-Etikett machen |
 
-**Ergebnis (tatsächlicher, korrigierter Notebook-Output):** Median auffällig-Quote **5,88 %** (statt der ursprünglich fehlerhaften 76,92 %), Ziel-Variable-Verteilung `hat_viele_Probleme`: 916 Häuser mit 0 (unauffälliger), 905 mit 1 (auffälliger) — 1.821 Häuser insgesamt (3 weniger als die 1.824 Häuser mit QI-Daten, weil diese 3 unter der korrigierten Definition keine bewertbare Zeile mehr haben).
+**Ergebnis (tatsächlicher Notebook-Output):** Median auffällig-Quote **5,88 %**, Ziel-Variable-Verteilung `hat_viele_Probleme`: 916 Häuser mit 0 (unauffälliger), 905 mit 1 (auffälliger) — 1.821 Häuser insgesamt (3 weniger als die 1.824 Häuser mit QI-Daten, weil diese 3 laut der Definition oben keine bewertbare Zeile mehr haben).
 
 ### Wie kommt 42,6 zustande — und woher wissen wir, dass es 1.821 Häuser sind?
 
@@ -114,22 +112,20 @@ Jede der 77.537 bereinigten Zeilen trägt eine `SO.QBID`. `nunique()` zählt, wi
 Ø Indikatoren pro Haus = 77.537 Zeilen ÷ 1.821 Häuser = 42,6
 ```
 
-Deutlich weniger als die ursprünglichen 54,7 — weil jetzt auch `N01` und `N02` ausgeschlossen werden, nicht nur `N99` (siehe oben). Kleine Häuser haben oft nur wenige bewertete Indikatoren, große Häuser deutlich mehr.
+Weil auch `N01` und `N02` ausgeschlossen werden, nicht nur `N99` (siehe oben). Kleine Häuser haben oft nur wenige bewertete Indikatoren, große Häuser deutlich mehr.
 
 ### 1.5 — Bereinigungsstatistik: die komplette Filterkaskade
 
-**Neu gegenüber früheren Notebook-Versionen:** Ein eigener Abschnitt zeigt jetzt explizit, wie viele Zeilen nach jedem Filterschritt übrig bleiben — nicht nur das Endergebnis. Tatsächlicher Notebook-Output:
+Ein eigener Abschnitt zeigt explizit, wie viele Zeilen nach jedem Filterschritt übrig bleiben — nicht nur das Endergebnis. Tatsächlicher Notebook-Output:
 
 | Schritt | Zeilen danach | Entfernt |
 |---|---:|---:|
 | Ausgangsdatensatz | 417.799 | — |
 | 1. Zählkennzahlen entfernt (`EKez` 33.557 · `TKez` 51.921 · `TKEZ` 5.056 · `KKez` 18.539) | 308.726 | 109.073 |
-| 2. `N*` entfernt (N01/N02/N99, korrigiert — vorher nur N99) | 198.770 | 109.956 |
+| 2. `N*` entfernt (N01/N02/N99) | 198.770 | 109.956 |
 | 3. Duplikate entfernt | **77.537** | 121.233 (61,0 % der Zeilen nach Schritt 2!) |
 
 **Warum das aufschlussreich ist:** 61,0 % der nach Schritt 2 verbliebenen Zeilen waren Duplikate — ein deutlich höherer Anteil, als man auf den ersten Blick vermuten würde, und ein starker nachträglicher Beleg dafür, wie wichtig die korrekte Deduplizierungslogik aus Schritt 3 (Abschnitt 1.4) tatsächlich war. Auffällig ist außerdem, dass die Kategorie „Zählkennzahlen" uneinheitlich geschrieben im Rohdatensatz vorkommt (`TKez` **und** separat `TKEZ`, komplett großgeschrieben, mit 5.056 eigenen Zeilen) — eine kleine Dateninkonsistenz der Quelle, die die Filterlogik (`QSQI.ArtDesWertes == 'QI'`) automatisch mit erfasst, ohne dass sie einzeln behandelt werden musste.
-
-**Korrektur gegenüber der ursprünglichen Version:** Schritt 2 entfernte ursprünglich nur `N99` (272.368 Zeilen übrig, 36.358 entfernt) — nach IQTIG-Tabelle 2 gehören aber auch `N01` und `N02` zur Kategorie „Bewertung nicht vorgesehen" und müssen ebenso ausgeschlossen werden. Das ändert die Grundgesamtheit für Schritt 3 spürbar (198.770 statt 272.368 Zeilen).
 
 ---
 
@@ -272,17 +268,15 @@ Ein späterer Chi²-Test (Baustein 2) zeigt **keinen** signifikanten Zusammenhan
 **Ergebnis (tatsächlicher Notebook-Output):**
 
 - **Vollständigkeit:** Nur 4 von 18 Spalten haben fehlende Werte — `fortbildungsquote` (33 fehlend), `KH.Träger.Art` (28 fehlend), `aerzte_pro_bett` (5 fehlend, siehe Abschnitt 5.1) und `pflege_pro_bett` (4 fehlend, siehe Abschnitt 6). Alle anderen 14 Spalten sind für alle 1.821 Häuser vollständig gefüllt.
-- **Ziel-Variable bestätigt sich unabhängig (korrigiertes Niveau):** `auffaellig_quote` hat Mittelwert 0,086 und Median 0,059 (5,9 %) — passt zum in Abschnitt 1.4 berechneten Median von 5,88 %. Deutlich niedriger als die ursprünglich fehlerhaften 76,0 %/76,9 %. `hat_viele_Probleme` hat einen Mittelwert von 0,497 (= Anteil der Einsen) — deckt sich mit 905 von 1.821 Häusern.
-- **Bettenzahl stark rechtsschief (unverändert):** Mittelwert 268 liegt deutlich über dem Median 190, die Standardabweichung (262) ist fast so groß wie der Mittelwert selbst — Kennzeichen einer rechtsschiefen Verteilung mit wenigen sehr großen Ausreißern (Maximum: 3.011 Betten). Erklärt rückblickend, warum die Histogramme in `02_Analyse.ipynb` bei 1.500 Betten gekappt werden. Diese Kennzahl ist von der Korrektur nicht betroffen, da sie nicht auf `QSErgBewStrukDialog` basiert.
-- **Uni-Kliniken (unverändert):** `SO.Uni`-Mittelwert 0,051 → 5,1 % der Häuser sind Uni-Kliniken (92 von 1.821), die übrigen 1.729 sind normale Häuser.
-- **Konzernanteil (unverändert):** `ist_konzern`-Mittelwert 0,197 → 19,7 % Konzernhäuser, passt zu den 358 von 1.821 Häusern aus Abschnitt 7.
-- **Personalkennzahlen plausibel (unverändert):** `aerzte_pro_bett` (Median 0,434, Max 2,4) und `pflege_pro_bett` (Median 0,982, Max 3,7) — keine negativen Werte oder unplausiblen Ausreißer.
+- **Ziel-Variable bestätigt sich unabhängig:** `auffaellig_quote` hat Mittelwert 0,086 und Median 0,059 (5,9 %) — passt zum in Abschnitt 1.4 berechneten Median von 5,88 %. `hat_viele_Probleme` hat einen Mittelwert von 0,497 (= Anteil der Einsen) — deckt sich mit 905 von 1.821 Häusern.
+- **Bettenzahl stark rechtsschief:** Mittelwert 268 liegt deutlich über dem Median 190, die Standardabweichung (262) ist fast so groß wie der Mittelwert selbst — Kennzeichen einer rechtsschiefen Verteilung mit wenigen sehr großen Ausreißern (Maximum: 3.011 Betten). Erklärt rückblickend, warum die Histogramme in `02_Analyse.ipynb` bei 1.500 Betten gekappt werden.
+- **Uni-Kliniken:** `SO.Uni`-Mittelwert 0,051 → 5,1 % der Häuser sind Uni-Kliniken (92 von 1.821), die übrigen 1.729 sind normale Häuser.
+- **Konzernanteil:** `ist_konzern`-Mittelwert 0,197 → 19,7 % Konzernhäuser, passt zu den 358 von 1.821 Häusern aus Abschnitt 7.
+- **Personalkennzahlen plausibel:** `aerzte_pro_bett` (Median 0,434, Max 2,4) und `pflege_pro_bett` (Median 0,982, Max 3,7) — keine negativen Werte oder unplausiblen Ausreißer.
 
 **Warum in der Gesamtübersicht (letzte Teilzelle) manche Zeilen nur `NaN` zeigen:** `KH.Träger`, `KH.Träger.Art`, `SO.Bundesland`, `SO.Latitude`, `SO.Longitude` und `SO.Name` sind Text-Spalten (`dtype: str`) — Mittelwert, Median, Min/Max und Standardabweichung sind auf Text nicht definiert und bleiben deshalb leer (`numeric_only=True`). Das ist kein Fehler, sondern das erwartete Verhalten; nur die Spalte „Anzahl" (`df.count()`) ist für sie trotzdem gefüllt, weil Zählen auch bei Text funktioniert.
 
 **Einschränkung:** `SO.QBID` und `SO.Standortnummer` sind ID-Spalten — ihr Mittelwert/Median in der Tabelle (z. B. `SO.QBID`-Mittelwert 6.026,76) ist statistisch bedeutungslos, da IDs keine inhaltliche numerische Größe sind, sondern nur eindeutige Kennungen.
-
-**Zum Vergleich mit der ursprünglichen (fehlerhaften) Version:** Nur 27,5 % der Häuser landen unter der korrigierten Definition in derselben Gruppe (viele/wenige Probleme) wie vorher — 72,5 % wechseln. Details zu Fehler, Beweis und Vergleich: `BI_Analyse/Korrektur_Auffaellig_Quote_Dokumentation.docx`.
 
 ---
 
@@ -295,4 +289,4 @@ Ein späterer Chi²-Test (Baustein 2) zeigt **keinen** signifikanten Zusammenhan
 
 ---
 
-*Zuletzt aktualisiert: 2026-08-14 — vollständig gegen den korrigierten Stand von `Notebooks/01_Exploration.ipynb` (58 Zellen) abgeglichen. Wichtigste Änderung: `QSErgBewStrukDialog` wurde neu interpretiert (`R10` = unauffällig statt auffällig, alle `N*`-Codes statt nur `N99` ausgeschlossen), belegt durch den offiziellen IQTIG-Bericht — siehe `BI_Analyse/Korrektur_Auffaellig_Quote_Dokumentation.docx`. Dadurch ändern sich Median auffällig-Quote (5,88 % statt 76,92 %), Zeilenzahl von `analysetabelle.csv` (1.821 statt 1.824) und die Verteilung von `hat_viele_Probleme` (905/916 statt 899/925).*
+*Zuletzt aktualisiert: 2026-08-14 — vollständig gegen den aktuellen Stand von `Notebooks/01_Exploration.ipynb` (58 Zellen) abgeglichen.*

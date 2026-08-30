@@ -35,7 +35,7 @@ FARBE_WENIGE = "#2ecc71"   # gruen = wenige Probleme
 FARBE_MAP    = {0: FARBE_WENIGE, 1: FARBE_VIELE}
 LABEL_MAP    = {0: "Wenige Probleme", 1: "Viele Probleme"}
 
-MEDIAN_QUOTE = 0.0588      # aus Python-Analyse berechnet (Korrektur 2026-08-14) — nicht veraendern!
+MEDIAN_QUOTE = 0.0588      # aus Python-Analyse berechnet — nicht veraendern!
 DT_SPLIT     = 0.271       # Decision Tree Split-Wert fuer aerzte_pro_bett
 TRAEGER_COL  = "KH.Träger.Art"
 
@@ -552,8 +552,8 @@ def berechne_risiko(
     risiko_text = "Viele Probleme" if vorhersage == 1 else "Wenige Probleme"
     risiko_farbe = FARBE_VIELE if vorhersage == 1 else FARBE_WENIGE
 
-    # Decision Tree Erklaerung (wichtigster Split) — Korrektur 2026-08-14:
-    # mehr Aerzte pro Bett haengt jetzt mit MEHR, nicht weniger, Qualitaetsproblemen zusammen
+    # Decision Tree Erklaerung (wichtigster Split):
+    # mehr Aerzte pro Bett haengt mit MEHR, nicht weniger, Qualitaetsproblemen zusammen
     _seite  = "darüber" if aerzte > DT_SPLIT else "darunter"
     _folge  = "viele Qualitätsprobleme wahrscheinlicher" if aerzte > DT_SPLIT else "wenige Qualitätsprobleme wahrscheinlicher (hängt zusätzlich von Pflegepersonal/Bettenzahl ab)"
     erklaerung = (

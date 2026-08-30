@@ -126,7 +126,7 @@ if seite == "Gesamtüberblick":
         ),
     )
     filter_uni        = _fc3.selectbox("Klinik-Typ", ["Alle", "Normale Klinik", "Uni-Klinik"], key="filter_uni_key")
-    _fc4.button("↺ Zurücksetzen", on_click=_reset_filters, use_container_width=True)
+    _fc4.button("↺ Zurücksetzen", on_click=_reset_filters, width="stretch")
 
     df_gefiltert = df.copy()
     if filter_bundesland != "Alle":
@@ -222,7 +222,7 @@ if seite == "Gesamtüberblick":
     if _koord_ok == 0:
         st.warning("⚠️ Keine Koordinaten verfügbar — Karte kann nicht angezeigt werden.")
     else:
-        st.plotly_chart(erstelle_karte(df_gefiltert), use_container_width=True)
+        st.plotly_chart(erstelle_karte(df_gefiltert), width="stretch")
     st.caption(
         "Jeder Punkt ist ein Krankenhaus. Farbe: grün = wenige Qualitätsprobleme, rot = viele. "
         "Punktgröße entspricht der Bettenzahl. Hover für Details."
@@ -233,7 +233,7 @@ if seite == "Gesamtüberblick":
     _h1, _h2 = st.columns(2)
     _farbige_metrik(_h1, "Wenige Probleme", _n_wenige/len(df_gefiltert), _n_wenige, FARBE_WENIGE)
     _farbige_metrik(_h2, "Viele Probleme",  _n_viele/len(df_gefiltert),  _n_viele,  FARBE_VIELE)
-    st.plotly_chart(erstelle_quote_histogramm(df_gefiltert), use_container_width=True)
+    st.plotly_chart(erstelle_quote_histogramm(df_gefiltert), width="stretch")
     st.caption(
         f"Trennlinie = Median {kpis['median_quote']:.1%}. Balken links der Linie = H\u00e4user mit wenigen Problemen (gr\u00fcn), "
         "Balken rechts = H\u00e4user mit vielen Problemen (rot)."
@@ -242,7 +242,7 @@ if seite == "Gesamtüberblick":
     st.markdown("---")
     if filter_bundesland == "Alle":
         st.subheader("Vergleich nach Bundesland")
-        st.plotly_chart(erstelle_bundesland_kachelkarte(df_gefiltert), use_container_width=True)
+        st.plotly_chart(erstelle_bundesland_kachelkarte(df_gefiltert), width="stretch")
         st.caption(
             "Schematische Deutschlandkarte (keine echten Geodaten) — Farbe zeigt den Anteil der Krankenhäuser "
             "mit überdurchschnittlich vielen Qualitätsproblemen je Bundesland, von Grün (niedrig) bis Rot (hoch). "
@@ -269,7 +269,7 @@ elif seite == "Einflussfaktoren":
 
     with tab1:
         st.subheader("Trägerschaft vs. Anteil 'Viele Probleme'")
-        st.plotly_chart(erstelle_traeger_vergleich(df), use_container_width=True)
+        st.plotly_chart(erstelle_traeger_vergleich(df), width="stretch")
         st.markdown(
             "**Befund:** Öffentliche Häuser haben mit **53,5 %** den höchsten Anteil an Häusern "
             "mit vielen Qualitätsproblemen — gegenüber 50,6 % (freigemeinnützig) und 43,8 % (privat). \n\n"
@@ -297,7 +297,7 @@ elif seite == "Einflussfaktoren":
 
     with tab2:
         st.subheader("Ärzte pro Bett: MIT vs. OHNE viele Probleme")
-        st.plotly_chart(erstelle_boxplot_aerzte(df), use_container_width=True)
+        st.plotly_chart(erstelle_boxplot_aerzte(df), width="stretch")
         col_a, col_b = st.columns(2)
         col_a.metric("Wenige Probleme: Ø Ärzte/Bett",
                      f"{df[df['hat_viele_Probleme']==0]['aerzte_pro_bett'].median():.3f}")
@@ -350,7 +350,7 @@ elif seite == "Einflussfaktoren":
             list(_merkmal_labels.values()),
         )
         merkmal = [k for k, v in _merkmal_labels.items() if v == _merkmal_auswahl][0]
-        st.plotly_chart(erstelle_streudiagramm(df, merkmal), use_container_width=True)
+        st.plotly_chart(erstelle_streudiagramm(df, merkmal), width="stretch")
 
         _erklaerung_basis = (
             "**Was zeigt dieses Diagramm?** Jeder Punkt ist ein Krankenhaus. "
@@ -437,7 +437,7 @@ elif seite == "Einflussfaktoren":
         pivot = erstelle_pivot_traeger_uni(df)
         st.dataframe(
             pivot.style.format("{:.3f}").background_gradient(cmap="RdYlGn_r"),
-            use_container_width=True,
+            width="stretch",
         )
         st.markdown(
             "**Befund:** Das Bild ist gemischt: Bei freigemeinnützigen und privaten Häusern haben "
@@ -487,7 +487,7 @@ elif seite == "Häuser vergleichen":
         )
         n_ergebnisse = st.slider("Max. Ergebnisse", 5, 30, 10)
 
-        suchen = st.button("\u21aa Suchen", use_container_width=True)
+        suchen = st.button("\u21aa Suchen", width="stretch")
 
     with col_ergebnis:
         if suchen:
@@ -507,7 +507,7 @@ elif seite == "Häuser vergleichen":
                         else f"background-color: {FARBE_WENIGE}22",
                         subset=["Problemkategorie"]
                     ),
-                    use_container_width=True,
+                    width="stretch",
                 )
 
                 # Vergleichsbalken
@@ -755,7 +755,7 @@ elif seite == "Qualitäts-Vorhersage":
         xaxis_title="Anteil an der Vorhersageleistung", height=320,
         xaxis=dict(tickformat=".0%"),
     )
-    st.plotly_chart(fig_fi, use_container_width=True)
+    st.plotly_chart(fig_fi, width="stretch")
     st.caption(
         "Ärzte pro Bett ist mit 72,8 % das mit Abstand wichtigste Merkmal — fast drei Viertel aller "
         "Modellentscheidungen hängen daran. Bettenzahl (16,5 %) und Pflegekräfte pro Bett (10,8 %) folgen. "

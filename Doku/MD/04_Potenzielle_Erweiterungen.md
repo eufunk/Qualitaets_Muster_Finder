@@ -4,8 +4,6 @@
 > Dieses Dokument erklärt Schritt für Schritt, was im Notebook `Notebooks/04_Potenzielle_Erweiterungen.ipynb` passiert — und warum jeweils so entschieden wurde.  
 > **Ergebnis:** Zwei neue Merkmale identifiziert, die die Modellgüte verbessern könnten. Ein drittes wurde getestet und verworfen.
 
-> **⚠️ Korrektur (2026-08-14):** Die Ziel-Variable `hat_viele_Probleme` wurde in `01_Exploration.ipynb` korrigiert (`QSErgBewStrukDialog` war zuvor falsch interpretiert). Dieses Notebook wurde mit der korrigierten `Data/analysetabelle.csv` neu ausgeführt — **alle Korrelationen in diesem Dokument sind neu** und haben sich im Vorzeichen gedreht, konsistent mit der Umkehrung bei allen anderen Merkmalen in `02_Analyse.md`. Die Empfehlungen (Doku-Rate und Notfallstufe einbinden, Mindestmengen nicht) bleiben inhaltlich gleich, aber die Begründungen ändern sich teils deutlich.
-
 **Projektfrage (übergeordnet):** Welche Krankenhausmerkmale hängen damit zusammen, dass ein Haus überdurchschnittlich viele Qualitätsprobleme aufweist?
 
 ---
@@ -61,14 +59,14 @@ Match: 1.815 von 1.821 Häusern (99,7 % Match-Rate)
 Korrelation mit hat_viele_Probleme: r = +0,208  (p < 0,0001)
 ```
 
-**Interpretation (korrigiert):** r = +0,208 ist inzwischen **etwas schwächer als `aerzte_pro_bett` (r = +0,210)** aus `02_Analyse.ipynb` — beide liegen praktisch gleichauf. Das Vorzeichen hat sich gedreht: Je höher die Dokumentationsrate, desto **häufiger**, nicht seltener, gehört ein Haus jetzt zur Gruppe „viele Probleme".
+**Interpretation:** r = +0,208 ist **etwas schwächer als `aerzte_pro_bett` (r = +0,210)** aus `02_Analyse.ipynb` — beide liegen praktisch gleichauf. Je höher die Dokumentationsrate, desto **häufiger**, nicht seltener, gehört ein Haus zur Gruppe „viele Probleme".
 
-Die ursprüngliche Hypothese (lückenhafte Dokumentation täuscht Auffälligkeit vor) hat sich damit **nicht bestätigt**. Der tatsächliche Mechanismus läuft stattdessen über dieselbe Logik wie bei `total_qi` in `02_Analyse.ipynb` (dort die stärkste Korrelation, r = +0,241): Eine höhere Dokumentationsrate bedeutet, dass mehr Indikatoren überhaupt bewertet werden können — und mehr bewertete Indikatoren bedeuten mehr Gelegenheiten, dass einer davon als auffällig eingestuft wird (unter der korrigierten Regel zählt alles außer `R10` als auffällig). Die Dokumentationsrate bleibt trotzdem ein **wichtiger Confounder**, nur mit umgekehrter Wirkrichtung als ursprünglich angenommen.
+Die Hypothese „lückenhafte Dokumentation täuscht Auffälligkeit vor" bestätigt sich damit **nicht**. Der tatsächliche Mechanismus läuft stattdessen über dieselbe Logik wie bei `total_qi` in `02_Analyse.ipynb` (dort die stärkste Korrelation, r = +0,241): Eine höhere Dokumentationsrate bedeutet, dass mehr Indikatoren überhaupt bewertet werden können — und mehr bewertete Indikatoren bedeuten mehr Gelegenheiten, dass einer davon als auffällig eingestuft wird (alles außer `R10` zählt als auffällig). Die Dokumentationsrate bleibt trotzdem ein **wichtiger Confounder**, nur mit anderer Wirkrichtung als zunächst angenommen.
 
 ### Mehrwert
 
 - Vergleichbar starkes Merkmal wie `aerzte_pro_bett`, das aktuell stärkste Merkmal im Decision Tree
-- Erklärt sich über denselben Mechanismus wie `total_qi` (Anzahl bewertbarer Indikatoren), nicht über einen Dokumentations-Artefakt wie ursprünglich angenommen
+- Erklärt sich über denselben Mechanismus wie `total_qi` (Anzahl bewertbarer Indikatoren), nicht über einen Dokumentations-Artefakt wie zunächst angenommen
 - Empfehlung: **In `analysetabelle.csv` aufnehmen** und `03_Decision_Tree.ipynb` neu trainieren
 
 ---
@@ -113,7 +111,7 @@ Anteil viele Probleme je Stufe:
 Korrelation mit hat_viele_Probleme: r = +0,181  (p < 0,0001)
 ```
 
-**Interpretation (korrigiert):** Das Ergebnis passt jetzt genau zur ursprünglichen Hypothese, ganz ohne Paradox: Stufe 0 (keine Notfallversorgung) hat mit 34,5 % den **niedrigsten** Anteil auffälliger Häuser, alle drei Notfallstufen (1–3) liegen mit 57–62 % deutlich höher — ungefähr gleichauf untereinander, aber klar über Stufe 0. Häuser mit Notfallversorgung behandeln komplexere, schwerere Fälle und fallen dadurch häufiger auffällig, unabhängig von der tatsächlichen Versorgungsqualität. Die in der ursprünglichen, fehlerhaften Auswertung nötige Sonder-Erklärung über den „kleine-Zahlen-Effekt" ist damit hinfällig — das Muster erklärt sich direkt durch Fallschwere.
+**Interpretation:** Das Ergebnis passt genau zur Hypothese, ganz ohne Paradox: Stufe 0 (keine Notfallversorgung) hat mit 34,5 % den **niedrigsten** Anteil auffälliger Häuser, alle drei Notfallstufen (1–3) liegen mit 57–62 % deutlich höher — ungefähr gleichauf untereinander, aber klar über Stufe 0. Häuser mit Notfallversorgung behandeln komplexere, schwerere Fälle und fallen dadurch häufiger auffällig, unabhängig von der tatsächlichen Versorgungsqualität. Das Muster erklärt sich direkt durch Fallschwere.
 
 r = +0,181 ist statistisch stark und bestätigt: die Notfallstufe ist ein **relevanter Strukturindikator**.
 
@@ -149,7 +147,7 @@ Median Compliance-Rate:
   Viele Probleme:  100,0 %
 ```
 
-**Interpretation (korrigiert):** Der Median beider Gruppen liegt weiterhin bei 100 % — fast alle Häuser mit Mindestmengen-Daten erfüllen die Vorgaben vollständig. Es gibt kaum Differenzierung zwischen den Gruppen. Die Korrelation ist mit der korrigierten Ziel-Variable sogar noch schwächer geworden und jetzt **nicht mehr statistisch signifikant** (r = −0,011, p = 0,7155 — vorher r = +0,071, p = 0,025). Zudem deckt die Datei nur 1.018 von 1.821 Häusern ab (Häuser ohne bestimmte Eingriffe haben gar keine Mindestmengen-Pflicht).
+**Interpretation:** Der Median beider Gruppen liegt bei 100 % — fast alle Häuser mit Mindestmengen-Daten erfüllen die Vorgaben vollständig. Es gibt kaum Differenzierung zwischen den Gruppen, die Korrelation ist **nicht statistisch signifikant** (r = −0,011, p = 0,7155). Zudem deckt die Datei nur 1.018 von 1.821 Häusern ab (Häuser ohne bestimmte Eingriffe haben gar keine Mindestmengen-Pflicht).
 
 ### Mehrwert
 
@@ -168,8 +166,8 @@ Keiner für die aktuelle Analyse. Empfehlung: **Nicht einbinden** — zu geringe
 ### Was würde sich ändern, wenn man die zwei empfohlenen Merkmale einbindet?
 
 1. **Decision Tree:** `mittl_doku_rate` (r = +0,208) liegt jetzt fast gleichauf mit `aerzte_pro_bett` (r = +0,210, aktuell wichtigstes Merkmal mit 72,8 % Feature Importance) — ob es das wichtigste Merkmal ablöst, müsste ein Nachtraining zeigen. Da das aktuelle Modell mit R² = −0,007 praktisch keine lineare Erklärungskraft hat, wäre ein zusätzliches, ähnlich starkes Merkmal ein sinnvoller nächster Versuch, auch wenn ein großer Sprung nicht garantiert ist.
-2. **Trägerschaftseffekt:** Entfällt als Motivation — die ANOVA in `02_Analyse.ipynb` zeigt nach der Korrektur **keinen** signifikanten Trägerschaftseffekt mehr (F=0,031, p=0,969), den man mit der Dokumentationsrate erklären müsste.
-3. **Erklärbarkeit:** Die Notfallstufe erklärt jetzt direkt und ohne Paradox, warum Häuser mit Notfallversorgung eine höhere Auffälligkeitsquote haben (Fallschwere) — anders als in der ursprünglichen Auswertung, wo Stufe 0 unerwartet am höchsten lag.
+2. **Trägerschaftseffekt:** Entfällt als Motivation — die ANOVA in `02_Analyse.ipynb` zeigt **keinen** signifikanten Trägerschaftseffekt (F=0,031, p=0,969), den man mit der Dokumentationsrate erklären müsste.
+3. **Erklärbarkeit:** Die Notfallstufe erklärt direkt und ohne Paradox, warum Häuser mit Notfallversorgung eine höhere Auffälligkeitsquote haben (Fallschwere).
 
 ### Nächste Schritte
 
@@ -179,4 +177,4 @@ Keiner für die aktuelle Analyse. Empfehlung: **Nicht einbinden** — zu geringe
 
 ---
 
-*Zuletzt aktualisiert: 2026-08-14 — vollständig gegen den korrigierten Stand von `Notebooks/04_Potenzielle_Erweiterungen.ipynb` (15 Zellen) abgeglichen. Wichtigste Änderung: Alle Korrelationen mit `hat_viele_Probleme` wurden mit der korrigierten Ziel-Variable neu berechnet und haben sich im Vorzeichen gedreht (Dokumentationsrate: r = +0,208 statt −0,237; Notfallstufe: r = +0,181 statt −0,179, jetzt ohne Paradox; Mindestmengen: r = −0,011, nicht mehr signifikant statt r = +0,071, p = 0,025).*
+*Zuletzt aktualisiert: 2026-08-14 — vollständig gegen den aktuellen Stand von `Notebooks/04_Potenzielle_Erweiterungen.ipynb` (15 Zellen) abgeglichen. Alle Korrelationen mit `hat_viele_Probleme` wurden dabei neu berechnet: Dokumentationsrate r = +0,208, Notfallstufe r = +0,181, Mindestmengen r = −0,011 (nicht signifikant).*

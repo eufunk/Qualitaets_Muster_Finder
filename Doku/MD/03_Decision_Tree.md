@@ -2,8 +2,6 @@
 
 > Dieses Dokument erklärt Schritt für Schritt, was im Notebook `Notebooks/03_Decision_Tree.ipynb` passiert — und warum jeweils so entschieden wurde. Ergebnis: ein trainierter und gespeicherter Decision-Tree-Klassifikator, drei Grafiken (`grafiken/`) und eine quantitative Aussage darüber, wie gut Strukturmerkmale von Krankenhäusern Qualitätsprobleme vorhersagen können.
 
-> **⚠️ Korrektur (2026-08-14):** Die Ziel-Variable `hat_viele_Probleme` wurde in `01_Exploration.ipynb` korrigiert (`QSErgBewStrukDialog` war zuvor falsch interpretiert). Das Modell wurde mit der korrigierten `Data/analysetabelle.csv` neu trainiert — **alle Kennzahlen in diesem Dokument sind neu** und weichen teils deutlich von der ursprünglichen Version ab (Accuracy 63,6 %→57,0 %, R² auf `auffaellig_quote` sogar negativ statt +3,3 %, Feature-Importance-Rangfolge unverändert, aber Gewichte stark verschoben).
-
 **Projektfrage:** Können Strukturmerkmale eines Krankenhauses (Größe, Träger, Personal, …) maschinell vorhersagen, ob es überdurchschnittlich viele Qualitätsprobleme hat?
 
 **Themen:** Decision Tree, Metriken (Accuracy / Precision / Recall / F1 / Confusion Matrix), R², OOP (`KrankenhausModell`-Klasse), joblib
@@ -262,7 +260,7 @@ Feature Importance beantwortet die Frage: *Welche Merkmale hat das Modell tatsä
 | Uni-Klinik (ja/nein) | 0,00 % | Kein Einfluss — Uni- und Nicht-Uni-Kliniken unterscheiden sich nicht in ihrer Auffälligkeitsquote |
 | `ist_konzern` | 0,00 % | Kein Einfluss auf die 3 Baumebenen |
 
-**Warum `traeger_enc` = 0?** In der korrigierten Auswertung zeigt die ANOVA in `02_Analyse.ipynb` für Trägerschaft **keinen** statistisch signifikanten Zusammenhang mehr (F = 0,031, p = 0,969) — passend dazu spielt `traeger_enc` auch im Decision Tree keine Rolle. Das ist einer der Punkte, an denen sich die Korrektur der Ziel-Variable besonders deutlich auswirkt: In der ursprünglichen, fehlerhaften Berechnung galt Trägerschaft noch als klarster Befund des ganzen Projekts — nach der Korrektur ist dieser Zusammenhang komplett verschwunden.
+**Warum `traeger_enc` = 0?** Die ANOVA in `02_Analyse.ipynb` zeigt für Trägerschaft **keinen** statistisch signifikanten Zusammenhang (F = 0,031, p = 0,969) — passend dazu spielt `traeger_enc` auch im Decision Tree keine Rolle. Zwei unabhängige Methoden (ANOVA und Decision Tree) kommen damit zum selben Schluss: Trägerschaft ist trotz optisch sichtbarem Unterschied kein echter Prädiktor.
 
 ---
 
@@ -291,7 +289,7 @@ Feature Importance beantwortet die Frage: *Welche Merkmale hat das Modell tatsä
 | `traeger_enc` | +0,0028 | Träger-Codierung: praktisch kein Effekt |
 | `SO.Betten` | −0,00001 | Größe: praktisch kein Effekt |
 
-**Richtung ist uneinheitlich:** Nur `aerzte_pro_bett` zeigt noch den erwarteten negativen Zusammenhang (mehr Ärzte pro Bett → tendenziell niedrigere Quote). Bei `pflege_pro_bett` hat sich das Vorzeichen gegenüber der ursprünglichen, fehlerhaften Berechnung umgedreht (jetzt leicht positiv statt negativ) — bei einem R² nahe 0 sind solche Vorzeichen aber ohnehin nicht verlässlich interpretierbar, da das Modell insgesamt keinen belastbaren linearen Zusammenhang gefunden hat.
+**Richtung ist uneinheitlich:** Nur `aerzte_pro_bett` zeigt einen negativen Zusammenhang (mehr Ärzte pro Bett → tendenziell niedrigere Quote), `pflege_pro_bett` einen leicht positiven — bei einem R² nahe 0 sind solche Vorzeichen aber ohnehin nicht verlässlich interpretierbar, da das Modell insgesamt keinen belastbaren linearen Zusammenhang gefunden hat.
 
 > ⚠️ **Kein Zusammenhang ist ein valides Ergebnis.** Ein negatives R² bedeutet nicht, dass die Analyse gescheitert ist — es bedeutet, dass die **verfügbaren Strukturdaten** die Höhe der Auffälligkeitsquote linear nicht vorhersagen können. Das ist eine substanzielle inhaltliche Aussage: Die Ursachen für eine hohe oder niedrige Auffälligkeitsquote liegen offenbar überwiegend außerhalb der hier erfassten Strukturmerkmale.
 
@@ -342,7 +340,7 @@ Das geladene Modell gibt sowohl eine binäre Vorhersage (0/1) als auch Wahrschei
 
 2. **`aerzte_pro_bett` ist mit großem Abstand das wichtigste Merkmal** (72,8 %) — konsistent mit Baustein 2 (T-Test: p < 0,0001, deutlicher Unterschied im Boxplot).
 
-3. **Trägerschaft spielt weder im Baum noch in der ANOVA aus Baustein 2 eine Rolle** — nach der Korrektur der Ziel-Variable ist der zuvor „klarste" Trägerschaftseffekt vollständig verschwunden (ANOVA: F = 0,031, p = 0,969).
+3. **Trägerschaft spielt weder im Baum noch in der ANOVA aus Baustein 2 eine Rolle** — trotz optisch sichtbarem Unterschied in Grafik 3 ist kein statistisch abgesicherter Trägerschaftseffekt nachweisbar (ANOVA: F = 0,031, p = 0,969).
 
 4. **Negatives R² ist das zentrale Ergebnis:** Krankenhausstruktur allein kann die Höhe der Auffälligkeitsquote linear nicht vorhersagen — das Modell schneidet schlechter ab als die simple Durchschnittsvorhersage. Kein Zusammenhang ist ein valides Ergebnis — und eine relevante, eher ernüchternde Aussage für die Projektfrage.
 

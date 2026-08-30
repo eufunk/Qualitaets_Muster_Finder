@@ -28,7 +28,7 @@ Der Grund für diese Trennung: `dashboard_utils.py` lässt sich unabhängig vom 
 ```python
 from dashboard_utils import (
     lade_daten, validiere_daten, berechne_kpis,
-    erstelle_karte, erstelle_quote_histogramm, erstelle_bundesland_balken,
+    erstelle_karte, erstelle_quote_histogramm, erstelle_bundesland_kachelkarte,
     erstelle_traeger_vergleich, erstelle_boxplot_aerzte,
     erstelle_streudiagramm, erstelle_pivot_traeger_uni,
     finde_aehnliche, haus_steckbrief,
@@ -152,22 +152,17 @@ def erstelle_quote_histogramm(df: pd.DataFrame) -> go.Figure:
 
 Der Trick hier: `bin_edges` wird **einmal** aus allen Daten berechnet und dann für die beiden Gruppen-Histogramme (`data_wenig`, `data_viel`) **wiederverwendet** (`bins=bin_edges` statt erneut `bins=30`). Ohne diesen Schritt würden die drei Histogramme leicht unterschiedliche Balkengrenzen bekommen, und die überlagerte Linie („Verlauf") würde nicht exakt auf den Balkenspitzen sitzen.
 
-Ein zweites Beispiel — das Bundesland-Balkendiagramm mit sprechendem Hover-Text:
+Ein zweites Beispiel — die Bundesland-Kachelkarte (`erstelle_bundesland_kachelkarte`), eine schematische Deutschlandkarte aus reinen `add_shape`-Rechtecken und `add_annotation`-Texten. Rechtecke und Annotationen selbst lösen aber keinen Hover-Tooltip aus, deshalb liegt zusätzlich eine unsichtbare Marker-Ebene über jeder Kachel:
 
 ```python
-fig = px.bar(
-    stats, x="pct", y="SO.Bundesland", orientation="h",
-    text=stats["n"].apply(lambda x: f"n={x} Häuser"),
-    custom_data=["n"],
-    ...
-)
-fig.update_traces(
-    marker_color=farben, textposition="outside",
-    hovertemplate="<b>%{y}</b><br>Anteil 'Viele Probleme': %{x:.1%}<br>Anzahl Häuser (n): %{customdata[0]}<extra></extra>",
-)
+fig.add_trace(go.Scatter(
+    x=xs, y=ys, mode="markers",
+    marker=dict(size=70, opacity=0, symbol="square"),
+    hovertemplate=hover, showlegend=False,
+))
 ```
 
-`custom_data=["n"]` macht die Fallzahl `n` im `hovertemplate` über `%{customdata[0]}` verfügbar — ohne diesen Schritt könnte die Maus-Over-Anzeige die Häuseranzahl je Bundesland nicht anzeigen, obwohl sie schon als Balkenbeschriftung sichtbar ist. Diese explizite Beschriftung wurde nachträglich ergänzt, weil unklar war, wofür die Zahl an jedem Balken steht.
+`opacity=0` macht die Marker unsichtbar, aber Plotly registriert weiterhin Maus-Events auf ihrer Fläche — dadurch zeigt jede Kachel beim Hovern trotzdem den vollen Landesnamen, den exakten Prozentwert und die Fallzahl `n`, obwohl die eigentliche Farbfläche nur ein statisches Shape ohne eigene Interaktivität ist. Diese Funktion ersetzt seit 2026-08-29 die frühere `erstelle_bundesland_balken` (Balkendiagramm) — deren „n=…"-Beschriftungen liefen bei langen Balken aus dem Diagramm heraus, und die reine 50-%-Grün/Rot-Schwelle stellte kleine Bundesländer (z. B. Bremen, n=14) optisch genauso selbstbewusst dar wie große (NRW, n=397).
 
 Alle übrigen Plot-Funktionen (`erstelle_karte`, `erstelle_traeger_vergleich`, `erstelle_boxplot_aerzte`, `erstelle_streudiagramm`, `erstelle_pivot_traeger_uni`) folgen demselben Muster: DataFrame rein, fertige Plotly-Figur (oder `pivot_table`) raus, keine Streamlit-Aufrufe innerhalb der Funktion. Das macht sie einzeln testbar (siehe Abschnitt 1.9) und in der UI-Datei zu einer einzigen `st.plotly_chart(...)`-Zeile verkürzbar.
 
@@ -302,14 +297,14 @@ KPI = Key Performance Indicator — die wichtigsten Kennzahlen auf einen Blick. 
 
 ### Deutschland-Karte
 
-- Plotly `scatter_mapbox`, Stil `open-street-map` (kein Token nötig)
+- Plotly `scatter_map` (bis 2026-08-29: `scatter_mapbox`, von Plotly inzwischen als veraltet markiert — brach auf Streamlit Cloud durch eine dort neuer installierte Plotly-Version, lokal unauffällig), Stil `open-street-map` (kein Token nötig)
 - Farbe = wenige (grün) / viele Probleme (rot), Punktgröße = Bettenzahl (Min. 30)
 - Koordinaten-Konvertierung: bedingungslos (kein dtype-Check, da dieser auf Linux-Servern fehlschlägt)
 
-### Histogramm + Bundesland-Balkendiagramm
+### Histogramm + Bundesland-Kachelkarte
 
 - Histogramm: 30 Balken, gestrichelte Linie bei Median (5,88 %)
-- Bundesland-Diagramm: **nur wenn kein Bundesland-Filter aktiv** — sonst Hinweismeldung
+- Bundesland-Kachelkarte: schematische Deutschlandkarte (dasselbe Layout wie `grafiken/g7_bundesland_kachelkarte.png`), Farbverlauf Grün→Weiß→Rot nach Anteil „Viele Probleme", Hover-Tooltip pro Kachel (siehe Abschnitt 1.5) — **nur wenn kein Bundesland-Filter aktiv** — sonst Hinweismeldung
 
 ---
 
@@ -364,7 +359,7 @@ Vier Tabs:
 |---|---|
 | Navigation per `st.button()` + `st.query_params` (kein `<a href>`) | Streamlit erzwingt bei `<a href>`-Links `target="_blank"` — mit echten Buttons öffnet sich nie ein neuer Browser-Tab; Seite überlebt trotzdem den Browser-Reload |
 | Filter nur auf Seite 1 | Andere Seiten zeigen immer den Gesamtdatensatz |
-| `scatter_mapbox` mit `open-street-map` | Funktioniert ohne Mapbox-Token auf Streamlit Cloud |
+| `scatter_map` mit `open-street-map` | Funktioniert ohne Mapbox-Token auf Streamlit Cloud; Nachfolger von `scatter_mapbox`, das auf Streamlit Cloud durch Plotly-Versionsdrift brach |
 | Koordinaten-Konvertierung bedingungslos | `dtype == object`-Check schlägt auf Linux-Servern fehl |
 | Lesbare Labels im Streudiagramm-Dropdown | Technische Spaltennamen durch beschreibende Texte ersetzt |
 | HTML-Karten statt `st.metric` für Steckbrief | `st.metric` erzwingt Pfeil + Vorzeichen — nicht entfernbar |

@@ -4,8 +4,6 @@
 >
 > Quelle: `Aufgabenstellung/Fragestellung.docx` & `Aufgabenstellung/Text_Presentation.docx`
 
-> ⚠️ **Korrektur (2026-08-14):** `QSErgBewStrukDialog` wurde ursprünglich falsch interpretiert (`R10` fälschlich als „auffällig" gewertet). Die Ziel-Variable wurde neu berechnet — alle Kennzahlen unten (Häuserzahl, Median, T-Test/ANOVA/R²-Werte) sind bereits die korrigierten Werte. Details: `Doku/MD/01_Exploration.md`, `ProjektDetails.md`.
-
 ---
 
 ## 📦 Baustein 1 — Daten vorbereiten *(Woche 1)*
@@ -42,7 +40,7 @@
 - [x] Alle Merkmale + Zielgröße in **eine Analysetabelle** zusammenführen (1 Zeile = 1 Krankenhaus)
 - [x] Zusammenführung **per Skript** reproduzierbar machen (kein manuelles Zusammenklicken)
 - [x] **Analysetabelle aktualisieren** — `pflege_pro_bett` und `ist_konzern` sind jetzt Spalten 17+18 in `Data/analysetabelle.csv`
-- [x] **Bug behoben (2026-07-29):** `01_Exploration.ipynb` verglich beim Konzern-Join `Konzern.csv`s `SO.Standortnummer` fälschlich gegen `SO.QBID` statt gegen `SO.csv`s eigene `SO.Standortnummer`-Spalte → `ist_konzern` war für alle Häuser 0. Nach Fix: 358 Konzernhäuser (19,7 % von 1.821, Stand nach der Zielvariablen-Korrektur vom 2026-08-14). Chi²-Test zeigt aber: kein signifikanter Zusammenhang mit `hat_viele_Probleme` (p=0,2585) — Decision Tree bestätigt das mit 0 % Feature Importance für `ist_konzern`.
+- [x] **Bug behoben (2026-07-29):** `01_Exploration.ipynb` verglich beim Konzern-Join `Konzern.csv`s `SO.Standortnummer` fälschlich gegen `SO.QBID` statt gegen `SO.csv`s eigene `SO.Standortnummer`-Spalte → `ist_konzern` war für alle Häuser 0. Nach Fix: 358 Konzernhäuser (19,7 % von 1.821). Chi²-Test zeigt aber: kein signifikanter Zusammenhang mit `hat_viele_Probleme` (p=0,2585) — Decision Tree bestätigt das mit 0 % Feature Importance für `ist_konzern`.
 
 ---
 
@@ -110,11 +108,11 @@
 - [x] Baum in eigenen Worten vorlesen können (Verständnistest)
 - [x] Vorhersage: `"Hat überdurchschnittlich viele Probleme"` basierend auf Strukturmerkmalen
 - [x] **Metriken:** Accuracy, Precision, Recall, F1-Score, Confusion Matrix
-- [x] **R²-Metrik** erklärt und berechnet (R²=−0,007 → kein linear nutzbarer Zusammenhang, siehe Korrektur-Hinweis oben)
+- [x] **R²-Metrik** erklärt und berechnet (R²=−0,007 → kein linear nutzbarer Zusammenhang)
 - [x] **Feature Importance** visualisiert (`aerzte_pro_bett` dominiert mit 72,8 %)
 - [x] **OOP** — Modell-Wrapper-Klasse `KrankenhausModell` implementiert *(2026-07-29: Notebook importiert die Klasse jetzt aus `modell_klasse.py` statt sie inline zu duplizieren — behebt zugleich einen `__main__`-Pickle-Bug, der das Dashboard zuvor beim Laden des Modells crashen ließ; 2026-07-30: Datei von `scripts/` nach `model/` verschoben)*
 - [x] **`joblib`** — Modell gespeichert als `Data/modell_krankenhaus.pkl`
-- [x] **Modell neu trainiert (2026-07-29, Metriken zuletzt am 2026-08-14 nach Zielvariablen-Korrektur aktualisiert)** mit `pflege_pro_bett` und `ist_konzern` als zusätzlichen Features. Accuracy 57,0 % (Basislinie 50,4 %). Feature Importance: `aerzte_pro_bett` 72,8 %, `SO.Betten` 16,5 %, `pflege_pro_bett` 10,8 %, alle anderen (inkl. `ist_konzern`) 0 %
+- [x] **Modell trainiert (2026-07-29)** mit `pflege_pro_bett` und `ist_konzern` als zusätzlichen Features. Accuracy 57,0 % (Basislinie 50,4 %). Feature Importance: `aerzte_pro_bett` 72,8 %, `SO.Betten` 16,5 %, `pflege_pro_bett` 10,8 %, alle anderen (inkl. `ist_konzern`) 0 %
 
 ---
 
@@ -124,8 +122,8 @@
 - [ ] Randfälle testen: leere Eingaben, fehlende Werte im Dashboard
 - [x] **Code aufräumen** — Duplikat `scripts/doku_generieren.py` gelöscht (identisch mit `word_dokumentation.py`), `datei_uebersicht_a4.py` → `datei_uebersicht.py` umbenannt, `modell_klasse.py` von `scripts/` nach eigenen Ordner `model/` verschoben, python-docx-Metadaten-Bug (falsches Erstelldatum/Autor „2013-12-23"/„python-docx") in allen 5 Word-Generator-Skripten behoben
 - [x] Komplett-Durchlauf getestet: Rohdaten → `01_Exploration.ipynb` → `Data/analysetabelle.csv` → `03_Decision_Tree.ipynb` → `Data/modell_krankenhaus.pkl` → `Dashboard/streamlit_dashboard.py` — alles ohne Fehler *(2026-07-29: alle drei Notebooks + Dashboard erfolgreich end-to-end durchlaufen lassen und lokal im Browser via `streamlit run` geprüft)*
-- [ ] Streamlit-Cloud-Deployment: Main-File-Pfad in den App-Settings von `scripts/streamlit_dashboard.py` auf `Dashboard/streamlit_dashboard.py` umstellen
-- [ ] `requirements.txt` verifizieren — alle verwendeten Pakete enthalten und Versionen aktuell?
+- [x] **Streamlit-Cloud-Deployment** — läuft live mit korrektem Main-File-Pfad `Dashboard/streamlit_dashboard.py`; im Zuge dessen zwei Cloud-spezifische Bugs gefunden und behoben, die lokal nicht auffielen: veraltetes `px.scatter_mapbox` (Streamlit Cloud installiert Pakete frisch, brach dort durch Plotly-Versionsdrift) durch `px.scatter_map` ersetzt, und `use_container_width` (Entfernungsdatum bereits überschritten) proaktiv auf `width="stretch"` umgestellt, bevor es zum selben Problem führen konnte
+- [x] `requirements.txt` verifiziert — alle 12 verwendeten Pakete enthalten (streamlit, plotly, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn, statsmodels, nbformat, ipykernel)
 
 ### Dokumentation
 - [x] Startanleitung schreiben → `README.md` erstellt
@@ -140,20 +138,22 @@
 
 ### Präsentation *(Folie 13)*
 
-#### Folien & Unterlagen *(2026-08-09 abgeschlossen)*
-- [x] **Folie 13 im PPTX aktualisiert** — Power BI → Streamlit-Dashboard (Titel, Screenshot, 5 Inhaltszeilen); Backup unter `Doku/Qualitaets_Muster_Finder_backup_folie13.pptx`; Skript: `scripts/update_folie13.py`
-- [x] **`Doku/MD/Praesentation_Folien_Beschreibung.md` korrigiert** — Übersichtstabelle Zeile 13 von „Dashboard in Power BI Präsentieren" auf „Streamlit-Dashboard — Live-Demo" aktualisiert; alle 15 Folien stimmen mit PPTX überein
-- [x] **Streamlit-Präsentationsfolie erstellt** — `Dashboard/folie13_praesentation.py`: slide-artige Einzelseite mit 2×2 Karten + Dashboard-Screenshots für die Einzelpräsentation; Start: `streamlit run Dashboard/folie13_praesentation.py`
-- [x] **Vollständiges Sprechertext-Dokument erstellt** — `Doku/Praesentationsskript_Qualitaets_Muster_Finder.docx` (30 Min, 15 Folien, erzählend mit fließenden Übergängen, Zeitangaben je Folie); Skript: `scripts/erstelle_praesentationsskript.py`
-- [x] **Erzählen statt Stichpunkte ablesen** — Sprechertext je Folie im Word-Skript vollständig ausformuliert, Übergänge hervorgehoben
+#### Folien & Unterlagen
+> ⚠️ Die vier Punkte unten aus dem Stand vom 2026-08-09 (altes 15-Folien-Einzelpräsentator-Deck, Power-BI-Bezug auf Folie 13, `Dashboard/folie13_praesentation.py`) sind **überholt** — dieses Deck und die zugehörigen Dateien existieren nicht mehr. Es wurde durch die neu strukturierte `Doku/PPT/Projektbegleitende_Praesentation.pptx` ersetzt (43 Folien, 6 Kapitel, entlang der projektbegleitenden Dokumentation aufgebaut; Skript: `scripts/erstelle_projektbegleitende_ppt.py`).
+
+- [x] **Foliendeck durchgehend neu gestaltet (2026-08-30)** — Folien 15–43 von reinen Aufzählungen auf farbige Befund-Panels, nummerierte Karten und gerahmte Fazit-Boxen umgestellt (neue Hilfsfunktionen `panel_reihe`, `karten_reihe`, `rahmen_box`); Grafiken mit schmalem/Hochformat-Seitenverhältnis (u. a. Bundesland-Kachelkarte, Korrelationsmatrix, Confusion Matrix, Dashboard-Screenshots) bekamen ein neues Bild-links/Panels-rechts-Layout (`bild_folie_seitlich`), das die Bilder deutlich größer darstellt
+- [x] **Dashboard-Screenshots aktualisiert** — die vier Screenshots in `grafiken/screenshots/` zeigten veraltete Kennzahlen; per Playwright gegen das lokal laufende Dashboard neu aufgenommen, inkl. Klick auf „Suchen“/„Ergebnis anzeigen“ für echte statt leere Ergebnisansichten
+- [x] **Vollständiger, zusammenhängender Sprechertext** — alle 43 Folien haben jetzt Referentennotizen direkt in der PPTX (`notiz()`-Hilfsfunktion), geschrieben als durchgehend erzählender Wir-Text mit Übergängen zwischen den Folien, nicht als Stichpunkte oder Regieanweisungen
+- [x] **Aufgabenstellung eingecheckt** — `Aufgabenstellung/Fragestellung.docx` und `.md` per gezielter `.gitignore`-Ausnahme jetzt versioniert (Ordner war zuvor komplett ausgeschlossen)
 
 #### Noch offen
-- [ ] Fragestellung vorstellen
-- [ ] Hürden & Erkenntnisse aus der Datenaufbereitung (Fallstricke, Designentscheidungen)
-- [ ] Befunde der deskriptiven Analyse — auch „kein Zusammenhang" klar und begründet benennen
-- [ ] Live-Demo des Dashboards (alle 4 Seiten zeigen)
-- [ ] Grenzen der Analyse ehrlich benennen: was können wir **nicht** aussagen?
-- [ ] Generalprobe mit Stoppuhr
+> Inhaltlich ist alles unten bereits in `Doku/PPT/Projektbegleitende_Praesentation.pptx` (Folien + Sprechertext) ausformuliert — offen ist nur noch das tatsächliche Vortragen und Üben.
+- [ ] Fragestellung vorstellen (Folie 3, „1.1 Projektrahmen & Fragestellung")
+- [ ] Hürden & Erkenntnisse aus der Datenaufbereitung (Kapitel 1–2, Folien 3–12: Fehlerbehebungen, Designentscheidungen)
+- [ ] Befunde der deskriptiven Analyse — auch „kein Zusammenhang" klar und begründet benennen (Kapitel 3, Folien 13–25)
+- [ ] Live-Demo des Dashboards (alle 4 Seiten zeigen, Kapitel 5)
+- [ ] Grenzen der Analyse ehrlich benennen: was können wir **nicht** aussagen? (Folie 42, „6.2 Grenzen der Analyse")
+- [ ] Generalprobe mit Stoppuhr — mit dem neuen Sprechertext laut durchsprechen und Zeit nehmen
 
 ### Abschlusspräsentation
 - [ ] Abschlusspräsentation halten
@@ -195,7 +195,7 @@
 | **Korrelationskoeffizient** (Pearson) | Baustein 2 — Heatmap mit `.corr()` |
 | **Scatterplot, Barplot, Histogram, Boxplot, Heatmap** | Baustein 2 — alle 10 Grafiken |
 | **T-Test** (Aerzte/Bett) | t=−9,13, **p<0,0001 signifikant** | Baustein 2 — `02_Analyse.ipynb` |
-| **ANOVA** (Träger) | F=0,031, **p=0,969 NICHT signifikant** (Korrektur 2026-08-14, vorher fälschlich signifikant) | Baustein 2 — `02_Analyse.ipynb` |
+| **ANOVA** (Träger) | F=0,031, **p=0,969 NICHT signifikant** | Baustein 2 — `02_Analyse.ipynb` |
 | **Konfidenzintervalle** (95 %) | Wenige=[0,389–0,416], Viele=[0,484–0,516] | Baustein 2 — `02_Analyse.ipynb` |
 | **`pivot_table()`** | Träger × Uni-Status | Baustein 2 — `02_Analyse.ipynb` |
 | **Feature Matrix X & Zielvariable y** | `analysetabelle.csv` | Baustein 1 |
@@ -209,7 +209,7 @@
 
 | IHK-Thema | Warum nicht abgedeckt | Wo nachholen |
 |-----------|----------------------|--------------|
-| **Inferenzstatistik** — T-Test, ANOVA | **✅ Ergänzt!** T-Test signifikant (p<0,0001), ANOVA nach Korrektur NICHT mehr signifikant (p=0,969) | Erledigt |
+| **Inferenzstatistik** — T-Test, ANOVA | **✅ Ergänzt!** T-Test signifikant (p<0,0001), ANOVA NICHT signifikant (p=0,969) | Erledigt |
 | **Konfidenzintervalle** | **✅ Ergänzt!** | Erledigt |
 | **Decision Tree — Gini/Entropy, Visualisierung** | **✅ Abgeschlossen!** | Baustein 4 |
 | **Metriken: Accuracy, Precision, Recall, F1, Confusion Matrix** | **✅ Abgeschlossen!** | Baustein 4 |

@@ -3,7 +3,9 @@
 Data/*
 !Data/analysetabelle.csv
 !Data/modell_krankenhaus.pkl
-Aufgabenstellung/
+Aufgabenstellung/*
+!Aufgabenstellung/Fragestellung.docx
+!Aufgabenstellung/Fragestellung.md
 
 # Python-Cache
 __pycache__/

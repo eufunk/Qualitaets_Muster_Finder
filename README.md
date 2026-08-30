@@ -69,7 +69,7 @@ streamlit run Dashboard/streamlit_dashboard.py
 
 > ⚠️ Die Rohdaten in `Data/CSV/` und `Data/Excel/` (86 Dateien, bis 911 MB) sind **nicht** im Repository. Für den Dashboard-Betrieb werden nur `Data/analysetabelle.csv` und `Data/modell_krankenhaus.pkl` benötigt — diese beiden liegen zwar im sonst per `.gitignore` ausgeschlossenen `Data/`-Ordner, sind aber per expliziter `!`-Ausnahme trotzdem versioniert.
 >
-> Die Python-Skripte, die die Word-Dokumentation in `Doku/Word/` und `Doku/Dozent/` erzeugen, liegen lokal in `scripts/` — dieser Ordner ist per `.gitignore` bewusst nicht versioniert (siehe `ProjektDetails.md`).
+> Die Python-Skripte, die die Word-Dokumentation in `Doku/Word/` erzeugen, liegen lokal in `scripts/` — dieser Ordner ist per `.gitignore` bewusst nicht versioniert (siehe `ProjektDetails.md`).
 
 ---
 
@@ -80,7 +80,7 @@ streamlit run Dashboard/streamlit_dashboard.py
 | `Notebooks/01_Exploration.ipynb` | Datenaufbereitung: Ziel-Variable, Merkmale, Analysetabelle |
 | `Notebooks/02_Analyse.ipynb` | Deskriptive Analyse: 12 Grafiken, T-Test, Chi²-Test, ANOVA, Konfidenzintervalle |
 | `Notebooks/03_Decision_Tree.ipynb` | Decision Tree, Metriken, R², Feature Importance |
-| `Dashboard/streamlit_dashboard.py` | Haupt-App: 4 Seiten (Übersicht, Vergleiche, Ähnliche Häuser, Risiko-Rechner) |
+| `Dashboard/streamlit_dashboard.py` | Haupt-App: 4 Seiten (Gesamtüberblick, Einflussfaktoren, Häuser vergleichen, Qualitäts-Vorhersage) |
 | `Dashboard/dashboard_utils.py` | Hilfsfunktionen: Daten laden, KPIs, Plots, Modell-Vorhersage |
 | `model/modell_klasse.py` | OOP-Wrapper `KrankenhausModell` (prepare, fit, evaluate, save, load) |
 | `Data/analysetabelle.csv` | Fertige Analysetabelle (Ergebnis aus Baustein 1) |
@@ -92,8 +92,6 @@ streamlit run Dashboard/streamlit_dashboard.py
 ---
 
 ## 🔑 Wichtige Entscheidungen — Warum haben wir das so gemacht?
-
-> ⚠️ **Korrektur (2026-08-14):** `QSErgBewStrukDialog` wurde ursprünglich falsch interpretiert (`R10` fälschlich als „auffällig" statt „nicht auffällig" gewertet). Der offizielle IQTIG-Bericht belegt das Gegenteil. Alle Zahlen unten sind bereits die korrigierten Werte — Details in `Doku/MD/01_Exploration.md`.
 
 ### Warum Median als Grenzwert für die Ziel-Variable?
 Die auffällig-Quote variiert zwischen 0 % und 100 %. Der Median (5,88 %) teilt die Häuser in genau zwei etwa gleich große Gruppen — das ergibt eine **ausgewogene Klassenverteilung** (49,7 % vs. 50,3 %), was für Machine Learning optimal ist. Ein fixer Schwellenwert (z. B. 80 %) wäre willkürlich.
@@ -137,7 +135,7 @@ Der Chi²-Test zeigt keinen Zusammenhang zwischen Konzernzugehörigkeit und Qual
 | Decision Tree Accuracy | **57,0 %** (Basislinie: 50,4 %) |
 | R² (lineare Regression) | **−0,007** — kein linear nutzbarer Zusammenhang |
 
-> **Fazit:** Keine starken, eindeutigen Zusammenhänge zwischen Strukturmerkmalen und Qualitätsproblemen. Mehr Personal pro Bett hängt mit mehr, nicht weniger, Qualitätsproblemen zusammen — der zuvor klarste Befund (Trägerschaft) ist nach der Korrektur statistisch nicht mehr abgesichert. **Kein Zusammenhang ist ein valides Ergebnis.**
+> **Fazit:** Keine starken, eindeutigen Zusammenhänge zwischen Strukturmerkmalen und Qualitätsproblemen. Mehr Personal pro Bett hängt mit mehr, nicht weniger, Qualitätsproblemen zusammen — die Trägerschaft zeigt trotz optisch sichtbarem Unterschied laut ANOVA keinen statistisch abgesicherten Zusammenhang. **Kein Zusammenhang ist ein valides Ergebnis.**
 
 ---
 

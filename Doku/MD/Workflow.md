@@ -56,8 +56,6 @@
 
 ### 1.3 Ziel-Variable erstellen
 
-> ⚠️ **Korrektur (2026-08-14):** Dieser Abschnitt beschrieb ursprünglich eine **falsche** Lesart von `QSErgBewStrukDialog` (`R* = auffällig` war invertiert, `N01`/`N02` wurden fälschlich als „nicht auffällig" statt als „nicht bewertbar" gezählt). Der offizielle IQTIG-Bericht (*Bericht zum Strukturierten Dialog 2021, Erfassungsjahr 2020*) belegt das Gegenteil. Die folgenden Bullet-Points, die Tabelle und das Ergebnis zeigen bereits die **korrigierte** Version, siehe `01_Exploration.md` für den vollständigen Vergleich alt/neu.
-
 **Quelle:** `QS.Qualitätsindikator.csv` — 29 Spalten, >50 MB
 
 **Bewertungsspalte:** **`QSErgBewStrukDialog`**
@@ -164,7 +162,7 @@
 
 > ⚠️ **Bug gefunden und behoben:** `Konzern.csv` nutzt `SO.Standortnummer` als Schlüssel — **nicht** `SO.QBID`. Der erste Join-Versuch verglich versehentlich `Konzern.csv`s `SO.Standortnummer` gegen `SO.csv`s `SO.QBID` → **0 Treffer**, `ist_konzern` war für alle Häuser 0. `SO.csv` hat aber selbst eine `SO.Standortnummer`-Spalte, die im ersten Anlauf nicht mit ausgewählt wurde. Nach Korrektur (Vergleich `SO.Standortnummer` gegen `SO.Standortnummer`): **358 von 1.821 Häusern (19,7 %)** sind Konzernhäuser.
 
-**Ergebnis:** Chi²-Test zeigt **keinen** signifikanten Zusammenhang zwischen `ist_konzern` und `hat_viele_Probleme` (χ²=1,277, p=0,2585 — Werte geändert durch die Zielvariablen-Korrektur vom 2026-08-14, Schlussfolgerung unverändert). Der Decision Tree bestätigt das mit **0 % Feature Importance**. Bewusst trotzdem im Modell gelassen — das Modell soll selbst entscheiden, kein Zusammenhang ist ein valider Befund.
+**Ergebnis:** Chi²-Test zeigt **keinen** signifikanten Zusammenhang zwischen `ist_konzern` und `hat_viele_Probleme` (χ²=1,277, p=0,2585). Der Decision Tree bestätigt das mit **0 % Feature Importance**. Bewusst trotzdem im Modell gelassen — das Modell soll selbst entscheiden, kein Zusammenhang ist ein valider Befund.
 
 ---
 
@@ -178,8 +176,6 @@
 
 10 Grafiken aus `Data/analysetabelle.csv`. Jede Grafik mit automatisch berechnetem Befundsatz. Farbschema: 🟢 grün = wenige Probleme, 🔴 rot = viele Probleme. Grafiken gespeichert in `grafiken/`. Pflegekräfte/Bett am 2026-07-29 ergänzt (mittlerweile in Grafik 5+6 zusammen mit Ärzte/Bett dargestellt); Konzernvergleich (Grafik 9) ebenfalls am 2026-07-29 ergänzt, Fortbildungsquote (Grafik 10) später als eigene Grafik ausgegliedert.
 
-> ⚠️ **Korrektur (2026-08-14):** Die Ziel-Variable `hat_viele_Probleme` wurde neu berechnet (siehe Baustein 1). Alle Befunde ab hier basieren auf der korrigierten `Data/analysetabelle.csv` und weichen teils deutlich von der ursprünglichen Auswertung ab — insbesondere haben sich bei fast allen Merkmalen die Richtungen der Zusammenhänge umgekehrt. Details siehe `02_Analyse.md`.
-
 ---
 
 ### 2.2 Befunde
@@ -187,32 +183,32 @@
 | Grafik | Merkmal | Befund |
 |--------|---------|--------|
 | 1 | auffällig-Quote | Median **5,88 %**, rechtsschief — meisten Häuser zwischen 0 % und 11 % |
-| 2 | Bettenzahl | Median: wenige=166, viele=220 — **Richtung umgekehrt**, viele Probleme jetzt bei größeren Häusern |
-| 3 | Trägerschaft | Privat 43,8 % vs. freigemeinnützig 50,6 % vs. öffentlich **53,5 %** — Reihenfolge umgekehrt, aber ANOVA (2.3) nicht signifikant |
-| 4 | Uni-Klinik | Uni **68,5 %** vs. Normal 48,7 % — jetzt ein deutlicher Unterschied |
-| 5+6 | Fortbildung & Ärzte/Bett | Fortbildung: weiterhin kein Unterschied; Ärzte/Bett: wenige=0,382, viele=0,470 — **Richtung umgekehrt** |
+| 2 | Bettenzahl | Median: wenige=166, viele=220 — viele Probleme bei größeren Häusern |
+| 3 | Trägerschaft | Privat 43,8 % vs. freigemeinnützig 50,6 % vs. öffentlich **53,5 %** — optisch sichtbar, aber ANOVA (2.3) nicht signifikant |
+| 4 | Uni-Klinik | Uni **68,5 %** vs. Normal 48,7 % — ein deutlicher Unterschied |
+| 5+6 | Fortbildung & Ärzte/Bett | Fortbildung: kein Unterschied; Ärzte/Bett: wenige=0,382, viele=0,470 |
 | 7 | Bundesland | Rheinland-Pfalz höchster Anteil **(64,0 %)**, Thüringen niedrigster (36,0 %) |
-| 8 | Korrelation | Stärkste Korrelation: `total_qi` **(r=+0,241)**, `aerzte_pro_bett` (r=+0,210) — **alle Vorzeichen jetzt positiv** |
-| 9 | Scatter | Kein klares Trennmuster — starke Überlappung (unverändert) |
-| 10 | Störfaktor | Private Häuser weiterhin kleiner (Md=125 Betten) — von der Korrektur unberührt |
-| 11 *(2026-07-29)* | Pflegekräfte/Bett | Wenige=0,891, Viele=1,047 — **Richtung umgekehrt**, gleiches Muster wie Ärzte/Bett |
-| 12 *(2026-07-29)* | Konzernvergleich | Konzern 52,5 % vs. unabhängig 49,0 % viele Probleme — weiterhin praktisch kein Unterschied |
+| 8 | Korrelation | Stärkste Korrelation: `total_qi` **(r=+0,241)**, `aerzte_pro_bett` (r=+0,210) — alle Vorzeichen positiv |
+| 9 | Scatter | Kein klares Trennmuster — starke Überlappung |
+| 10 | Störfaktor | Private Häuser kleiner (Md=125 Betten) |
+| 11 *(2026-07-29)* | Pflegekräfte/Bett | Wenige=0,891, Viele=1,047 — gleiches Muster wie Ärzte/Bett |
+| 12 *(2026-07-29)* | Konzernvergleich | Konzern 52,5 % vs. unabhängig 49,0 % viele Probleme — praktisch kein Unterschied |
 
 ### 2.3 Inferenzstatistik (ergänzt)
 
 | Test | Ergebnis | Befund |
 |------|----------|--------|
-| **T-Test** Ärzte/Bett (Wenige vs. Viele) | t=−9,13, **p<0,0001** | Unterschied statistisch **signifikant** (Richtung umgekehrt) |
-| **T-Test** Pflegekräfte/Bett (Wenige vs. Viele) *(2026-07-29)* | t=−7,51, **p<0,0001** | Unterschied statistisch **signifikant** (Richtung umgekehrt) |
-| **Chi²-Test** Konzernzugehörigkeit vs. viele Probleme *(2026-07-29)* | χ²=1,277, **p=0,2585** | **Kein** signifikanter Zusammenhang (Schlussfolgerung unverändert) |
-| **ANOVA** auffällig-Quote nach Träger | F=0,031, **p=0,969** | **Nicht mehr signifikant** — größte Umkehrung durch die Korrektur (vorher F=11,32, p<0,001, „klarster Befund" des Projekts) |
-| **95%-KI** Ärzte/Bett Wenige | [0,389–0,416] | Kein Überlappung mit Viele-Gruppe |
-| **95%-KI** Ärzte/Bett Viele | [0,484–0,516] | Bestätigt signifikanten Unterschied (Richtung umgekehrt) |
+| **T-Test** Ärzte/Bett (Wenige vs. Viele) | t=−9,13, **p<0,0001** | Unterschied statistisch **signifikant** |
+| **T-Test** Pflegekräfte/Bett (Wenige vs. Viele) *(2026-07-29)* | t=−7,51, **p<0,0001** | Unterschied statistisch **signifikant** |
+| **Chi²-Test** Konzernzugehörigkeit vs. viele Probleme *(2026-07-29)* | χ²=1,277, **p=0,2585** | **Kein** signifikanter Zusammenhang |
+| **ANOVA** auffällig-Quote nach Träger | F=0,031, **p=0,969** | **Nicht signifikant**, obwohl Grafik 3 einen Unterschied zeigt |
+| **95%-KI** Ärzte/Bett Wenige | [0,389–0,416] | Keine Überlappung mit Viele-Gruppe |
+| **95%-KI** Ärzte/Bett Viele | [0,484–0,516] | Bestätigt signifikanten Unterschied |
 | **pivot_table** Träger × Uni | Gemischtes Bild: bei freigemeinnützig/privat Uni niedriger, bei öffentlich Uni höher | Kein einheitlicher Effekt |
 
 ### 2.4 Gesamteinschätzung
 
-Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhänge als vorher (Ärzte/Bett, Pflege/Bett, Uni-Status), aber der zuvor „klarste" Befund — der Trägerschaftseffekt — ist komplett verschwunden (ANOVA nicht signifikant). Stärkster Prädiktor bleibt `total_qi`, ein **Strukturmerkmal**, kein Qualitätsmerkmal. Kernbefund: mehr Personal pro Bett hängt jetzt mit **mehr**, nicht weniger, Qualitätsproblemen zusammen — am ehesten dadurch erklärbar, dass besser ausgestattete Häuser komplexere Fälle behandeln und dadurch mehr/andere Indikatoren auslösen (vgl. `total_qi`-Korrelation).
+Es zeigen sich mehrere statistisch signifikante Einzelzusammenhänge (Ärzte/Bett, Pflege/Bett, Uni-Status), aber der optisch auffällige Trägerschaftseffekt ist statistisch nicht abgesichert (ANOVA nicht signifikant). Stärkster Prädiktor bleibt `total_qi`, ein **Strukturmerkmal**, kein Qualitätsmerkmal. Kernbefund: mehr Personal pro Bett hängt mit **mehr**, nicht weniger, Qualitätsproblemen zusammen — am ehesten dadurch erklärbar, dass besser ausgestattete Häuser komplexere Fälle behandeln und dadurch mehr/andere Indikatoren auslösen (vgl. `total_qi`-Korrelation).
 
 > 💡 **Kein Zusammenhang ist ein valides Ergebnis.** *(Quelle: Text_Presentation.docx, Folie 7)*
 
@@ -239,7 +235,6 @@ Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhäng
 <span style="background:#d4edda;color:#155724;padding:2px 8px;border-radius:4px;font-weight:bold">✅ Abgeschlossen</span> &nbsp; **Datum:** 2026-07-27, neu trainiert 2026-07-29 &nbsp; **Datei:** `03_Decision_Tree.ipynb`
 
 - **OOP:** Klasse `KrankenhausModell` mit `prepare()`, `fit()`, `evaluate()`, `save()`, `load()` — Notebook importiert die Klasse jetzt aus `model/modell_klasse.py`, statt sie inline zu duplizieren *(behebt einen `__main__`-Pickle-Bug, der das Dashboard beim Laden des Modells crashen ließ)*
-> ⚠️ **Korrektur (2026-08-14):** Modell mit der korrigierten `Data/analysetabelle.csv` neu trainiert — alle folgenden Kennzahlen sind neu. Details siehe `03_Decision_Tree.md`.
 
 - **Train-Test-Split:** 80/20 (1.456/365), stratifiziert | Basislinie: 50,4 %
 - **Metriken:** Accuracy=0,570 | Precision=0,552 | Recall=0,702 | F1=0,618 | CV=0,616±0,037
@@ -275,13 +270,13 @@ Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhäng
 | `01_Exploration.ipynb` | Baustein 1 | Datenaufbereitung: Ziel-Variable, Merkmale, Analysetabelle, Ärzte/Pflege pro Bett, Konzernzugehörigkeit |
 | `02_Analyse.ipynb` | Baustein 2 | Deskriptive Analyse: 12 Grafiken, T-Test, Chi²-Test, ANOVA, Konfidenzintervalle, pivot_table |
 | `03_Decision_Tree.ipynb` | Baustein 4 | Decision Tree, OOP (importiert aus model/modell_klasse.py), Metriken, R², Feature Importance, joblib |
-| `04_Potenzielle_Erweiterungen.ipynb` | Baustein 5 (Bonus) | Prüft zusätzliche Merkmale (Dokumentationsrate, Notfallstufe, Mindestmengen) als mögliche Modellerweiterung — seit 2026-08-14 an die Zielvariablen-Korrektur angepasst |
+| `04_Potenzielle_Erweiterungen.ipynb` | Baustein 5 (Bonus) | Prüft zusätzliche Merkmale (Dokumentationsrate, Notfallstufe, Mindestmengen) als mögliche Modellerweiterung |
 
 ### 🖥️ Dashboard
 
 | Datei | Baustein | Zweck |
 |-------|----------|-------|
-| `Dashboard/streamlit_dashboard.py` | Baustein 3 | Haupt-App: 4 Seiten (Übersicht, Vergleiche, Ähnliche Häuser, Risiko-Rechner) |
+| `Dashboard/streamlit_dashboard.py` | Baustein 3 | Haupt-App: 4 Seiten (Gesamtüberblick, Einflussfaktoren, Häuser vergleichen, Qualitäts-Vorhersage) |
 | `Dashboard/dashboard_utils.py` | Baustein 3 | Hilfsfunktionen: Daten laden, KPIs, Plots, Modell-Vorhersage |
 
 ### 🧠 Modell-Logik (`model/`)
@@ -298,9 +293,8 @@ Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhäng
 | `datensatz_uebersicht.py` | Baustein 1 | Generiert `Datensatz_Uebersicht.docx` (Datei-Klassifikation aller 86 CSVs) |
 | `analysetabelle_zusammenfassung.py` | Baustein 1 | Generiert `Analysetabelle_Zusammenfassung.docx`: Merkmale, Ziel-Variable, Quelltabellen, Merge-Kriterien, Endgröße |
 | `grafiken_doku.py` | Baustein 2 | Generiert `Grafiken_Dokumentation.docx`: alle 12 Grafiken aus `02_Analyse.ipynb` erklärt, Zahlen live berechnet |
-| `erstelle_dozenten_doku.py` | Baustein 1+2 | Generiert `Doku/Dozent/Fortschrittsbericht_Qualitaets_Muster_Finder.docx` (Fortschrittsbericht für den Dozenten) |
+| `erstelle_dozenten_doku.py` | Baustein 1+2 | Erzeugte den Fortschrittsbericht für den Dozenten (Zwischenpräsentation); `Doku/Dozent/` wurde nach der Zwischenpräsentation wieder entfernt |
 | `erstelle_praesentationsskript.py` | Baustein 5 | Generiert `Doku/PPT/Praesentationsskript_Qualitaets_Muster_Finder.docx` (Sprechertext je Folie) |
-| `erstelle_analysetabelle_korrigiert.py` | — | Stand vor der Korrektur vom 2026-08-14: baute eine parallele `analysetabelle_korrigiert.csv` zum Vergleich alt/neu. Die korrigierte Logik ist inzwischen direkt in `01_Exploration.ipynb` übernommen — Status dieses Skripts (behalten/löschen) noch offen |
 
 ### 📊 Datendateien
 
@@ -325,7 +319,6 @@ Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhäng
 
 | Datei | Inhalt |
 |-------|--------|
-| `Doku/Dozent/Fortschrittsbericht_Qualitaets_Muster_Finder.docx` | Fortschrittsbericht für den Dozenten (Baustein 1+2, inkl. Korrektur-Kennzahlen) |
 | `Doku/PPT/Praesentationsskript_Qualitaets_Muster_Finder.docx` | Vollständiges Präsentationsskript mit Sprechertext je Folie |
 | `Doku/PPT/Qualitaets_Muster_Finder.pptx` | Foliensatz (Einzelpräsentator) |
 | `Doku/PPT/Qualitaets_Muster_Finder_Teamvortrag.pptx` | Foliensatz (Team-Variante, 3 Präsentatoren) |
@@ -338,7 +331,7 @@ Nach der Korrektur zeigen sich mehr statistisch signifikante Einzelzusammenhäng
 | `01_Exploration.md` | Schritt-für-Schritt-Erklärung von `01_Exploration.ipynb` — was gemacht wurde und warum |
 | `02_Analyse.md` | Schritt-für-Schritt-Erklärung von `02_Analyse.ipynb` — was gemacht wurde und warum |
 | `03_Decision_Tree.md` | Schritt-für-Schritt-Erklärung von `03_Decision_Tree.ipynb` — was gemacht wurde und warum |
-| `04_Potenzielle_Erweiterungen.md` | Schritt-für-Schritt-Erklärung von `04_Potenzielle_Erweiterungen.ipynb` — seit 2026-08-14 an die Korrektur angepasst |
+| `04_Potenzielle_Erweiterungen.md` | Schritt-für-Schritt-Erklärung von `04_Potenzielle_Erweiterungen.ipynb` |
 | `05_Dashboard.md` | Erklärung des Streamlit-Dashboards: technische Umsetzung, Seiten, Zweck, Bedienung |
 | `Daten_Inhaltsverzeichnis.md` | Tabellarische Übersicht aller 86 CSV-Dateien mit Relevanz-Einstufung |
 | `Qualitätsindikator.md` | Detaildokumentation von `QS.Qualitätsindikator.csv` und seiner Rolle als Ziel-Variable |

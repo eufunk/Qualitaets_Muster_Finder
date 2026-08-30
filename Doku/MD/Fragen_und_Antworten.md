@@ -1,6 +1,6 @@
 # ❓ Fragen und Antworten — Qualitäts-Muster-Finder
 
-> Vorbereitung auf mögliche Rückfragen des Dozenten am Ende der Präsentation. 30 Fragen, gruppiert nach Themenblock. Alle Zahlen sind gegen die aktuellen, korrigierten Notebooks/MD-Dokumente verifiziert (`01_Exploration.md`, `02_Analyse.md`, `03_Decision_Tree.md`).
+> Vorbereitung auf mögliche Rückfragen des Dozenten am Ende der Präsentation. 30 Fragen, gruppiert nach Themenblock. Alle Zahlen sind gegen die aktuellen Notebooks/MD-Dokumente verifiziert (`01_Exploration.md`, `02_Analyse.md`, `03_Decision_Tree.md`).
 
 **Projektfrage:** Welche Krankenhausmerkmale hängen damit zusammen, dass ein Haus überdurchschnittlich viele Qualitätsprobleme aufweist?
 
@@ -12,7 +12,7 @@
 Gibt es Zusammenhänge zwischen Strukturmerkmalen eines Krankenhauses (Größe, Trägerschaft, Personal, Region, Uni-Status, Konzernzugehörigkeit, Fortbildung) und der Häufigkeit, mit der ein Haus in seinen Qualitätsindikatoren auffällig wird? Ausdrücklich Teil der Aufgabenstellung: Ein „kein Zusammenhang gefunden" ist ein genauso gültiges Ergebnis wie ein gefundener Zusammenhang.
 
 ### 2. Warum ist „Kein Zusammenhang ist ein valides Ergebnis" für dieses Projekt relevant?
-Weil es sich in diesem konkreten Projekt tatsächlich bewahrheitet hat — nicht nur eine theoretische Warnung geblieben ist. Zwei Beispiele aus der eigenen Analyse: Die Trägerschaft galt zunächst als der klarste Befund der gesamten Untersuchung, ist nach der Korrektur der Ziel-Variable aber statistisch nicht mehr signifikant (ANOVA p = 0,969) — der Zusammenhang war nicht real. Und das lineare Modell erreichte auf der stetigen Zielgröße sogar ein negatives R² (−0,007), also eine schlechtere Vorhersage als der bloße Durchschnittswert. Beides sind echte „Kein Zusammenhang"-Ergebnisse, keine gescheiterten Analysen.
+Weil es sich in diesem konkreten Projekt tatsächlich bewahrheitet hat — nicht nur eine theoretische Warnung geblieben ist. Zwei Beispiele aus der eigenen Analyse: Die Trägerschaft zeigt im Balkendiagramm einen auffälligen Unterschied, ist aber statistisch nicht signifikant (ANOVA p = 0,969) — der optische Eindruck täuscht, der Zusammenhang ist nicht real. Und das lineare Modell erreichte auf der stetigen Zielgröße sogar ein negatives R² (−0,007), also eine schlechtere Vorhersage als der bloße Durchschnittswert. Beides sind echte „Kein Zusammenhang"-Ergebnisse, keine gescheiterten Analysen.
 
 Der Satz selbst stammt wörtlich aus dem Einführungsvortrag des Dozenten (`Aufgabenstellung/Text_Presentation.docx`) — als ausdrückliche Warnung davor, ein Ergebnis so lange zu drehen, bis am Ende doch ein vorzeigbarer Zusammenhang „gefunden" wird.
 
@@ -51,7 +51,7 @@ IQTIG (Institut für Qualitätssicherung und Transparenz im Gesundheitswesen) is
 ## B — Daten
 
 ### 5. Wie viele Krankenhäuser wurden verwendet, und warum ist 1.821 nicht gleich 2.310?
-Die finale Analysetabelle enthält 1.821 Krankenhäuser. `SO.csv` (Stammdaten) listet 2.310 Standorte insgesamt — davon haben 486 keine einzige Zeile in `QS.Qualitätsindikator.csv` (bleiben bei 1.824), und von diesen 1.824 haben zusätzlich 3 Häuser unter der korrigierten Code-Definition keine einzige bewertbare Zeile mehr (alle ihre Indikatoren sind N*-Codes) — macht 1.821 übrige Häuser mit einer gültigen Ziel-Variable.
+Die finale Analysetabelle enthält 1.821 Krankenhäuser. `SO.csv` (Stammdaten) listet 2.310 Standorte insgesamt — davon haben 486 keine einzige Zeile in `QS.Qualitätsindikator.csv` (bleiben bei 1.824), und von diesen 1.824 haben zusätzlich 3 Häuser laut der Code-Definition keine einzige bewertbare Zeile mehr (alle ihre Indikatoren sind N*-Codes) — macht 1.821 übrige Häuser mit einer gültigen Ziel-Variable.
 
 ### 6. Wie habt ihr entschieden, welche der 86 CSV-Dateien verwendet werden?
 In zwei Schritten: Erstens eine Häufigkeits- und Spalten-Präfix-Analyse (nur Header, `nrows=0`) — jede Spalte folgt dem Muster `PRÄFIX.Beschreibung` (SO = Standort, FA = Fachabteilung, QS = Qualitätssicherung), das zeigt, welche Dateien thematisch zusammengehören und wie sie sich verknüpfen lassen. Zweitens eine inhaltliche Prüfung: Gehört die Datei zum A-Teil (Strukturdaten → mögliches Merkmal) oder C-Teil (Qualitätsindikatoren → Ziel-Variable)? Lässt sie sich sauber über `SO.QBID` verknüpfen und liegt für nahezu alle 1.821 Häuser vor? Am Ende blieben 7 von 86 Dateien aktiv genutzt, 33 als „möglicherweise relevant" für spätere Erweiterungen markiert, 46 ausgeschlossen (Lookup-Tabellen, Verwaltungsdaten, DSGVO-Daten).
@@ -64,32 +64,31 @@ Beide enthalten personenbezogene Daten (Name, E-Mail, Telefon, Funktion von Kont
 
 ---
 
-## C — Ziel-Variable & die Code-Korrektur
+## C — Ziel-Variable & Bewertungscodes
 
 ### 9. Wie wurde die Ziel-Variable berechnet?
 Aus `QS.Qualitätsindikator.csv` (911,7 MB, größte Datei im Datensatz): Filterkaskade von 417.799 Zeilen → Zählkennzahlen wie EKez/TKez entfernt (308.726) → alle N*-Codes entfernt (198.770) → Duplikate je Haus+Indikator entfernt (77.537, Schlüssel `SO.QBID` + `QSQI.Indikator`). Pro Haus wird `auffaellig_quote = auffällig_n / total_qi` berechnet, der Median (5,88 %) dient als Trennwert für die binäre Variable `hat_viele_Probleme`.
 
-### 10. Was war der Fehler bei der ursprünglichen Interpretation der Bewertungscodes, und wie wurde er entdeckt?
-Beim Abgleich mit den Kollegen aus dem BI-Team fiel auf, dass deren Power-BI-Auswertung zu einem anderen Ergebnis kam als unsere Python-Auswertung, obwohl beide auf denselben Rohdaten aufsetzen. Das war der Anlass für eine erneute Prüfung. Wir fanden ein offizielles IQTIG-Dokument („Bericht zum Strukturierten Dialog 2021, Erfassungsjahr 2020"), das die Bedeutung aller sieben Bewertungscodes eindeutig dokumentiert — und stellten fest, dass die Codes zuvor anders interpretiert waren, als es diese offizielle Definition vorsieht.
+### 10. Wie wird die Bewertungsspalte `QSErgBewStrukDialog` interpretiert, und wodurch ist das belegt?
+Die Spalte kennt sieben Bewertungscodes. Belegt durch ein offizielles IQTIG-Dokument („Bericht zum Strukturierten Dialog 2021, Erfassungsjahr 2020"), das die Bedeutung aller sieben Codes eindeutig dokumentiert: `R10` bedeutet „Ergebnis liegt im Referenzbereich" (nicht auffällig), alle N\*-Codes bedeuten „nicht bewertet" (nicht bewertbar, ausgeschlossen), alle übrigen Codes zählen als auffällig.
 
-### 11. Was bedeutet der Code R10 konkret, und warum war die falsche Interpretation so gravierend?
-R10 bedeutet „Ergebnis liegt im Referenzbereich" — also **nicht** auffällig. Ursprünglich wurde R10 als auffällig gezählt (invertiert), außerdem wurden N01/N02 fälschlich als „nicht auffällig" mitgezählt statt korrekt als „nicht bewertbar" ausgeschlossen zu werden. Da R10 der mit Abstand häufigste Code ist, kehrte dieser Fehler die Ziel-Variable für den Großteil der Häuser praktisch um.
+### 11. Was bedeutet der Code R10 konkret, und warum ist er für die Ziel-Variable so wichtig?
+R10 bedeutet „Ergebnis liegt im Referenzbereich" — also **nicht** auffällig. Da R10 der mit Abstand häufigste Code ist, bestimmt seine korrekte Einordnung maßgeblich, wie die Ziel-Variable für den Großteil der Häuser ausfällt.
 
-| Code | Bedeutung | Interpretation zuvor | Interpretation aktuell |
-|---|---|---|---|
-| R10 | Ergebnis liegt im Referenzbereich | auffällig | nicht auffällig |
-| N01/N02 | Bewertung nicht vorgesehen | nicht auffällig (mitgezählt) | nicht bewertbar — ausgeschlossen |
-| N99 | Bewertung nicht vorgesehen | nicht bewertbar — ausgeschlossen | nicht bewertbar — ausgeschlossen |
-| H20/H99 | Auf Auffälligkeit hingewiesen | nicht auffällig | auffällig |
-| U30–33/U99 | Qualitativ unauffällig (entkräftet) | nicht auffällig | auffällig (initial gezählt) |
-| A40–42/A99 | Qualitativ auffällig (bestätigt) | nicht auffällig | auffällig, bestätigt |
-| D50/51/99 · S90/91/99 | Nicht bewertbar/Sonstiges | nicht auffällig | auffällig |
+| Code | Bedeutung | Auffällig? |
+|---|---|---|
+| R10 | Ergebnis liegt im Referenzbereich | Nein |
+| N01/N02/N99 | Bewertung nicht vorgesehen | Nicht bewertbar — ausgeschlossen |
+| H20/H99 | Auf Auffälligkeit hingewiesen | Ja |
+| U30–33/U99 | Qualitativ unauffällig (entkräftet) | Ja (initial gezählt) |
+| A40–42/A99 | Qualitativ auffällig (bestätigt) | Ja, bestätigt |
+| D50/51/99 · S90/91/99 | Nicht bewertbar/Sonstiges | Ja |
 
-### 12. Wie habt ihr sichergestellt, dass die korrigierte Interpretation jetzt richtig ist?
-Per Summenprobe gegen den offiziellen IQTIG-Bericht: Die Summe der als auffällig gezählten Codes (H+U+A+D+S) unter der neuen Interpretation ergibt exakt die im IQTIG-Bericht veröffentlichte Zahl „Rechnerisch auffällige Ergebnisse gesamt". Zusätzlich kommen unsere Python-Auswertung und die unabhängige Power-BI-Auswertung der Kollegen jetzt zum selben Ergebnis — ein zweiter, unabhängiger Beleg.
+### 12. Wie stellt ihr sicher, dass eure Interpretation der Bewertungscodes richtig ist?
+Per Summenprobe gegen den offiziellen IQTIG-Bericht: Die Summe der als auffällig gezählten Codes (H+U+A+D+S) ergibt exakt die im IQTIG-Bericht veröffentlichte Zahl „Rechnerisch auffällige Ergebnisse gesamt". Zusätzlich kommen unsere Python-Auswertung und die unabhängige Power-BI-Auswertung der BI-Kollegen zum selben Ergebnis — ein zweiter, unabhängiger Beleg.
 
-### 13. Wie stark hat sich das Ergebnis durch die Korrektur verändert?
-Erheblich: 72,5 % der Krankenhäuser wechseln die Gruppe (viele/wenige Probleme). Praktisch alle Korrelationsvorzeichen drehten sich um (z. B. Ärzte pro Bett von negativ auf positiv), und der zuvor „klarste Befund" der Analyse — ein hoch signifikanter Trägerschafts-Effekt (F=11,32, p<0,001) — verschwand vollständig (F=0,031, p=0,969 nach der Korrektur).
+### 13. Wie ausgewogen ist die Ziel-Variable, und warum ist das für ein Modell wichtig?
+Von 1.821 Häusern haben 905 (49,7 %) viele und 916 (50,3 %) wenige Probleme — dank Median-Split fast perfekt balanciert. Eine ausgewogene Klassenverteilung ist wichtig, damit ein Modell nicht einfach durch reines Raten der Mehrheitsklasse fast immer richtig liegt, ohne etwas gelernt zu haben — genau das misst die Basislinie von 50,4 % in Kapitel 4.
 
 ### 14. Warum wurde der Median statt Mittelwert oder ein fester Schwellenwert (z. B. 80 %) als Trennwert gewählt?
 Der Median ist robuster gegenüber Ausreißern als der Mittelwert und teilt die Häuser automatisch in zwei etwa gleich große Gruppen (916 vs. 905) — das verhindert ein starkes Klassenungleichgewicht, bei dem ein Modell schon durch reines Raten der Mehrheitsklasse fast immer richtig läge, ohne etwas gelernt zu haben. Ein fixer Wert wie 80 % wäre willkürlich und nicht an die tatsächliche Verteilung der Daten angepasst.
@@ -164,4 +163,4 @@ Erstens Patientenmix: Häuser mit schwierigeren oder komplexeren Fällen fallen 
 
 ---
 
-*Stand: siehe Datum der letzten Aktualisierung dieses Dokuments. Quellen: `01_Exploration.md`, `02_Analyse.md`, `03_Decision_Tree.md`, `Aufgabenstellung/Text_Presentation.docx`, `Fortschrittsbericht_Qualitaets_Muster_Finder.docx`.*
+*Stand: siehe Datum der letzten Aktualisierung dieses Dokuments. Quellen: `01_Exploration.md`, `02_Analyse.md`, `03_Decision_Tree.md`, `Aufgabenstellung/Text_Presentation.docx`.*
