@@ -69,7 +69,7 @@ streamlit run Dashboard/streamlit_dashboard.py
 
 > ⚠️ Die Rohdaten in `Data/CSV/` und `Data/Excel/` (86 Dateien, bis 911 MB) sind **nicht** im Repository. Für den Dashboard-Betrieb werden nur `Data/analysetabelle.csv` und `Data/modell_krankenhaus.pkl` benötigt — diese beiden liegen zwar im sonst per `.gitignore` ausgeschlossenen `Data/`-Ordner, sind aber per expliziter `!`-Ausnahme trotzdem versioniert.
 >
-> Die Python-Skripte, die die Word-Dokumentation in `Doku/Word/` erzeugen, liegen lokal in `scripts/` — dieser Ordner ist per `.gitignore` bewusst nicht versioniert (siehe `ProjektDetails.md`).
+> Die Python-Skripte, die die Word-Dokumentation in `Docs/Word/` erzeugen, liegen lokal in `scripts/` — dieser Ordner ist per `.gitignore` bewusst nicht versioniert (siehe `ProjektDetails.md`).
 
 ---
 
@@ -85,7 +85,7 @@ streamlit run Dashboard/streamlit_dashboard.py
 | `model/modell_klasse.py` | OOP-Wrapper `KrankenhausModell` (prepare, fit, evaluate, save, load) |
 | `Data/analysetabelle.csv` | Fertige Analysetabelle (Ergebnis aus Baustein 1) |
 | `Data/modell_krankenhaus.pkl` | Trainiertes Decision-Tree-Modell |
-| `Doku/MD/Workflow.md` | Vollständige Dokumentation aller Entscheidungen |
+| `Docs/MD/Workflow.md` | Vollständige Dokumentation aller Entscheidungen |
 | `ToDo.md` | Aufgabenliste nach Baustein-Struktur |
 | `ProjektDetails.md` | Vollständige, versionierte Dateiübersicht |
 

@@ -1,6 +1,6 @@
 # 📖 IQTIG.md — Erkenntnisse aus dem Bundesqualitätsbericht 2023
 
-> Quelle: `Doku/IQTIG_Bundesqualitaetsbericht-2023_2023-11-08.pdf` (lokal vorhanden, nicht versioniert — 25,5 MB, 4.559 Seiten). Dieses Dokument fasst zusammen, was beim Durchsehen relevant für unser Projekt war. Bei 4.559 Seiten wurde nicht linear gelesen, sondern gezielt: Titel-/Metadatenseiten, das vollständige Inhaltsverzeichnis sowie das erste QS-Verfahren (QS PCI, ~170 Seiten) als repräsentatives Beispiel für die Methodik, die sich über alle Verfahren wiederholt.
+> Quelle: `Docs/IQTIG_Bundesqualitaetsbericht-2023_2023-11-08.pdf` (lokal vorhanden, nicht versioniert — 25,5 MB, 4.559 Seiten). Dieses Dokument fasst zusammen, was beim Durchsehen relevant für unser Projekt war. Bei 4.559 Seiten wurde nicht linear gelesen, sondern gezielt: Titel-/Metadatenseiten, das vollständige Inhaltsverzeichnis sowie das erste QS-Verfahren (QS PCI, ~170 Seiten) als repräsentatives Beispiel für die Methodik, die sich über alle Verfahren wiederholt.
 
 ---
 

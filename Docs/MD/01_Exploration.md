@@ -284,7 +284,7 @@ Ein späterer Chi²-Test (Baustein 2) zeigt **keinen** signifikanten Zusammenhan
 
 - **`QS.csv`** wird nie geladen — siehe „Tabellenverbindungen analysieren". Ursprünglich als Brückentabelle vermutet, aber nicht nötig.
 - **`AQ.Pflege.csv`** wird nie geladen — bewusst durch `SO.Personalliste.csv` ersetzt (Abschnitt 6).
-- **`QS.Leistungsbereich.csv`**, **`Notfallversorgung.csv`** und **`MM.csv`** werden hier nicht eingebunden — sie wurden separat in `Notebooks/04_Potenzielle_Erweiterungen.ipynb` (siehe `Doku/MD/04_Potenzielle_Erweiterungen.md`) auf zusätzliches Signal geprüft. Zwei der drei Dateien zeigen dort ein stärkeres Signal als jedes bisherige Merkmal, sind aber (Stand dieses Dokuments) noch nicht in `analysetabelle.csv` übernommen.
+- **`QS.Leistungsbereich.csv`**, **`Notfallversorgung.csv`** und **`MM.csv`** werden hier nicht eingebunden — sie wurden separat in `Notebooks/04_Potenzielle_Erweiterungen.ipynb` (siehe `Docs/MD/04_Potenzielle_Erweiterungen.md`) auf zusätzliches Signal geprüft. Zwei der drei Dateien zeigen dort ein stärkeres Signal als jedes bisherige Merkmal, sind aber (Stand dieses Dokuments) noch nicht in `analysetabelle.csv` übernommen.
 - Statistische Auswertung (T-Test, ANOVA, Chi²-Test, Grafiken) passiert **nicht** hier, sondern in `02_Analyse.ipynb`. Dieses Notebook liefert nur die Datengrundlage.
 
 ---

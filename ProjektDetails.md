@@ -4,7 +4,7 @@
 >
 > **Datenbasis:** IQTIG Qualitätsberichte 2023 — 1.821 deutsche Krankenhäuser mit auswertbarer Qualitätsbewertung
 
-> ℹ️ **Hinweis zu diesem Dokument:** Es listet ausschließlich Dateien, die tatsächlich per Git versioniert werden (Stand `.gitignore`, 2026-08-30). Lokal vorhandene, aber bewusst nicht eingecheckte Inhalte — u. a. der komplette `scripts/`-Ordner, die Rohdaten in `Data/CSV/` und `Data/Excel/` sowie einzelne Zusatzdateien — sind hier nicht aufgeführt. Ausnahme: `Doku/PPT/` ist inzwischen **teilweise** versioniert — `Projektbegleitende_Praesentation.pptx` wird per `.gitignore`-Ausnahme eingecheckt, alle anderen Dateien in diesem Ordner (u. a. das Teamvortrag-Deck) bleiben lokal.
+> ℹ️ **Hinweis zu diesem Dokument:** Es listet ausschließlich Dateien, die tatsächlich per Git versioniert werden (Stand `.gitignore`, 2026-08-30). Lokal vorhandene, aber bewusst nicht eingecheckte Inhalte — u. a. der komplette `scripts/`-Ordner, die Rohdaten in `Data/CSV/` und `Data/Excel/` sowie einzelne Zusatzdateien — sind hier nicht aufgeführt. Ausnahme: `Docs/PPT/` ist inzwischen **teilweise** versioniert — `Projektbegleitende_Praesentation.pptx` wird per `.gitignore`-Ausnahme eingecheckt, alle anderen Dateien in diesem Ordner (u. a. das Teamvortrag-Deck) bleiben lokal.
 
 ---
 
@@ -18,7 +18,7 @@ Das Projekt folgt einer **5-Baustein-Struktur** plus einem optionalen Erweiterun
 | 2 — Deskriptive Analyse | ✅ Abgeschlossen | `Notebooks/02_Analyse.ipynb` |
 | 3 — Streamlit-Dashboard | ✅ Live | `Dashboard/streamlit_dashboard.py` |
 | 4 — Entscheidungsbaum (Bonus) | ✅ Abgeschlossen | `Notebooks/03_Decision_Tree.ipynb` |
-| 5 — Abschluss & Präsentation | 🟡 Unterlagen fertig, Vortrag noch offen | `Doku/PPT/Projektbegleitende_Praesentation.pptx` |
+| 5 — Abschluss & Präsentation | 🟡 Unterlagen fertig, Vortrag noch offen | `Docs/PPT/Projektbegleitende_Praesentation.pptx` |
 | Bonus — Potenzielle Erweiterungen | ✅ Analysiert, **nicht ins Hauptmodell übernommen** | `Notebooks/04_Potenzielle_Erweiterungen.ipynb` |
 
 ---
@@ -56,7 +56,7 @@ QualitaetsMusterFinderProjekt/
 │   ├── README.md                 → Hauptdokumentation mit Startanleitung
 │   ├── ProjektDetails.md         → Detaillierte Projektstruktur & Entscheidungen (dieses Dokument)
 │   ├── ToDo.md                   → Aufgabenliste + IHK-Abgleich
-│   ├── Doku/MD/ (11 Dateien)      → Markdown-Dokumentation
+│   ├── Docs/MD/ (11 Dateien)      → Markdown-Dokumentation
 │   │   ├── Workflow.md, 01_Exploration.md, 01_Exploration_Ref.md, 02_Analyse.md, 03_Decision_Tree.md
 │   │   ├── 04_Potenzielle_Erweiterungen.md → Walkthrough zum Bonus-Notebook
 │   │   ├── 05_Dashboard.md                 → Doku zur Dashboard-Bedienung/Layout
@@ -64,11 +64,11 @@ QualitaetsMusterFinderProjekt/
 │   │   ├── Fragen_und_Antworten.md         → 30 vorbereitete Fragen & Antworten für Rückfragen
 │   │   ├── IQTIG.md                        → Auswertung des offiziellen IQTIG-Bundesqualitätsberichts 2023
 │   │   └── Qualitätsindikator.md           → Deep-Dive zur größten Rohdatei (QS.Qualitätsindikator.csv, 911,7 MB)
-│   ├── Doku/Word/ (7 Dateien)     → Word-Exporte, siehe Datei-Übersicht unten
-│   └── Doku/PPT/ (1 Datei)        → Projektbegleitende_Praesentation.pptx — einzige versionierte Foliendatei
+│   ├── Docs/Word/ (7 Dateien)     → Word-Exporte, siehe Datei-Übersicht unten
+│   └── Docs/PPT/ (1 Datei)        → Projektbegleitende_Praesentation.pptx — einzige versionierte Foliendatei
 │
 └── ⚙️ Konfiguration
-    ├── .gitignore                → Schließt Data/* aus (außer den 2 !-Ausnahmen), sowie scripts/, Doku/PPT/* (außer 1 Ausnahme), .devcontainer/, Doku/Archiv/, Aufgabenstellung/* (außer den 2 Fragestellung-Ausnahmen) und weitere Einzeldateien
+    ├── .gitignore                → Schließt Data/* aus (außer den 2 !-Ausnahmen), sowie scripts/, Docs/PPT/* (außer 1 Ausnahme), .devcontainer/, Docs/Archiv/, Aufgabenstellung/* (außer den 2 Fragestellung-Ausnahmen) und weitere Einzeldateien
     └── requirements.txt          → 12 Pakete (streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn, statsmodels)
 ```
 
@@ -93,7 +93,7 @@ QualitaetsMusterFinderProjekt/
 
 - `model/modell_klasse.py` — OOP-Wrapper `KrankenhausModell` (prepare, fit, evaluate, save, load); Default-Modellpfad `Data/modell_krankenhaus.pkl`. Einzige Quelle der Wahrheit für Features & Modell-Logik — wird von `Dashboard/dashboard_utils.py` und `Notebooks/03_Decision_Tree.ipynb` ordnerübergreifend importiert (`sys.path`-Ergänzung, kein echtes Python-Package)
 
-> **Hinweis:** Die Word-Dokumente in `Doku/Word/` (siehe unten) werden von Python-Skripten in `scripts/` erzeugt. Dieser Ordner ist per `.gitignore` bewusst nicht versioniert (lokales Arbeitswerkzeug) — die daraus erzeugten `.docx`-Ergebnisse sind es aber, damit die Dokumentation ohne lokalen Skript-Lauf einsehbar bleibt.
+> **Hinweis:** Die Word-Dokumente in `Docs/Word/` (siehe unten) werden von Python-Skripten in `scripts/` erzeugt. Dieser Ordner ist per `.gitignore` bewusst nicht versioniert (lokales Arbeitswerkzeug) — die daraus erzeugten `.docx`-Ergebnisse sind es aber, damit die Dokumentation ohne lokalen Skript-Lauf einsehbar bleibt.
 
 ### 📊 Daten (2) — im Ordner `Data/`
 
@@ -107,31 +107,31 @@ QualitaetsMusterFinderProjekt/
 - `README.md` — Hauptdokumentation mit Startanleitung & "Wichtige Entscheidungen"
 - `ProjektDetails.md` — Detaillierte Projektstruktur & Entscheidungen (dieses Dokument)
 - `ToDo.md` — Aufgabenliste mit Haken + IHK-Abgleich
-- `Doku/MD/Workflow.md` — Vollständige Workflow-Dokumentation pro Baustein
-- `Doku/MD/01_Exploration.md` — Schritt-für-Schritt-Erklärung von `01_Exploration.ipynb`
-- `Doku/MD/01_Exploration_Ref.md` — Schritt-für-Schritt-Erklärung von `01_Exploration_Ref.ipynb` (Konkordanzanalyse)
-- `Doku/MD/02_Analyse.md` — Schritt-für-Schritt-Erklärung von `02_Analyse.ipynb`
-- `Doku/MD/03_Decision_Tree.md` — Schritt-für-Schritt-Erklärung von `03_Decision_Tree.ipynb`
-- `Doku/MD/04_Potenzielle_Erweiterungen.md` — Walkthrough zu `04_Potenzielle_Erweiterungen.ipynb` inkl. Hypothesen, Ergebnissen und Empfehlungen je geprüfter Datei
-- `Doku/MD/05_Dashboard.md` — Doku zu Aufbau, Navigation und Seiten des Streamlit-Dashboards
-- `Doku/MD/Daten_Inhaltsverzeichnis.md` — Übersicht aller 86 CSV-Dateien
-- `Doku/MD/Fragen_und_Antworten.md` — 30 vorbereitete Fragen & Antworten zur Absicherung gegen Rückfragen des Dozenten
-- `Doku/MD/IQTIG.md` — Auswertung des offiziellen IQTIG-Bundesqualitätsberichts 2023 (Methodik, Beleg für IQTIG/G-BA-Herkunft der Rohdaten)
-- `Doku/MD/Qualitätsindikator.md` — Deep-Dive zu `QS.Qualitätsindikator.csv` (911,7 MB, größte Rohdatei, 29 Spalten)
+- `Docs/MD/Workflow.md` — Vollständige Workflow-Dokumentation pro Baustein
+- `Docs/MD/01_Exploration.md` — Schritt-für-Schritt-Erklärung von `01_Exploration.ipynb`
+- `Docs/MD/01_Exploration_Ref.md` — Schritt-für-Schritt-Erklärung von `01_Exploration_Ref.ipynb` (Konkordanzanalyse)
+- `Docs/MD/02_Analyse.md` — Schritt-für-Schritt-Erklärung von `02_Analyse.ipynb`
+- `Docs/MD/03_Decision_Tree.md` — Schritt-für-Schritt-Erklärung von `03_Decision_Tree.ipynb`
+- `Docs/MD/04_Potenzielle_Erweiterungen.md` — Walkthrough zu `04_Potenzielle_Erweiterungen.ipynb` inkl. Hypothesen, Ergebnissen und Empfehlungen je geprüfter Datei
+- `Docs/MD/05_Dashboard.md` — Doku zu Aufbau, Navigation und Seiten des Streamlit-Dashboards
+- `Docs/MD/Daten_Inhaltsverzeichnis.md` — Übersicht aller 86 CSV-Dateien
+- `Docs/MD/Fragen_und_Antworten.md` — 30 vorbereitete Fragen & Antworten zur Absicherung gegen Rückfragen des Dozenten
+- `Docs/MD/IQTIG.md` — Auswertung des offiziellen IQTIG-Bundesqualitätsberichts 2023 (Methodik, Beleg für IQTIG/G-BA-Herkunft der Rohdaten)
+- `Docs/MD/Qualitätsindikator.md` — Deep-Dive zu `QS.Qualitätsindikator.csv` (911,7 MB, größte Rohdatei, 29 Spalten)
 
-### 📄 Dokumentation (Word) — im Ordner `Doku/Word/`
+### 📄 Dokumentation (Word) — im Ordner `Docs/Word/`
 
 - `Dokumentation_Qualitaets_Muster_Finder.docx` — Hauptdokumentation
 - `Datensatz_Uebersicht.docx` — Datei-Klassifikation aller 86 Rohdaten
 - `Grafiken_Dokumentation.docx` — Erklärung aller 12 Analyse-Grafiken
 - `Analysetabelle_Zusammenfassung.docx` — Merkmale, Ziel-Variable, Quelltabellen, Merge-Kriterien, Endgröße
-- `Dashboard_Uebersicht.docx` — Word-Fassung von `Doku/MD/05_Dashboard.md`
+- `Dashboard_Uebersicht.docx` — Word-Fassung von `Docs/MD/05_Dashboard.md`
 - `ML_Doku.docx` — Word-Fassung des Decision-Tree-Walkthroughs
 - `Projektbegleitende_Dokumentation.docx` — Großes, kapitelweise gewachsenes Begleitdokument (6 Kapitel: Aufgabenstellung, Datenaufbereitung, Deskriptive Analyse, ML-Modell, Dashboard, Fazit/Grenzen/Ausblick)
 
-### 🖼️ Doku/PPT/ — im Ordner `Doku/PPT/`
+### 🖼️ Docs/PPT/ — im Ordner `Docs/PPT/`
 
-- `Projektbegleitende_Praesentation.pptx` — Foliengenerierte Entsprechung der Projektbegleitenden Dokumentation, 6 Kapitel. Einzige Datei aus `Doku/PPT/`, die per `.gitignore`-Ausnahme versioniert wird — das separate Teamvortrag-Deck bleibt bewusst lokal
+- `Projektbegleitende_Praesentation.pptx` — Foliengenerierte Entsprechung der Projektbegleitenden Dokumentation, 6 Kapitel. Einzige Datei aus `Docs/PPT/`, die per `.gitignore`-Ausnahme versioniert wird — das separate Teamvortrag-Deck bleibt bewusst lokal
 
 ### 🖼️ Grafiken (`grafiken/`)
 
@@ -141,7 +141,7 @@ QualitaetsMusterFinderProjekt/
 
 ### ⚙️ Konfiguration
 
-- `.gitignore` — Schließt `Data/*` aus (Rohdaten, 86 CSVs/Excels sowie `analysetabelle.xlsx`) außer den 2 `!`-Ausnahmen; schließt zusätzlich `scripts/`, `.devcontainer/`, `Doku/Archiv/` (rein manuell gepflegtes persönliches Archiv), zwei externe IQTIG-Quell-PDFs und `Aufgabenstellung/` aus. `Doku/PPT/*` ist ebenfalls ausgeschlossen, mit einer gezielten `!`-Ausnahme für `Projektbegleitende_Praesentation.pptx`
+- `.gitignore` — Schließt `Data/*` aus (Rohdaten, 86 CSVs/Excels sowie `analysetabelle.xlsx`) außer den 2 `!`-Ausnahmen; schließt zusätzlich `scripts/`, `.devcontainer/`, `Docs/Archiv/` (rein manuell gepflegtes persönliches Archiv), zwei externe IQTIG-Quell-PDFs und `Aufgabenstellung/` aus. `Docs/PPT/*` ist ebenfalls ausgeschlossen, mit einer gezielten `!`-Ausnahme für `Projektbegleitende_Praesentation.pptx`
 - `requirements.txt` — 12 Pakete: streamlit, plotly, nbformat, ipykernel, pandas, scikit-learn, joblib, scipy, numpy, matplotlib, seaborn, statsmodels (statsmodels wird von Plotly fuer die Trendlinien im Streudiagramm-Tab benoetigt)
 
 > `.devcontainer/devcontainer.json` (GitHub-Codespaces-Konfiguration) liegt lokal vor, ist aber bewusst nicht versioniert — Codespaces wird für dieses Projekt nicht genutzt, das Deployment läuft über Streamlit Community Cloud.
@@ -233,23 +233,23 @@ streamlit run Dashboard/streamlit_dashboard.py
 
 **Code-/Doku-Aufräumen:**
 - [ ] Entscheiden, ob `mittl_doku_rate` und `notfall_stufe` aus `04_Potenzielle_Erweiterungen.ipynb` in `analysetabelle.csv` und das Modell übernommen werden
-- [ ] Toter Verweis in `Doku/MD/01_Exploration.md` auf die inzwischen gelöschte `BI_Analyse/`-Dokumentation bereinigen
+- [ ] Toter Verweis in `Docs/MD/01_Exploration.md` auf die inzwischen gelöschte `BI_Analyse/`-Dokumentation bereinigen
 
 **Erledigt (Auswahl, Stand 2026-08-30):**
 - ✅ Ziel-Variable in `01_Exploration.ipynb` berechnet: `QSErgBewStrukDialog`-Code `R10` bedeutet „nicht auffällig"
 - ✅ `02_Analyse.ipynb`, `03_Decision_Tree.ipynb` und `04_Potenzielle_Erweiterungen.ipynb` inkl. aller MD-Dokus gegen die aktuelle `analysetabelle.csv` ausgeführt
 - ✅ Alle Word-Dokument-Generatoren in `scripts/` und deren Ausgabedateien auf die aktuellen Kennzahlen abgestimmt
 - ✅ Fehlendes `scripts/Grafiken_Speichern.py` neu erstellt und alle 12 PNG-Grafiken erzeugt
-- ✅ `.gitignore` überarbeitet: `scripts/`, `Doku/PPT/`, `.devcontainer/` (ungenutzte Codespaces-Konfiguration) und weitere lokale Arbeitsdateien vollständig von der Versionierung ausgeschlossen
+- ✅ `.gitignore` überarbeitet: `scripts/`, `Docs/PPT/`, `.devcontainer/` (ungenutzte Codespaces-Konfiguration) und weitere lokale Arbeitsdateien vollständig von der Versionierung ausgeschlossen
 - ✅ `Dashboard/` (`streamlit_dashboard.py`, `dashboard_utils.py`) zeigt durchgehend die aktuellen Kennzahlen — u. a. Trägerschafts-Tab (ANOVA nicht signifikant), Feature Importance, Risiko-Rechner-Richtung (mehr Ärzte/Bett → höheres Risiko). Dabei zwei unabhängige Bugs gefunden und behoben: fehlendes `statsmodels` (Streudiagramm-Trendlinien crashten) und veraltetes `Styler.applymap` (Ähnliche-Häuser-Suche crashte). Alle 4 Seiten inkl. Kern-Interaktionen per `streamlit.testing.v1.AppTest` verifiziert (keine Exceptions)
 - ✅ *(2026-08-27/28)* Grafiken durchgehend `g`+Nummer benannt (u. a. Decision-Tree-Grafiken, Bundesland-Kachelkarte statt Balken), `01_Exploration_Ref` als Konkordanzanalyse-Referenz ergänzt, indikator-/hausgewichtete Gesamtquote (7,71 % / 8,62 %) in `02_Analyse.md`/`.ipynb` nachgerechnet und dokumentiert
-- ✅ *(2026-08-28)* D50/S90-Codes zählen durchgehend als auffällig (`01_Exploration.md`, `01_Exploration.ipynb`, `Fragen_und_Antworten.md`) — bestätigt durch eine Summenprobe H+U+A+D+S gegen die offizielle IQTIG-Zahl. `Doku/MD/IQTIG.md` neu: Auswertung des offiziellen IQTIG-Bundesqualitätsberichts 2023. `Doku/PPT/Projektbegleitende_Praesentation.pptx` erstmals eingecheckt (gezielte `.gitignore`-Ausnahme)
+- ✅ *(2026-08-28)* D50/S90-Codes zählen durchgehend als auffällig (`01_Exploration.md`, `01_Exploration.ipynb`, `Fragen_und_Antworten.md`) — bestätigt durch eine Summenprobe H+U+A+D+S gegen die offizielle IQTIG-Zahl. `Docs/MD/IQTIG.md` neu: Auswertung des offiziellen IQTIG-Bundesqualitätsberichts 2023. `Docs/PPT/Projektbegleitende_Praesentation.pptx` erstmals eingecheckt (gezielte `.gitignore`-Ausnahme)
 - ✅ *(2026-08-29/30)* Dashboard-Fix: veraltetes `px.scatter_mapbox` (brach auf Streamlit Cloud, lokal unauffällig) durch das aktiv gepflegte `px.scatter_map` ersetzt; Bundesland-Vergleich von abgeschnittenem Balkendiagramm auf interaktive Kachelkarte mit Hover-Tooltips umgestellt
-- ✅ *(2026-08-30)* Abschließender Doku-Audit: `05_Dashboard.md`, `Workflow.md` und `README.md` auf aktuelle Seitennamen/Technik (`scatter_map`, Kachelkarte) gebracht. Dieselbe D50/S90-Anpassung wie 2026-08-28 auch im `Doku/Dozent/Fortschrittsbericht_...`-Generator vorgenommen. Für `Dashboard_Uebersicht.docx` und `ML_Doku.docx` fehlten die Generator-Skripte komplett (vermutlich mit `Doku/PPT/Designs/` verloren gegangen) — `scripts/erstelle_dashboard_doku.py` und `scripts/erstelle_ml_doku.py` neu geschrieben und beide docx mit aktuellen Kennzahlen neu erzeugt (u. a. Median 5,88 % statt 77 %, Accuracy 57,0 % statt 63,6 %, Feature Importance Ärzte/Bett 72,8 % statt 53,6 %, 1.821 statt 1.824 Häuser)
+- ✅ *(2026-08-30)* Abschließender Doku-Audit: `05_Dashboard.md`, `Workflow.md` und `README.md` auf aktuelle Seitennamen/Technik (`scatter_map`, Kachelkarte) gebracht. Dieselbe D50/S90-Anpassung wie 2026-08-28 auch im `Docs/Dozent/Fortschrittsbericht_...`-Generator vorgenommen. Für `Dashboard_Uebersicht.docx` und `ML_Doku.docx` fehlten die Generator-Skripte komplett (vermutlich mit `Docs/PPT/Designs/` verloren gegangen) — `scripts/erstelle_dashboard_doku.py` und `scripts/erstelle_ml_doku.py` neu geschrieben und beide docx mit aktuellen Kennzahlen neu erzeugt (u. a. Median 5,88 % statt 77 %, Accuracy 57,0 % statt 63,6 %, Feature Importance Ärzte/Bett 72,8 % statt 53,6 %, 1.821 statt 1.824 Häuser)
 - ✅ *(2026-08-30)* `Aufgabenstellung/Fragestellung.docx` per `.gitignore`-Ausnahme eingecheckt (Ordner war zuvor komplett ausgeschlossen). Zusätzlich `use_container_width` (11 Stellen in `Dashboard/streamlit_dashboard.py`) proaktiv auf `width="stretch"` umgestellt — Streamlit hatte das Entfernungsdatum (2025-12-31) bereits überschritten und `requirements.txt` pinnt Streamlit nicht, dasselbe Risikomuster wie beim `scatter_mapbox`-Vorfall. Alle 4 Seiten inkl. Reset-/Such-/Vorhersage-Button-Interaktionen erneut per `AppTest` verifiziert (keine Exceptions, keine Deprecation-Warnungen mehr)
 - ✅ *(2026-08-30)* `Projektbegleitende_Praesentation.pptx` Folien 15–43 visuell überarbeitet: Aufzählungen durch farbige Befund-Panels, nummerierte Karten und gerahmte Fazit-Boxen ersetzt (neue Hilfsfunktionen `panel_reihe`, `karten_reihe`, `rahmen_box` in `erstelle_projektbegleitende_ppt.py`). Grafiken mit schmalem/quadratischem/Hochformat-Seitenverhältnis (u. a. Folie 18 Bundesland-Kachelkarte, Korrelationsmatrix, Confusion Matrix, Dashboard-Screenshots) wirkten im Bild-oben/Panels-unten-Layout zu klein — dafür neues Layout `bild_folie_seitlich()`: Bild groß links über die volle Inhaltshöhe, Panels gestapelt rechts. Breite Grafiken (Boxplot-Paar, Entscheidungsbaum) blieben bewusst im alten Bild-oben-Layout, da dort bereits breiter dargestellt
 - ✅ *(2026-08-30)* `grafiken/screenshots/` (4 Dateien, zeigten seit 2026-08-09 veraltete Kennzahlen) per Playwright gegen das lokal gestartete Dashboard neu aufgenommen — inkl. Klick auf „Suchen“/„Ergebnis anzeigen“, damit die Screenshots echte Ergebnisse statt Platzhalter zeigen. `Projektbegleitende_Praesentation.pptx` mit den neuen Screenshots neu erzeugt (Folien 37–40)
-- ✅ *(2026-08-30)* `Doku/Dozent/` (Fortschrittsbericht für die Dozenten-Zwischenpräsentation, Woche-4-Stand) auf Wunsch komplett entfernt — Referenzen darauf in `README.md`, `Doku/MD/Workflow.md`, `Doku/MD/Fragen_und_Antworten.md` und dieser Datei bereinigt. Der Generator `scripts/erstelle_dozenten_doku.py` bleibt unangetastet in `scripts/` (gitignored, nicht Teil der Löschung)
+- ✅ *(2026-08-30)* `Docs/Dozent/` (Fortschrittsbericht für die Dozenten-Zwischenpräsentation, Woche-4-Stand) auf Wunsch komplett entfernt — Referenzen darauf in `README.md`, `Docs/MD/Workflow.md`, `Docs/MD/Fragen_und_Antworten.md` und dieser Datei bereinigt. Der Generator `scripts/erstelle_dozenten_doku.py` bleibt unangetastet in `scripts/` (gitignored, nicht Teil der Löschung)
 - ✅ *(2026-08-30)* `Projektbegleitende_Praesentation.pptx` von 43 auf 35 Folien verdichtet (8 Folienpaare zusammengelegt, jeweils inkl. neu verfasster, zusammenhängender Sprechernotiz): 1.4a+b Herkunft/Anzahl der Häuser, 2.2c+d Filterkaskade/Ergebnis, 3.1 Grafik 9+10 Konzernvergleich/Fortbildungsquote, 3.4+3.5 Inferenzstatistik/Pivot-Tabelle, 4.2 Datenaufbereitung/Split/Basislinie, 4.3 Metriken/Confusion Matrix, 4.5+4.6 R²-Metrik/Modell speichern, 6.2+6.3 Grenzen der Analyse/Ausblick. Alle 35 Folien per Skript verifiziert (Sprechernotizen vollständig) und die 8 zusammengelegten Folien einzeln als PNG gerendert und auf Textüberlauf geprüft — dabei zwei Layout-Fehler gefunden und behoben: zu knapp bemessene Tabellenhöhe (Folie „4.2", überlappte mit der Kachel-Reihe darunter) und zu enger Abstand zwischen Zwischenüberschrift und Kartenreihe (Folie „6.2+6.3")
 
 ---
@@ -270,11 +270,11 @@ streamlit run Dashboard/streamlit_dashboard.py
 | **`ist_konzern` trotz fehlendem Signal ins Modell aufgenommen** | Chi²-Test zeigt keinen Zusammenhang (p=0,2585), Decision Tree bestätigt mit 0 % Feature Importance. Bewusst drin gelassen: „Kein Zusammenhang" ist selbst ein dokumentiertes, vom Modell empirisch bestätigtes Ergebnis |
 | **`pflege_pro_bett` über `SO.Personalliste.csv` statt `AQ.Pflege.csv`** | `AQ.Pflege.csv` enthält nur Qualifikationsnachweise, keine Personal-Anzahlen. `SO.Personalliste.csv` hat direkt `SO.QBID` + `SO.Personal.Anzahl` mit Bereich `'Pflege'` |
 | **Erweiterungs-Merkmale aus Notebook 04 (noch) nicht ins Hauptmodell übernommen** | Bewusst als separate Explorationsanalyse dokumentiert statt spontan ins laufende Modell gemergt — Übernahme würde `01_Exploration.ipynb`, `analysetabelle.csv` und das trainierte Modell neu durchlaufen lassen und ist als expliziter Folgeschritt vorgesehen |
-| **`scripts/` nicht versioniert, `Doku/PPT/` größtenteils nicht** | Lokale Arbeitswerkzeuge bzw. Präsentationsunterlagen; die daraus erzeugten `.docx`-Ergebnisse (in `Doku/Word/`) sind versioniert, die Erzeuger-Skripte selbst nicht. Ausnahme seit 2026-08-28: `Projektbegleitende_Praesentation.pptx` wird gezielt eingecheckt, das Teamvortrag-Deck bleibt lokal |
+| **`scripts/` nicht versioniert, `Docs/PPT/` größtenteils nicht** | Lokale Arbeitswerkzeuge bzw. Präsentationsunterlagen; die daraus erzeugten `.docx`-Ergebnisse (in `Docs/Word/`) sind versioniert, die Erzeuger-Skripte selbst nicht. Ausnahme seit 2026-08-28: `Projektbegleitende_Praesentation.pptx` wird gezielt eingecheckt, das Teamvortrag-Deck bleibt lokal |
 | **D50/S90-Codes zählen als auffällig** | Bestätigt durch eine Summenprobe: H+U+A+D+S ergibt exakt die offizielle IQTIG-Zahl. Der Code (`~str.startswith('R')` nach N*-Ausschluss) setzt das direkt um |
 | **`px.scatter_map` statt `px.scatter_mapbox`** *(2026-08-29)* | `scatter_mapbox` ist bei Plotly offiziell veraltet; unpinnte `plotly>=5.18.0`-Version in `requirements.txt` ließ Streamlit Cloud eine neuere, mit dem kaum noch gepflegten Mapbox-Codepfad inkompatible Version installieren — lokal unauffällig, auf Cloud AttributeError |
 | **Bundesland-Vergleich als Kachelkarte statt Balkendiagramm** *(2026-08-29)* | Balken hatten abgeschnittene Beschriftungen bei langen Balken und stellten kleine Bundesländer (z. B. Bremen n=14) optisch gleichwertig zu großen (NRW n=397) dar — dieselbe schematische Deutschlandkarte wie `grafiken/g7_bundesland_kachelkarte.png`, jetzt interaktiv mit Hover-Tooltip |
-| **Fehlende Generator-Skripte neu geschrieben statt `.docx` direkt gepatcht** *(2026-08-30)* | `Dashboard_Uebersicht.docx` und `ML_Doku.docx` hatten keine zugehörigen Skripte mehr in `scripts/` (vermutlich zusammen mit `Doku/PPT/Designs/` verloren gegangen) und enthielten veraltete Kennzahlen. Bewusst `erstelle_dashboard_doku.py`/`erstelle_ml_doku.py` neu geschrieben statt nur die `.docx` zu patchen, damit beide Dateien wie alle anderen Word-Dokumente reproduzierbar aus Quelldaten neu erzeugbar bleiben |
+| **Fehlende Generator-Skripte neu geschrieben statt `.docx` direkt gepatcht** *(2026-08-30)* | `Dashboard_Uebersicht.docx` und `ML_Doku.docx` hatten keine zugehörigen Skripte mehr in `scripts/` (vermutlich zusammen mit `Docs/PPT/Designs/` verloren gegangen) und enthielten veraltete Kennzahlen. Bewusst `erstelle_dashboard_doku.py`/`erstelle_ml_doku.py` neu geschrieben statt nur die `.docx` zu patchen, damit beide Dateien wie alle anderen Word-Dokumente reproduzierbar aus Quelldaten neu erzeugbar bleiben |
 | **`use_container_width` proaktiv auf `width="stretch"` umgestellt** *(2026-08-30)* | Streamlit-Entfernungsdatum für `use_container_width` (2025-12-31) lag bereits in der Vergangenheit, `requirements.txt` pinnt Streamlit nicht — dasselbe Risikomuster, das den `scatter_mapbox`-Vorfall auf Streamlit Cloud verursacht hat. Vorsorglich behoben statt auf den nächsten Cloud-Crash zu warten |
 
 ---

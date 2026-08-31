@@ -31,23 +31,23 @@ scripts/
 *.pptx
 
 # Präsentations-Ordner von Commits ausschließen — außer explizit eingecheckte Dateien
-Doku/PPT/*
-!Doku/PPT/Projektbegleitende_Praesentation.pptx
-Doku/MD/Praesentation_Folien_Beschreibung.md
-Doku/MD/Praesentation_Team_Folien_Beschreibung.md
+Docs/PPT/*
+!Docs/PPT/Projektbegleitende_Praesentation.pptx
+Docs/MD/Praesentation_Folien_Beschreibung.md
+Docs/MD/Praesentation_Team_Folien_Beschreibung.md
 
 # Jupyter-Outputs optional ausschließen (auskommentieren um Outputs zu behalten)
 # *.ipynb
 
 # Externe Quellberichte (PDF) nicht einchecken
-Doku/IQTIG_Bericht-zum-Strukturierten-Dialog-2021_EJ-2020_2022-05-16-barrierefrei.pdf
-Doku/IQTIG_Bundesqualitaetsbericht-2023_2023-11-08.pdf
+Docs/IQTIG_Bericht-zum-Strukturierten-Dialog-2021_EJ-2020_2022-05-16-barrierefrei.pdf
+Docs/IQTIG_Bundesqualitaetsbericht-2023_2023-11-08.pdf
 
 # GitHub-Codespaces-Konfiguration nicht einchecken (nicht genutzt, Deployment läuft über Streamlit Cloud)
 .devcontainer/
 
 # Persönliches Archiv der Nutzerin — rein manuell gepflegt, nicht versionieren
-Doku/Archiv/
+Docs/Archiv/
 
 # Lokale Server-Log-Dateien (z. B. beim Neustarten von streamlit run entstanden)
 *.log

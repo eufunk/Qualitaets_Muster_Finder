@@ -293,8 +293,8 @@ Es zeigen sich mehrere statistisch signifikante Einzelzusammenhänge (Ärzte/Bet
 | `datensatz_uebersicht.py` | Baustein 1 | Generiert `Datensatz_Uebersicht.docx` (Datei-Klassifikation aller 86 CSVs) |
 | `analysetabelle_zusammenfassung.py` | Baustein 1 | Generiert `Analysetabelle_Zusammenfassung.docx`: Merkmale, Ziel-Variable, Quelltabellen, Merge-Kriterien, Endgröße |
 | `grafiken_doku.py` | Baustein 2 | Generiert `Grafiken_Dokumentation.docx`: alle 12 Grafiken aus `02_Analyse.ipynb` erklärt, Zahlen live berechnet |
-| `erstelle_dozenten_doku.py` | Baustein 1+2 | Erzeugte den Fortschrittsbericht für den Dozenten (Zwischenpräsentation); `Doku/Dozent/` wurde nach der Zwischenpräsentation wieder entfernt |
-| `erstelle_praesentationsskript.py` | Baustein 5 | Generiert `Doku/PPT/Praesentationsskript_Qualitaets_Muster_Finder.docx` (Sprechertext je Folie) |
+| `erstelle_dozenten_doku.py` | Baustein 1+2 | Erzeugte den Fortschrittsbericht für den Dozenten (Zwischenpräsentation); `Docs/Dozent/` wurde nach der Zwischenpräsentation wieder entfernt |
+| `erstelle_praesentationsskript.py` | Baustein 5 | Generiert `Docs/PPT/Praesentationsskript_Qualitaets_Muster_Finder.docx` (Sprechertext je Folie) |
 
 ### 📊 Datendateien
 
@@ -303,7 +303,7 @@ Es zeigen sich mehrere statistisch signifikante Einzelzusammenhänge (Ärzte/Bet
 | `Data/analysetabelle.csv` / `.xlsx` | Baustein 1 | Finale Analysetabelle: 1.821 Häuser × 18 Spalten — Basis für alles weitere |
 | `Data/modell_krankenhaus.pkl` | Baustein 4 | Trainiertes Decision-Tree-Modell (joblib) — bereit für Dashboard |
 
-### 📄 Dokumentation (Word, `Doku/Word/`)
+### 📄 Dokumentation (Word, `Docs/Word/`)
 
 | Datei | Inhalt |
 |-------|--------|
@@ -319,11 +319,11 @@ Es zeigen sich mehrere statistisch signifikante Einzelzusammenhänge (Ärzte/Bet
 
 | Datei | Inhalt |
 |-------|--------|
-| `Doku/PPT/Praesentationsskript_Qualitaets_Muster_Finder.docx` | Vollständiges Präsentationsskript mit Sprechertext je Folie |
-| `Doku/PPT/Qualitaets_Muster_Finder.pptx` | Foliensatz (Einzelpräsentator) |
-| `Doku/PPT/Qualitaets_Muster_Finder_Teamvortrag.pptx` | Foliensatz (Team-Variante, 3 Präsentatoren) |
+| `Docs/PPT/Praesentationsskript_Qualitaets_Muster_Finder.docx` | Vollständiges Präsentationsskript mit Sprechertext je Folie |
+| `Docs/PPT/Qualitaets_Muster_Finder.pptx` | Foliensatz (Einzelpräsentator) |
+| `Docs/PPT/Qualitaets_Muster_Finder_Teamvortrag.pptx` | Foliensatz (Team-Variante, 3 Präsentatoren) |
 
-### 📝 Markdown-Dateien (`Doku/MD/`)
+### 📝 Markdown-Dateien (`Docs/MD/`)
 
 | Datei | Zweck |
 |-------|-------|
@@ -338,7 +338,7 @@ Es zeigen sich mehrere statistisch signifikante Einzelzusammenhänge (Ärzte/Bet
 | `Praesentation_Folien_Beschreibung.md` | Folienbeschreibung für die Einzelpräsentator-Variante |
 | `Praesentation_Team_Folien_Beschreibung.md` | Folienbeschreibung für die Team-Variante (3 Präsentatoren) |
 
-*(`ToDo.md` und `ProjektDetails.md` liegen im Projekt-Root, nicht in `Doku/MD/`.)*
+*(`ToDo.md` und `ProjektDetails.md` liegen im Projekt-Root, nicht in `Docs/MD/`.)*
 
 ### 🖼️ Grafiken
 

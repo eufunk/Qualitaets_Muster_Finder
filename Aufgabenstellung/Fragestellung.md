@@ -1,6 +1,6 @@
 # Projekt: Qualitäts-Muster-Finder
 
-> Übertragen aus `Aufgabenstellung/Fragestellung.docx` (Original-Aufgabenstellung, unverändert im Inhalt). Die Checkboxen markieren den aktuellen Umsetzungsstand (Stand: 2026-08-09) — Details und Begründungen dazu in `ToDo.md` sowie `Doku/MD/01_Exploration.md` und `Doku/MD/02_Analyse.md`.
+> Übertragen aus `Aufgabenstellung/Fragestellung.docx` (Original-Aufgabenstellung, unverändert im Inhalt). Die Checkboxen markieren den aktuellen Umsetzungsstand (Stand: 2026-08-09) — Details und Begründungen dazu in `ToDo.md` sowie `Docs/MD/01_Exploration.md` und `Docs/MD/02_Analyse.md`.
 
 ---
 
@@ -21,7 +21,7 @@ Bei manchen Indikatoren werden Häuser als „auffällig" bewertet. Welche struk
 ### 1. Daten vorbereiten
 
 - [x] **Ziel-Variable erstellen:**
-  - [x] Für jedes Krankenhaus: Anteil auffälliger Qualitätsindikatoren berechnen — *erledigt in `Notebooks/01_Exploration.ipynb`, Kapitel 3 (`QS.Qualitätsindikator.csv` → `auffaellig_quote`); erklärt in `Doku/MD/01_Exploration.md` Kap. 3*
+  - [x] Für jedes Krankenhaus: Anteil auffälliger Qualitätsindikatoren berechnen — *erledigt in `Notebooks/01_Exploration.ipynb`, Kapitel 3 (`QS.Qualitätsindikator.csv` → `auffaellig_quote`); erklärt in `Docs/MD/01_Exploration.md` Kap. 3*
   - [x] Target: „Hat überdurchschnittlich viele Probleme" = liegt über Median — *Spalte `hat_viele_Probleme` in `Data/analysetabelle.csv`, ebenfalls `01_Exploration.ipynb` Kap. 3, Schritt 7*
 - [x] **5–8 interessante Merkmale auswählen, z. B.:**
   - [x] Bettenzahl — *`SO.csv` → `SO.Betten`, `01_Exploration.ipynb` Kapitel 2*
@@ -34,7 +34,7 @@ Bei manchen Indikatoren werden Häuser als „auffällig" bewertet. Welche struk
 
 ### 2. Deskriptive Analyse
 
-- [x] Vergleiche: Wie unterscheiden sich Häuser MIT überdurchschnittlich vielen vs. wenigen Problemen? — *`Notebooks/02_Analyse.ipynb` Kapitel 2 (Grafiken 1–7, 11–12); erklärt in `Doku/MD/02_Analyse.md`*
+- [x] Vergleiche: Wie unterscheiden sich Häuser MIT überdurchschnittlich vielen vs. wenigen Problemen? — *`Notebooks/02_Analyse.ipynb` Kapitel 2 (Grafiken 1–7, 11–12); erklärt in `Docs/MD/02_Analyse.md`*
 - [x] Korrelationen berechnen: Welche Merkmale hängen zusammen? — *`02_Analyse.ipynb` Kapitel 3, Grafik 8 (Korrelationsmatrix)*
 - [x] Gruppenvergleiche: Uni-Kliniken vs. normale Häuser, große vs. kleine, öffentlich vs. privat — *`02_Analyse.ipynb` Grafiken 2 (Betten), 3 (Träger), 4 (Uni)*
 - [x] Visualisierungen: Box-Plots, Scatter-Plots, Balkendiagramme — *alle 12 Grafiken über `scripts/grafiken_speichern.py` erzeugt, liegen in `grafiken/`*
@@ -74,14 +74,14 @@ Streamlit-App mit 4 Seiten *(`Dashboard/streamlit_dashboard.py`)*:
 
 - [x] **Folie 13 im PPTX aktualisiert** — Power BI → Streamlit-Dashboard (Titel, Screenshot, Inhaltszeilen); `scripts/update_folie13.py`
 - [x] **Streamlit-Präsentationsfolie** — `Dashboard/folie13_praesentation.py` (slide-artig, 2×2 Karten + Screenshots, für Einzelpräsentation)
-- [x] **Sprechertext-Dokument** — `Doku/Praesentationsskript_Qualitaets_Muster_Finder.docx` (30 Min, 15 Folien, erzählend mit Übergängen); `scripts/erstelle_praesentationsskript.py`
+- [x] **Sprechertext-Dokument** — `Docs/Praesentationsskript_Qualitaets_Muster_Finder.docx` (30 Min, 15 Folien, erzählend mit Übergängen); `scripts/erstelle_praesentationsskript.py`
 - [x] **`Praesentation_Folien_Beschreibung.md`** — alle 15 Folien mit PPTX abgeglichen, Zeile 13 korrigiert
 
 ---
 
 ## Die Daten (liegen vor)
 
-- Qualitätsindikatoren (C-1.2): Bewertungen für ~1.900 Krankenhäuser *(tatsächlich nachgezählt: 1.824 Häuser mit Bewertungen — siehe Herkunfts-Erklärung in `Doku/MD/01_Exploration.md`, Kapitel 3)*
+- Qualitätsindikatoren (C-1.2): Bewertungen für ~1.900 Krankenhäuser *(tatsächlich nachgezählt: 1.824 Häuser mit Bewertungen — siehe Herkunfts-Erklärung in `Docs/MD/01_Exploration.md`, Kapitel 3)*
 - Strukturdaten (A-Teil): Betten, Personal, Träger, Standort
 
 ## Hinweis

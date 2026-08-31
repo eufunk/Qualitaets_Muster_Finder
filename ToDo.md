@@ -129,17 +129,17 @@
 - [x] Startanleitung schreiben → `README.md` erstellt
 - [x] Entscheidungen festhalten → `README.md` Abschnitt "Wichtige Entscheidungen"
 - [x] **Entscheidungsbegründungen ausformulieren** *(Folie 13: „festhalten, welche Entscheidungen ihr getroffen habt und warum")* — erledigt:
-  - [x] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)? → `Doku/MD/01_Exploration.md` Abschnitt 1.4, Schritt 7
-  - [x] Warum N99 ausgeschlossen? → `Doku/MD/01_Exploration.md` Abschnitt 1.4, Schritt 2
-  - [x] Warum diese Merkmale (und nicht andere)? → je ein „Warum"-Abschnitt pro Merkmal in `Doku/MD/01_Exploration.md`, konsolidiert in `Doku/Word/Analysetabelle_Zusammenfassung.docx`
-  - [x] Warum `aerzte_pro_bett` über FA.csv statt SO.Personalliste? → `Doku/MD/01_Exploration.md` Abschnitt 5
-- [x] **Notebook-Walkthroughs erstellt:** `Doku/MD/01_Exploration.md`, `Doku/MD/02_Analyse.md` und `Doku/MD/03_Decision_Tree.md` — erklären jeden Schritt der beiden Notebooks inkl. Begründung, mit allen Grafiken eingebettet, Konzept-Boxen (IQTIG, G-BA, p-Wert, Boxplot-Aufbau, „Diagramm lesen" je Grafik) und Klarstellung der „~1.900"-Zahl sowie des kleine-Zahlen-Effekts hinter der 100 %-Spitze in `auffaellig_quote`
-- [x] Kollegen-Zusammenfassung erstellt: `Doku/Word/Analysetabelle_Zusammenfassung.docx` (gewählte Merkmale, Ziel-Variablen, Quelltabellen, Merge-Kriterien, Endgröße der Analysetabelle)
+  - [x] Warum Median als Schwelle (nicht Mittelwert oder fester Wert)? → `Docs/MD/01_Exploration.md` Abschnitt 1.4, Schritt 7
+  - [x] Warum N99 ausgeschlossen? → `Docs/MD/01_Exploration.md` Abschnitt 1.4, Schritt 2
+  - [x] Warum diese Merkmale (und nicht andere)? → je ein „Warum"-Abschnitt pro Merkmal in `Docs/MD/01_Exploration.md`, konsolidiert in `Docs/Word/Analysetabelle_Zusammenfassung.docx`
+  - [x] Warum `aerzte_pro_bett` über FA.csv statt SO.Personalliste? → `Docs/MD/01_Exploration.md` Abschnitt 5
+- [x] **Notebook-Walkthroughs erstellt:** `Docs/MD/01_Exploration.md`, `Docs/MD/02_Analyse.md` und `Docs/MD/03_Decision_Tree.md` — erklären jeden Schritt der beiden Notebooks inkl. Begründung, mit allen Grafiken eingebettet, Konzept-Boxen (IQTIG, G-BA, p-Wert, Boxplot-Aufbau, „Diagramm lesen" je Grafik) und Klarstellung der „~1.900"-Zahl sowie des kleine-Zahlen-Effekts hinter der 100 %-Spitze in `auffaellig_quote`
+- [x] Kollegen-Zusammenfassung erstellt: `Docs/Word/Analysetabelle_Zusammenfassung.docx` (gewählte Merkmale, Ziel-Variablen, Quelltabellen, Merge-Kriterien, Endgröße der Analysetabelle)
 
 ### Präsentation *(Folie 13)*
 
 #### Folien & Unterlagen
-> ⚠️ Die vier Punkte unten aus dem Stand vom 2026-08-09 (altes 15-Folien-Einzelpräsentator-Deck, Power-BI-Bezug auf Folie 13, `Dashboard/folie13_praesentation.py`) sind **überholt** — dieses Deck und die zugehörigen Dateien existieren nicht mehr. Es wurde durch die neu strukturierte `Doku/PPT/Projektbegleitende_Praesentation.pptx` ersetzt (43 Folien, 6 Kapitel, entlang der projektbegleitenden Dokumentation aufgebaut; Skript: `scripts/erstelle_projektbegleitende_ppt.py`).
+> ⚠️ Die vier Punkte unten aus dem Stand vom 2026-08-09 (altes 15-Folien-Einzelpräsentator-Deck, Power-BI-Bezug auf Folie 13, `Dashboard/folie13_praesentation.py`) sind **überholt** — dieses Deck und die zugehörigen Dateien existieren nicht mehr. Es wurde durch die neu strukturierte `Docs/PPT/Projektbegleitende_Praesentation.pptx` ersetzt (43 Folien, 6 Kapitel, entlang der projektbegleitenden Dokumentation aufgebaut; Skript: `scripts/erstelle_projektbegleitende_ppt.py`).
 
 - [x] **Foliendeck durchgehend neu gestaltet (2026-08-30)** — Folien 15–43 von reinen Aufzählungen auf farbige Befund-Panels, nummerierte Karten und gerahmte Fazit-Boxen umgestellt (neue Hilfsfunktionen `panel_reihe`, `karten_reihe`, `rahmen_box`); Grafiken mit schmalem/Hochformat-Seitenverhältnis (u. a. Bundesland-Kachelkarte, Korrelationsmatrix, Confusion Matrix, Dashboard-Screenshots) bekamen ein neues Bild-links/Panels-rechts-Layout (`bild_folie_seitlich`), das die Bilder deutlich größer darstellt
 - [x] **Dashboard-Screenshots aktualisiert** — die vier Screenshots in `grafiken/screenshots/` zeigten veraltete Kennzahlen; per Playwright gegen das lokal laufende Dashboard neu aufgenommen, inkl. Klick auf „Suchen“/„Ergebnis anzeigen“ für echte statt leere Ergebnisansichten
@@ -147,7 +147,7 @@
 - [x] **Aufgabenstellung eingecheckt** — `Aufgabenstellung/Fragestellung.docx` und `.md` per gezielter `.gitignore`-Ausnahme jetzt versioniert (Ordner war zuvor komplett ausgeschlossen)
 
 #### Noch offen
-> Inhaltlich ist alles unten bereits in `Doku/PPT/Projektbegleitende_Praesentation.pptx` (Folien + Sprechertext) ausformuliert — offen ist nur noch das tatsächliche Vortragen und Üben.
+> Inhaltlich ist alles unten bereits in `Docs/PPT/Projektbegleitende_Praesentation.pptx` (Folien + Sprechertext) ausformuliert — offen ist nur noch das tatsächliche Vortragen und Üben.
 - [ ] Fragestellung vorstellen (Folie 3, „1.1 Projektrahmen & Fragestellung")
 - [ ] Hürden & Erkenntnisse aus der Datenaufbereitung (Kapitel 1–2, Folien 3–12: Fehlerbehebungen, Designentscheidungen)
 - [ ] Befunde der deskriptiven Analyse — auch „kein Zusammenhang" klar und begründet benennen (Kapitel 3, Folien 13–25)
